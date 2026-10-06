@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { renderQuestionPrompt, translate, type Locale } from '@/localization';
 
+import { VisualQuestion } from './visual/VisualQuestion';
 import { usePracticeSession } from './usePracticeSession';
 
 const ANSWERS = Array.from({ length: 11 }, (_, value) => value);
@@ -155,6 +156,8 @@ export function PracticeScreen() {
           <Text style={styles.question}>
             {renderQuestionPrompt(practice.question, locale)}
           </Text>
+
+          <VisualQuestion question={practice.question} locale={locale} />
 
           <View style={styles.answerGrid}>
             {ANSWERS.map((answer) => (

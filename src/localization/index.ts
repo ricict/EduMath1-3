@@ -13,6 +13,9 @@ type MessageKey =
   | 'question.numberComparison'
   | 'question.unitFraction'
   | 'question.readClock'
+  | 'visual.numberRecognitionLabel'
+  | 'visual.additionFirstGroupLabel'
+  | 'visual.additionSecondGroupLabel'
   | 'action.check'
   | 'action.next'
   | 'action.finish'
@@ -40,6 +43,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'One of {denominator} equal parts is shaded. Which fraction is shown?',
     'question.readClock': 'What time does the clock show?',
+    'visual.numberRecognitionLabel': 'Shown number: {target}',
+    'visual.additionFirstGroupLabel': 'First group: {count} objects',
+    'visual.additionSecondGroupLabel': 'Second group: {count} objects',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'action.finish': 'Finish session',
@@ -66,6 +72,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'Satu dari {denominator} bagian yang sama diarsir. Pecahan apa yang ditunjukkan?',
     'question.readClock': 'Jam menunjukkan pukul berapa?',
+    'visual.numberRecognitionLabel': 'Angka yang ditampilkan: {target}',
+    'visual.additionFirstGroupLabel': 'Kelompok pertama: {count} benda',
+    'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'action.finish': 'Selesaikan sesi',
@@ -92,6 +101,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'ระบายสี 1 ส่วนจากทั้งหมด {denominator} ส่วนที่เท่ากัน เศษส่วนที่แสดงคืออะไร?',
     'question.readClock': 'นาฬิกาแสดงเวลากี่โมง?',
+    'visual.numberRecognitionLabel': 'ตัวเลขที่แสดง: {target}',
+    'visual.additionFirstGroupLabel': 'กลุ่มแรกมีสิ่งของ {count} ชิ้น',
+    'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'action.finish': 'จบเซสชัน',

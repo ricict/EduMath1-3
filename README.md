@@ -11,8 +11,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M3 — Question Generation Engine: COMPLETE**
 - **M4 — Learning Session & Offline Storage: COMPLETE**
 - **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
+- **M6 — Visual Mathematics & Pedagogy: IN PROGRESS**
 
-M1 through M5 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 derives explainable mastery state, applies strict curriculum prerequisites, recommends eligible practice, and can start the recommended M4 session while preserving the original M1 Grade 1 addition regression contract.
+M1 through M5 were completed on 2026-10-06. M6 is now in progress, beginning with typed visual rendering for `number_recognition_10` and `addition_concept`. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 derives explainable mastery state, applies strict curriculum prerequisites, recommends eligible practice, and can start the recommended M4 session while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 
@@ -372,6 +373,6 @@ Two intermediate CI failures were repaired narrowly: run 31 exposed connector es
 
 M5 does not claim that every Grade 1–3 canonical skill is already practiceable. M3 generator coverage remains intentionally incremental, and M5 represents unavailable curriculum/generator states explicitly.
 
-The next milestone is M6 — Visual Mathematics & Pedagogy. It should render semantic mathematical representations and develop concrete → visual → abstract learning experiences without changing the locked M5 mastery policy casually.
+M6 — Visual Mathematics & Pedagogy is now in progress. Its first vertical slice renders semantic Grade 1 number-recognition and addition-combine questions without moving mathematical generation into React or changing the locked M5 mastery policy.
 
 See docs/m2-curriculum-engine.md for M2, docs/m3-question-generation-engine.md for M3, docs/m4-learning-session-offline-storage.md for M4, and docs/m5-mastery-adaptive-learning.md for the M5 completion lock.
