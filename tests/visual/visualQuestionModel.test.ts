@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { generateAdditionConcept } from '../../src/core/question-engine/additionConcept';
+import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
 import { generateNumberRecognition10 } from '../../src/core/question-engine/numberRecognition10';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
@@ -121,6 +122,33 @@ test('clock hand geometry places hour hand between numerals at the half-hour', (
   });
 });
 
+test('number-line comparison visual model consumes explicit scale semantics', () => {
+  const question = generateCompareOrderNumbers20({
+    grade: 1,
+    skillId: 'compare_order_numbers_20',
+    difficulty: 3,
+    seed: 20261006,
+    representation: 'number-line',
+  });
+
+  assert.deepEqual(buildVisualQuestionModel(question), {
+    kind: 'number-line-comparison',
+    questionId: question.id,
+    left: question.data.left,
+    right: question.data.right,
+    scaleMin: question.data.scaleMin,
+    scaleMax: question.data.scaleMax,
+  });
+
+  const symbolic = generateCompareOrderNumbers20({
+    grade: 1,
+    skillId: 'compare_order_numbers_20',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  assert.equal(buildVisualQuestionModel(symbolic), null);
+});
+
 test('visual accessibility wording stays localized while semantic values stay unchanged', () => {
   assert.equal(
     translate('en', 'visual.numberRecognitionLabel', { target: 7 }),
@@ -141,5 +169,14 @@ test('visual accessibility wording stays localized while semantic values stay un
   assert.equal(
     translate('id', 'visual.clockLabel', { hour: 3, minute: '30' }),
     'Jam analog menunjukkan pukul 3:30',
+  );
+  assert.equal(
+    translate('en', 'visual.numberLineComparisonLabel', {
+      min: 0,
+      max: 20,
+      left: 7,
+      right: 12,
+    }),
+    'Number line from 0 to 20. Compare 7 and 12.',
   );
 });

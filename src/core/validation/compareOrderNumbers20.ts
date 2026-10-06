@@ -1,4 +1,9 @@
-import type { ComparisonRelation, Difficulty, Question } from '../types';
+import type {
+  ComparisonRelation,
+  Difficulty,
+  NumberComparisonQuestion,
+  Question,
+} from '../types';
 import type { QuestionValidationResult } from './types';
 
 const MAX_VALUE_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -31,7 +36,8 @@ export function validateCompareOrderNumbers20(question: Question): QuestionValid
     return { valid: false, errors };
   }
 
-  const { left, right } = question.data;
+  const comparisonQuestion = question as NumberComparisonQuestion;
+  const { left, right, scaleMin, scaleMax } = comparisonQuestion.data;
   const maxValue = MAX_VALUE_BY_DIFFICULTY[question.difficulty];
 
   if (!Number.isInteger(left) || !Number.isInteger(right)) {
@@ -43,7 +49,18 @@ export function validateCompareOrderNumbers20(question: Question): QuestionValid
   if (left > maxValue || right > maxValue) {
     errors.push('Compared values exceed the configured difficulty cap.');
   }
-  if (question.expectedAnswer !== expectedRelation(left, right)) {
+  if (scaleMin !== 0 || scaleMax !== maxValue) {
+    errors.push('Comparison scale must match the configured difficulty range.');
+  }
+  if (
+    comparisonQuestion.representation !== 'symbolic' &&
+    comparisonQuestion.representation !== 'number-line'
+  ) {
+    errors.push('Comparison representation must be symbolic or number-line.');
+  }
+  if (
+    comparisonQuestion.expectedAnswer !== expectedRelation(left, right)
+  ) {
     errors.push('Expected relation does not match the compared values.');
   }
 

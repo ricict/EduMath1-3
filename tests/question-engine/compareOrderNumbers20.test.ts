@@ -21,6 +21,14 @@ test('number comparison generator is deterministic and registered', () => {
     supportsQuestionGeneration('compare_order_numbers_20', 'relation-choice', 'symbolic'),
     true,
   );
+  assert.equal(
+    supportsQuestionGeneration(
+      'compare_order_numbers_20',
+      'relation-choice',
+      'number-line',
+    ),
+    true,
+  );
   assert.deepEqual(
     generateQuestion({
       grade: 1,
@@ -40,6 +48,11 @@ test('number comparison preserves value and answer invariants across many seeds'
     assert.equal(validation.valid, true, `seed ${seed}: ${validation.errors.join(', ')}`);
     assert.ok(question.data.left >= 0 && question.data.left <= 20);
     assert.ok(question.data.right >= 0 && question.data.right <= 20);
+    assert.equal(question.data.scaleMin, 0);
+    assert.equal(
+      question.data.scaleMax,
+      { 1: 10, 2: 15, 3: 20 }[question.difficulty],
+    );
 
     const expected =
       question.data.left < question.data.right
@@ -61,6 +74,27 @@ test('number comparison difficulty caps remain explicit', () => {
       assert.ok(question.data.right <= caps[difficulty]);
     }
   }
+});
+
+test('number-line representation is opt-in and preserves default symbolic identity', () => {
+  const symbolic = generate(20261006, 3);
+  const numberLine = generateQuestion({
+    grade: 1,
+    skillId: 'compare_order_numbers_20',
+    difficulty: 3,
+    seed: 20261006,
+    representation: 'number-line',
+  });
+
+  assert.equal(symbolic.representation, 'symbolic');
+  assert.equal(numberLine.representation, 'number-line');
+  assert.equal(numberLine.data.left, symbolic.data.left);
+  assert.equal(numberLine.data.right, symbolic.data.right);
+  assert.equal(numberLine.expectedAnswer, symbolic.expectedAnswer);
+  assert.equal(numberLine.data.scaleMin, 0);
+  assert.equal(numberLine.data.scaleMax, 20);
+  assert.notEqual(numberLine.id, symbolic.id);
+  assert.equal(validateQuestion(numberLine).valid, true);
 });
 
 test('number comparison renders semantic prompts independently in all locales', () => {

@@ -151,6 +151,51 @@ export function VisualQuestion({ question, locale }: VisualQuestionProps) {
     );
   }
 
+  if (model.kind === 'number-line-comparison') {
+    const values = Array.from(
+      { length: model.scaleMax - model.scaleMin + 1 },
+      (_, index) => model.scaleMin + index,
+    );
+
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.numberLineComparisonLabel', {
+          min: model.scaleMin,
+          max: model.scaleMax,
+          left: model.left,
+          right: model.right,
+        })}
+        style={styles.numberLineCard}
+      >
+        <View accessible={false} style={styles.numberLineTicks}>
+          {values.map((value) => {
+            const highlighted = value === model.left || value === model.right;
+            return (
+              <View key={value} style={styles.numberLineTickCell}>
+                <Text
+                  style={[
+                    styles.numberLineLabel,
+                    highlighted && styles.numberLineLabelHighlighted,
+                  ]}
+                >
+                  {value}
+                </Text>
+                <View
+                  style={[
+                    styles.numberLineTick,
+                    highlighted && styles.numberLineTickHighlighted,
+                  ]}
+                />
+              </View>
+            );
+          })}
+        </View>
+        <View accessible={false} style={styles.numberLineRule} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.groupRow}>
       {model.groups.map((group) => (
@@ -290,5 +335,51 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     backgroundColor: '#172033',
+  },
+  numberLineCard: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    paddingHorizontal: 8,
+    paddingTop: 18,
+    paddingBottom: 12,
+  },
+  numberLineTicks: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  numberLineTickCell: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  numberLineLabel: {
+    color: '#526071',
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '600',
+  },
+  numberLineLabelHighlighted: {
+    color: '#172033',
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  numberLineTick: {
+    width: 1,
+    height: 10,
+    marginTop: 3,
+    backgroundColor: '#7D8A9A',
+  },
+  numberLineTickHighlighted: {
+    width: 4,
+    height: 18,
+    backgroundColor: '#315EFB',
+  },
+  numberLineRule: {
+    height: 2,
+    marginTop: -1,
+    backgroundColor: '#526071',
   },
 });

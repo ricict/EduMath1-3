@@ -141,12 +141,14 @@ export type ComparisonRelation = 'less-than' | 'equal' | 'greater-than';
 
 export interface NumberComparisonQuestion extends QuestionBase {
   questionType: 'relation-choice';
-  representation: 'symbolic';
+  representation: 'symbolic' | 'number-line';
   promptKey: 'question.numberComparison';
   data: {
     operation: 'number-comparison';
     left: number;
     right: number;
+    scaleMin: 0;
+    scaleMax: number;
   };
   expectedAnswer: ComparisonRelation;
 }

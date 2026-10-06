@@ -39,6 +39,15 @@ export interface ReadClockVisualModel {
   minuteHandDegrees: number;
 }
 
+export interface NumberLineComparisonVisualModel {
+  kind: 'number-line-comparison';
+  questionId: string;
+  left: number;
+  right: number;
+  scaleMin: 0;
+  scaleMax: number;
+}
+
 export function getClockHandDegrees(
   hour: number,
   minute: 0 | 30,
@@ -56,7 +65,8 @@ export type VisualQuestionModel =
   | NumberRecognitionVisualModel
   | AdditionCombineVisualModel
   | UnitFractionVisualModel
-  | ReadClockVisualModel;
+  | ReadClockVisualModel
+  | NumberLineComparisonVisualModel;
 
 export function buildVisualQuestionModel(
   question: Question,
@@ -109,6 +119,20 @@ export function buildVisualQuestionModel(
         ...handDegrees,
       };
     }
+
+    case 'number-comparison':
+      if (question.representation !== 'number-line') {
+        return null;
+      }
+
+      return {
+        kind: 'number-line-comparison',
+        questionId: question.id,
+        left: question.data.left,
+        right: question.data.right,
+        scaleMin: question.data.scaleMin,
+        scaleMax: question.data.scaleMax,
+      };
 
     default:
       return null;

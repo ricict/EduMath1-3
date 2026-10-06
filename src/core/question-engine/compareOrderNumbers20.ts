@@ -36,29 +36,41 @@ export function generateCompareOrderNumbers20(
   if (context.questionType && context.questionType !== 'relation-choice') {
     throw new Error('compare_order_numbers_20 supports only relation-choice questions.');
   }
-  if (context.representation && context.representation !== 'symbolic') {
-    throw new Error('compare_order_numbers_20 currently generates only symbolic questions.');
+  if (
+    context.representation &&
+    context.representation !== 'symbolic' &&
+    context.representation !== 'number-line'
+  ) {
+    throw new Error(
+      'compare_order_numbers_20 supports symbolic or number-line questions.',
+    );
   }
 
+  const representation = context.representation ?? 'symbolic';
   const random = createSeededRandom(context.seed);
   const maxValue = MAX_VALUE_BY_DIFFICULTY[context.difficulty];
   const left = random.integer(0, maxValue);
   const right = random.integer(0, maxValue);
 
   return {
-    id: `compare_order_numbers_20:${context.seed}:${left}:${right}`,
+    id:
+      representation === 'symbolic'
+        ? `compare_order_numbers_20:${context.seed}:${left}:${right}`
+        : `compare_order_numbers_20:${context.seed}:${left}:${right}:number-line`,
     grade: 1,
     domain: 'number',
     topic: 'comparison',
     skillId: 'compare_order_numbers_20',
     difficulty: context.difficulty,
     questionType: 'relation-choice',
-    representation: 'symbolic',
+    representation,
     promptKey: 'question.numberComparison',
     data: {
       operation: 'number-comparison',
       left,
       right,
+      scaleMin: 0,
+      scaleMax: maxValue,
     },
     expectedAnswer: relationFor(left, right),
   };
@@ -71,7 +83,7 @@ export const compareOrderNumbers20Generator: QuestionGenerator = {
   supportedGrades: [1],
   supportedDifficulties: [1, 2, 3],
   supportedQuestionTypes: ['relation-choice'],
-  supportedRepresentations: ['symbolic'],
+  supportedRepresentations: ['symbolic', 'number-line'],
   requiredConstraints: ['valueRange'],
   generate: generateCompareOrderNumbers20,
   validate: validateCompareOrderNumbers20,

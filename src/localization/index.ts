@@ -18,6 +18,7 @@ type MessageKey =
   | 'visual.additionSecondGroupLabel'
   | 'visual.unitFractionLabel'
   | 'visual.clockLabel'
+  | 'visual.numberLineComparisonLabel'
   | 'answer.relationLessThan'
   | 'answer.relationEqual'
   | 'answer.relationGreaterThan'
@@ -60,6 +61,8 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
     'visual.unitFractionLabel': '{shaded} of {total} equal parts is shaded',
     'visual.clockLabel': 'Analog clock showing {hour}:{minute}',
+    'visual.numberLineComparisonLabel':
+      'Number line from {min} to {max}. Compare {left} and {right}.',
     'answer.relationLessThan': 'Less than',
     'answer.relationEqual': 'Equal to',
     'answer.relationGreaterThan': 'Greater than',
@@ -101,6 +104,8 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
     'visual.unitFractionLabel': '{shaded} dari {total} bagian yang sama diarsir',
     'visual.clockLabel': 'Jam analog menunjukkan pukul {hour}:{minute}',
+    'visual.numberLineComparisonLabel':
+      'Garis bilangan dari {min} sampai {max}. Bandingkan {left} dan {right}.',
     'answer.relationLessThan': 'Kurang dari',
     'answer.relationEqual': 'Sama dengan',
     'answer.relationGreaterThan': 'Lebih dari',
@@ -142,6 +147,8 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
     'visual.unitFractionLabel': 'ระบายสี {shaded} จาก {total} ส่วนที่เท่ากัน',
     'visual.clockLabel': 'นาฬิกาเข็มแสดงเวลา {hour}:{minute}',
+    'visual.numberLineComparisonLabel':
+      'เส้นจำนวนจาก {min} ถึง {max} เปรียบเทียบ {left} และ {right}',
     'answer.relationLessThan': 'น้อยกว่า',
     'answer.relationEqual': 'เท่ากับ',
     'answer.relationGreaterThan': 'มากกว่า',
