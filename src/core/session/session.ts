@@ -1,5 +1,5 @@
 import { generateQuestion } from '../question-engine/registry';
-import type { Question } from '../types';
+import type { Difficulty, Grade, Question, SkillId } from '../types';
 import {
   DEFAULT_PRACTICE_TARGET_MS,
   PRACTICE_SESSION_SCHEMA_VERSION,
@@ -8,8 +8,6 @@ import {
   type QuestionAttempt,
   type SessionQuestionReference,
 } from './types';
-import type { Difficulty, Grade, SkillId } from '../types';
-
 const MAX_UINT32 = 0xffffffff;
 
 export interface StartPracticeSessionInput {
