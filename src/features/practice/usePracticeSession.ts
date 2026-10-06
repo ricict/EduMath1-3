@@ -12,7 +12,6 @@ import {
   recoverInterruptedPracticeSession,
   restoreActiveQuestion,
   resumePracticeSession,
-  startPracticeSession,
   submitAnswer,
 } from '@/core/session/session';
 import type { PracticeSession } from '@/core/session/types';
