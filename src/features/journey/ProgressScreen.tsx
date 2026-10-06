@@ -30,8 +30,6 @@ export function ProgressScreen() {
   const [error, setError] = useState(false);
 
   const loadProgress = useCallback(async () => {
-    setLoading(true);
-
     try {
       const nextSnapshot = await loadLearnerJourneySnapshot(
         localPracticeSessionStore,
@@ -46,6 +44,11 @@ export function ProgressScreen() {
   }, []);
 
   useEffect(() => {
+    void loadProgress();
+  }, [loadProgress]);
+
+  const retryProgress = useCallback(() => {
+    setLoading(true);
     void loadProgress();
   }, [loadProgress]);
 
@@ -65,7 +68,7 @@ export function ProgressScreen() {
         </Text>
         <Pressable
           accessibilityRole="button"
-          onPress={() => void loadProgress()}
+          onPress={retryProgress}
           style={styles.retryButton}
         >
           <Text style={styles.retryButtonText}>Try again</Text>
