@@ -3,10 +3,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { renderQuestionPrompt, translate, type Locale } from '@/localization';
 
+import {
+  formatPracticeAnswerText,
+  getPracticeAnswerOptions,
+  isSamePracticeAnswer,
+  practiceAnswerKey,
+} from './answerInteraction';
+import type { PracticeScreenAnswer } from './practiceCompatibility';
 import { VisualQuestion } from './visual/VisualQuestion';
 import { type PracticeUnavailableReason, usePracticeSession } from './usePracticeSession';
-
-const ANSWERS = Array.from({ length: 11 }, (_, value) => value);
 
 function formatDuration(durationMs: number): string {
   const totalSeconds = Math.max(0, Math.floor(durationMs / 1_000));
@@ -34,9 +39,24 @@ function renderUnavailableMessage(
   }
 }
 
+function renderAnswerAccessibilityLabel(
+  locale: Locale,
+  answer: PracticeScreenAnswer,
+): string {
+  if (answer.kind === 'numeric') {
+    return String(answer.value);
+  }
+
+  return translate(locale, 'answer.fractionLabel', {
+    numerator: answer.value.numerator,
+    denominator: answer.value.denominator,
+  });
+}
+
 export function PracticeScreen() {
   const [locale, setLocale] = useState<Locale>('en');
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] =
+    useState<PracticeScreenAnswer | null>(null);
   const [checked, setChecked] = useState(false);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
 
@@ -53,7 +73,10 @@ export function PracticeScreen() {
       return;
     }
 
-    const correct = await practice.submitNumericAnswer(selectedAnswer);
+    const correct =
+      selectedAnswer.kind === 'numeric'
+        ? await practice.submitNumericAnswer(selectedAnswer.value)
+        : await practice.submitFractionAnswer(selectedAnswer.value);
     setChecked(true);
     setLastResult(correct);
   };
@@ -142,6 +165,17 @@ export function PracticeScreen() {
     );
   }
 
+  const answerOptions = getPracticeAnswerOptions(practice.question);
+  if (answerOptions === null) {
+    return (
+      <View style={styles.statePage}>
+        <Text style={styles.stateText}>
+          {translate(locale, 'status.unsupportedPracticeType')}
+        </Text>
+      </View>
+    );
+  }
+
   const canFinish = checked && lastResult === true;
 
   return (
@@ -193,21 +227,28 @@ export function PracticeScreen() {
           <VisualQuestion question={practice.question} locale={locale} />
 
           <View style={styles.answerGrid}>
-            {ANSWERS.map((answer) => (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: selectedAnswer === answer }}
-                key={answer}
-                onPress={() => {
-                  setSelectedAnswer(answer);
-                  setChecked(false);
-                  setLastResult(null);
-                }}
-                style={[styles.answerButton, selectedAnswer === answer && styles.answerButtonSelected]}
-              >
-                <Text style={styles.answerText}>{answer}</Text>
-              </Pressable>
-            ))}
+            {answerOptions.map((answer) => {
+              const selected = isSamePracticeAnswer(selectedAnswer, answer);
+
+              return (
+                <Pressable
+                  accessibilityLabel={renderAnswerAccessibilityLabel(locale, answer)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  key={practiceAnswerKey(answer)}
+                  onPress={() => {
+                    setSelectedAnswer(answer);
+                    setChecked(false);
+                    setLastResult(null);
+                  }}
+                  style={[styles.answerButton, selected && styles.answerButtonSelected]}
+                >
+                  <Text style={styles.answerText}>
+                    {formatPracticeAnswerText(answer)}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {checked && selectedAnswer !== null && lastResult !== null ? (
@@ -365,8 +406,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   answerButton: {
-    width: 56,
+    minWidth: 56,
     height: 56,
+    paddingHorizontal: 12,
     borderRadius: 16,
     borderWidth: 2,
     borderColor: '#D7DFE8',

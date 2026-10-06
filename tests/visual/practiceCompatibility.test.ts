@@ -69,7 +69,36 @@ test('numeric visual and symbolic questions share the same answer interaction bo
   assert.equal(questions.every(supportsPracticeScreenQuestion), true);
 });
 
-test('non-numeric question types remain explicitly unsupported by the first M6 practice screen', () => {
+
+test('fraction-choice is supported after the second M6 interaction increment', () => {
+  const fractionQuestion: Question = {
+    id: 'fraction',
+    grade: 2,
+    domain: 'number',
+    topic: 'fractions',
+    skillId: 'unit_fractions',
+    difficulty: 1,
+    questionType: 'fraction-choice',
+    representation: 'visual',
+    promptKey: 'question.unitFraction',
+    data: {
+      operation: 'unit-fraction',
+      shadedParts: 1,
+      totalParts: 2,
+      numerator: 1,
+      denominator: 2,
+    },
+    answerOptions: [
+      { numerator: 1, denominator: 2 },
+      { numerator: 1, denominator: 4 },
+    ],
+    expectedAnswer: { numerator: 1, denominator: 2 },
+  };
+
+  assert.equal(supportsPracticeScreenQuestion(fractionQuestion), true);
+});
+
+test('relation-choice remains explicitly unsupported by the current M6 practice screen', () => {
   const relationQuestion: Question = {
     id: 'comparison',
     grade: 1,
