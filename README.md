@@ -8,9 +8,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 
 - **M1 — Foundation Bootstrap: COMPLETE**
 - **M2 — Curriculum & Canonical Skill Engine: COMPLETE**
-- **M3 — Question Generation Engine: IN PROGRESS**
+- **M3 — Question Generation Engine: COMPLETE**
 
-M1 was closed on 2026-10-06. M2 extends the M1 proof into an auditable curriculum-independent mathematics skill graph while preserving the deterministic Grade 1 addition vertical slice. M3 is now establishing the typed deterministic generator registry, generator-specific validation, and representative generator families.
+M1, M2, and M3 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 
@@ -32,7 +32,7 @@ The core learning loop is designed so curriculum rules, question generation, val
 
 ### Algorithm-first question generation
 
-EduMath does not depend on a large stored question bank. Questions are intended to be generated from explicit rules, mathematical constraints, controlled randomness, and deterministic validation.
+EduMath does not depend on a large stored question bank. Questions are generated from explicit mathematical rules, canonical constraints, controlled randomness, difficulty rules, and deterministic validation.
 
 ### Curriculum controls the system
 
@@ -51,13 +51,11 @@ M2 defines **60 canonical Grade 1–3 skills** across:
 - geometry;
 - data.
 
-The graph covers number sense, counting, comparison, place value, fractions, addition, subtraction, multiplication/division foundations, equality, patterns, length, mass, time, money, 2D/3D shapes, position, classification, tables, pictograms, and unit-scale bar charts.
-
 M2 does **not** claim official alignment with Cambridge, Indonesia's national curriculum, Thailand's national curriculum, or Montessori.
 
 ### Skill progression is a prerequisite DAG
 
-Progression is derived from explicit prerequisite relationships rather than a second manually maintained sequence. This avoids contradictory ordering metadata.
+Progression is derived from explicit prerequisite relationships rather than a second manually maintained sequence.
 
 The original M1 chain remains a regression contract:
 
@@ -69,41 +67,74 @@ addition_concept
 addition_within_10
 ```
 
-The M2 graph engine can validate the graph, produce a deterministic topological progression, and return the transitive prerequisite closure for a skill.
+### Typed deterministic question generation
 
-### Generator capability metadata
+M3 introduces a typed `QuestionGenerator` contract and explicit registry. A generator declares:
 
-Each canonical skill declares the generator capability it will eventually require, such as counting, number comparison, place value, addition, fraction, time, shape, or data interpretation.
+- supported canonical skills;
+- capability;
+- grades;
+- difficulty levels;
+- question types;
+- representations;
+- required canonical constraint fields;
+- deterministic generation;
+- generator-specific validation.
 
-This is capability metadata only. M2 does not implement the broad generator suite; that work belongs to M3.
+Registry dispatch checks the request against M2 canonical metadata before generation and checks the produced semantic question afterward.
 
-### Representation metadata
+Unsupported canonical skills fail explicitly. M3 completion does **not** mean all 60 canonical skills already have generators; M3 establishes and verifies the architecture and representative generator families used to add further coverage safely.
 
-Skills declare the mathematical representations they can support, including symbolic, visual, concrete, number-line, clock, money, table, pictogram, and bar-chart representations.
+### Generator registry integrity
 
-Representation metadata does not imply that every representation UI is implemented yet. Visual/pedagogical delivery belongs primarily to later milestones.
+The registry automatically detects malformed generator metadata including:
 
-### Multilingual separation
+- duplicate generator IDs;
+- duplicate skill ownership;
+- empty descriptor metadata;
+- duplicate descriptor values;
+- capability mismatch with M2;
+- non-canonical grades;
+- non-canonical representations;
+- missing required canonical constraints.
 
-The question engine emits mathematical semantics. The localization layer renders those semantics in English, Indonesian, or Thai. There are no language-specific mathematics generators.
+### Semantic question model
 
-## M2 graph validation
+M3 uses discriminated semantic question structures rather than language-specific prose.
 
-The curriculum engine rejects or detects:
+Implemented question types:
 
-- duplicate skill IDs;
-- missing declared canonical skills;
-- unknown prerequisites;
-- self-prerequisites;
-- repeated prerequisite edges;
-- cyclic prerequisites;
-- malformed grade applicability metadata;
-- prerequisites introduced after a dependent skill;
-- invalid domain/topic combinations;
-- skills with no declared representation;
-- malformed numeric ranges or allowed-denominator constraints.
+- `numeric-choice`;
+- `relation-choice`;
+- `fraction-choice`;
+- `time-choice`.
 
-The canonical catalog is validated automatically in the test suite.
+Implemented semantic representations include:
+
+- symbolic;
+- visual;
+- clock.
+
+Localization remains responsible for child-facing English, Indonesian, and Thai wording.
+
+## M3 representative generators
+
+The completed M3 architecture includes six deterministic representative generators:
+
+- `addition_within_10` — Grade 1, preserved M1 regression generator;
+- `subtraction_within_10` — Grade 1;
+- `compare_order_numbers_20` — Grade 1;
+- `multiplication_facts_2_5_10` — Grades 2–3;
+- `unit_fractions` — Grades 2–3, consumes canonical `allowedDenominators`;
+- `tell_time_hour_half_hour` — Grades 1–2, semantic clock representation.
+
+The registered generator suite therefore exercises Grades 1, 2, and 3 and representative capabilities for addition, subtraction, number comparison, multiplication, fractions, and time.
+
+The locked M1 reference remains:
+
+```text
+seed 20261006 → 4 + 1 = 5
+```
 
 ## Repository structure
 
@@ -116,30 +147,26 @@ src/
       skillGraph.ts               # DAG validation, ordering, prerequisite closure
       skillIds.ts                 # Stable canonical skill identifiers
       taxonomy.ts                 # Allowed domain/topic relationships
-    question-engine/              # Seeded deterministic generation
-    validation/                   # Mathematical invariant checks
-    types.ts                      # Shared domain types
+    question-engine/
+      generator.ts                # Typed generator contract
+      registry.ts                 # Dispatch and compatibility checks
+      registryValidation.ts       # Registry integrity validation
+      seededRandom.ts             # Deterministic PRNG
+      ...                         # Representative generator modules
+    validation/                   # Generator-specific mathematical validators
+    types.ts                      # Shared semantic question/domain types
   features/practice/              # Minimal M1 practice UI
-  localization/                   # EN / ID / TH rendering
+  localization/                   # EN / ID / TH semantic rendering
 tests/
   curriculum/                     # M2 curriculum/graph tests
-  question-engine/                # M1 generator regression tests
+  question-engine/                # M1 regressions + M3 generator/registry tests
 docs/
-  m2-curriculum-engine.md         # M2 rationale, boundaries, and source basis
+  m2-curriculum-engine.md         # M2 rationale and boundaries
+  m3-question-generation-engine.md # M3 architecture and completion lock
 .github/workflows/ci.yml          # Automated quality gate
 ```
 
-Additional architecture boundaries for adaptation, persistence, and visual mathematics will be introduced only when their milestones require concrete implementation.
-
-## Existing deterministic vertical slice
-
-The existing M1 generator remains unchanged:
-
-**Grade 1 — Addition within 10**
-
-It retains seeded deterministic generation, explicit difficulty caps, mathematical validation, and independent EN / ID / TH rendering.
-
-M2 intentionally does not add dozens of question generators.
+Full visual pedagogy components are intentionally not implemented by M3. Visual and clock generators emit semantic representation data; later UI work can render those semantics without moving mathematical rules into React screens.
 
 ## Run locally
 
@@ -164,27 +191,45 @@ This runs:
 2. `expo lint`
 3. deterministic/unit tests via `tsx --test`
 
-The M2 completion baseline contained 17 tests. At the current M3 implementation checkpoint, GitHub Actions run 12 completed successfully with 30 tests passing, 0 failing, and 0 skipped.
+The M2 completion baseline contained 17 tests.
+
+The final M3 implementation quality gate before documentation lock was GitHub Actions run 20:
+
+```text
+Head SHA : fbe3ab566635d66b820ed69a53f27dfcba992752
+Tests    : 56
+Passed   : 56
+Failed   : 0
+Skipped  : 0
+```
+
+The M3 suite includes high-volume per-generator invariant tests plus a generic registry matrix that runs every registered skill across its declared grades, difficulty levels, and deterministic seed samples.
 
 ## Curriculum and pedagogy claims
 
-The M2 canonical catalog is an internal mathematical ontology, not a provider curriculum.
+The canonical catalog remains an internal mathematical ontology, not a provider curriculum.
 
-External curriculum sources were reviewed to make sure the canonical model covers the major mathematical areas encountered in primary Grades/Stages 1–3, but M2 deliberately does not encode formal provider mappings. Those mappings belong to M7 and must be separately verified before any official alignment claim is made.
+Formal Cambridge, Indonesian, and Thai curriculum mapping belongs to M7 and must be separately verified before any official alignment claim is made.
 
 Montessori remains a future pedagogy/learning-path profile. Until properly validated, any future implementation should use wording such as **Montessori-inspired**, not claim official Montessori alignment.
 
-## M2 completion criteria
+## M3 completion criteria
 
-M2 is considered complete when:
+M3 is complete because:
 
-- the Grade 1–3 canonical skill catalog is explicit and stable;
-- skill IDs are type-safe;
-- domain/topic relationships are explicit;
-- prerequisites form a validated DAG;
-- deterministic progression can be derived;
-- malformed graph conditions are covered by automated tests;
-- the M1 deterministic generator remains unchanged and green;
-- TypeScript, lint, and all tests pass in GitHub Actions.
+- a typed generator contract is established;
+- registry dispatch consumes M2 canonical skill metadata;
+- unsupported skills fail explicitly;
+- grade, difficulty, question-type, representation, capability, and canonical-constraint compatibility are enforced;
+- registry metadata integrity is automatically validated;
+- generation remains seed-deterministic;
+- mathematical generation and validation remain separate;
+- semantic mathematics remains separate from localization;
+- representative generators cover Grades 1–3 and materially different mathematical patterns;
+- `resultRange`, `valueRange`, and `allowedDenominators` constraint patterns are exercised;
+- symbolic, visual, and clock semantic representations are exercised;
+- high-volume invariant and generic registry-matrix tests pass;
+- the M1 locked seed remains unchanged;
+- TypeScript, lint, and unit tests pass in GitHub Actions.
 
-See `docs/m2-curriculum-engine.md` for the design rationale and boundary with M3/M7.
+See `docs/m2-curriculum-engine.md` for M2 and `docs/m3-question-generation-engine.md` for the M3 design and completion lock.
