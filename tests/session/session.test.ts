@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  checkpointPracticeSession,
   completePracticeSession,
   deriveQuestionSeed,
   getActivePracticeDurationMs,
   issueNextQuestion,
   pausePracticeSession,
+  recoverInterruptedPracticeSession,
   restoreActiveQuestion,
   resumePracticeSession,
   startPracticeSession,
@@ -249,4 +251,30 @@ test('deterministic reconstruction rejects a tampered stored question identity',
     () => restoreActiveQuestion(tampered),
     /does not match deterministic reconstruction/,
   );
+});
+
+
+test('active session checkpoints fold elapsed time into persisted duration', () => {
+  const session = createAdditionSession();
+  const checkpointed = checkpointPracticeSession(session, 4_000);
+
+  assert.equal(checkpointed.status, 'active');
+  assert.equal(checkpointed.activeSinceMs, 4_000);
+  assert.equal(checkpointed.accumulatedActiveDurationMs, 3_000);
+  assert.equal(getActivePracticeDurationMs(checkpointed, 5_000), 4_000);
+});
+
+test('unexpected interruption recovery excludes unknown offline time', () => {
+  const checkpointed = checkpointPracticeSession(
+    createAdditionSession(),
+    4_000,
+  );
+  const recovered = recoverInterruptedPracticeSession(checkpointed);
+
+  assert.equal(recovered.status, 'paused');
+  assert.equal(recovered.activeSinceMs, null);
+  assert.equal(recovered.accumulatedActiveDurationMs, 3_000);
+
+  const resumed = resumePracticeSession(recovered, 20_000);
+  assert.equal(getActivePracticeDurationMs(resumed, 22_000), 5_000);
 });

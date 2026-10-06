@@ -368,3 +368,48 @@ export function getActivePracticeDurationMs(
     (nowMs - session.activeSinceMs)
   );
 }
+
+
+export function checkpointPracticeSession(
+  session: PracticeSession,
+  checkpointAtMs: number,
+): PracticeSession {
+  if (session.status !== 'active' || session.activeSinceMs === null) {
+    return session;
+  }
+
+  assertTimestampNotBefore(
+    'checkpointAtMs',
+    checkpointAtMs,
+    session.activeSinceMs,
+  );
+
+  return {
+    ...session,
+    activeSinceMs: checkpointAtMs,
+    accumulatedActiveDurationMs:
+      session.accumulatedActiveDurationMs +
+      (checkpointAtMs - session.activeSinceMs),
+  };
+}
+
+/**
+ * Recovers an active session that was persisted before an unexpected process
+ * interruption. Unknown offline time is deliberately not counted as practice.
+ */
+export function recoverInterruptedPracticeSession(
+  session: PracticeSession,
+): PracticeSession {
+  if (session.status !== 'active') {
+    return session;
+  }
+  if (session.activeSinceMs === null) {
+    throw new Error('Active session is missing its active start timestamp.');
+  }
+
+  return {
+    ...session,
+    status: 'paused',
+    activeSinceMs: null,
+  };
+}
