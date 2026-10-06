@@ -44,11 +44,15 @@ export function validateMultiplicationFacts2510(
   if (a !== factFamily && b !== factFamily) {
     errors.push('One factor must match the declared 2, 5, or 10 fact family.');
   }
-  if (question.expectedAnswer !== a * b) {
-    errors.push('Expected answer must equal a × b.');
-  }
-  if (question.expectedAnswer < 0 || question.expectedAnswer > 100) {
-    errors.push('Multiplication result must remain within the canonical 0–100 range.');
+  if (typeof question.expectedAnswer !== 'number') {
+    errors.push('Multiplication expected answer must be numeric.');
+  } else {
+    if (question.expectedAnswer !== a * b) {
+      errors.push('Expected answer must equal a × b.');
+    }
+    if (question.expectedAnswer < 0 || question.expectedAnswer > 100) {
+      errors.push('Multiplication result must remain within the canonical 0–100 range.');
+    }
   }
 
   return {
