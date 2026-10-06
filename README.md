@@ -11,9 +11,10 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M3 — Question Generation Engine: COMPLETE**
 - **M4 — Learning Session & Offline Storage: COMPLETE**
 - **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
-- **M6 — Visual Mathematics & Pedagogy: IN PROGRESS**
+- **M6 — Visual Mathematics & Pedagogy: COMPLETE / TERMINAL-LOCKED**
+- **M7 — Learner Journey & App Shell: IN PROGRESS**
 
-M1 through M5 were completed on 2026-10-06. M6 is now in progress. Representative child-facing visual rendering now covers large numerals, addition object groups, unit fractions, analog clocks, an opt-in number-line representation for number comparison, and common 2D shapes. The interaction layer supports all currently defined question types: `numeric-choice`, `relation-choice`, `fraction-choice`, `time-choice`, and `shape-choice`. Numeric, fraction, time, and shape answer options are semantic deterministic M3 data rather than React-generated distractors. The practice controller starts fresh Grade 1 sessions through the locked M5 recommendation-to-M4 bridge. M6 is not complete yet because representative data-display families remain to be implemented.
+M1 through M6 are complete and locked. M6 terminally established the semantic-to-visual boundary and representative visual coverage, including large numerals, object groups, fractions, clocks, number lines, common 2D shapes, tally/simple tables, pictograms, and unit-scale bar charts. M7 now owns the learner-facing application shell around those locked engines: navigation, grade-aware practice entry, locally persisted presentation preferences, progress presentation derived from M4 history and M5 mastery, and explicit availability states. M7 does not redefine curriculum, mastery, question generation, or visual mathematics.
 
 ## Technical stack
 
@@ -284,7 +285,7 @@ The final M4 documentation commit must also pass the full GitHub Actions quality
 
 The canonical catalog remains an internal mathematical ontology, not a provider curriculum.
 
-Formal Cambridge, Indonesian, and Thai curriculum mapping belongs to M7 and must be separately verified before any official alignment claim is made.
+Formal Cambridge, Indonesian, and Thai curriculum mapping remains future work and must be separately verified before any official alignment claim is made. It is outside the frozen M7 learner-journey scope.
 
 Montessori remains a future pedagogy/learning-path profile. Until properly validated, any future implementation should use wording such as **Montessori-inspired**, not claim official Montessori alignment.
 
