@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { Grade } from '@/core/types';
 import {
   renderQuestionPrompt,
   translate,
@@ -82,14 +83,14 @@ function renderAnswerAccessibilityLabel(
   });
 }
 
-export function PracticeScreen() {
+export function PracticeScreen({ grade }: { grade: Grade }) {
   const [locale, setLocale] = useState<Locale>('en');
   const [selectedAnswer, setSelectedAnswer] =
     useState<PracticeScreenAnswer | null>(null);
   const [checked, setChecked] = useState(false);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
 
-  const practice = usePracticeSession();
+  const practice = usePracticeSession(grade);
 
   const resetAnswerUi = () => {
     setSelectedAnswer(null);

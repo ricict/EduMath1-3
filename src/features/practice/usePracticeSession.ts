@@ -18,6 +18,7 @@ import type { PracticeSession } from '@/core/session/types';
 import type {
   ComparisonRelation,
   FractionAnswer,
+  Grade,
   Question,
   Shape2D,
   TimeAnswer,
@@ -26,7 +27,6 @@ import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePr
 
 import { supportsPracticeScreenQuestion } from './practiceCompatibility';
 
-const PRACTICE_GRADE = 1 as const;
 
 export type PracticeUnavailableReason =
   | {
@@ -38,10 +38,10 @@ export type PracticeUnavailableReason =
       questionType: Question['questionType'];
     };
 
-async function createFreshSession(nowMs: number) {
+async function createFreshSession(nowMs: number, grade: Grade) {
   return startRecommendedPractice(localPracticeSessionStore, {
     id: `local-${nowMs.toString(36)}`,
-    grade: PRACTICE_GRADE,
+    grade,
     sessionSeed: nowMs >>> 0,
     startedAtMs: nowMs,
   });
@@ -64,7 +64,7 @@ export interface PracticeSessionController {
   startNewSession(): Promise<void>;
 }
 
-export function usePracticeSession(): PracticeSessionController {
+export function usePracticeSession(grade: Grade): PracticeSessionController {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<PracticeSession | null>(null);
@@ -114,7 +114,7 @@ export function usePracticeSession(): PracticeSessionController {
 
   const startFresh = useCallback(async () => {
     const nowMs = Date.now();
-    const fresh = await createFreshSession(nowMs);
+    const fresh = await createFreshSession(nowMs, grade);
 
     if (fresh.kind === 'unavailable') {
       applyUnavailable({
@@ -138,7 +138,7 @@ export function usePracticeSession(): PracticeSessionController {
     setQuestion(fresh.question);
     setClockNowMs(nowMs);
     await persistCheckpoint(fresh.session, nowMs);
-  }, [applyUnavailable, persistCheckpoint]);
+  }, [applyUnavailable, grade, persistCheckpoint]);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,7 +157,7 @@ export function usePracticeSession(): PracticeSessionController {
         }
 
         if (!restored || restored.status === 'completed') {
-          const fresh = await createFreshSession(nowMs);
+          const fresh = await createFreshSession(nowMs, grade);
 
           if (fresh.kind === 'unavailable') {
             if (!cancelled) {
@@ -257,7 +257,7 @@ export function usePracticeSession(): PracticeSessionController {
     return () => {
       cancelled = true;
     };
-  }, [applySession, applyUnavailable, queueSave, reportError]);
+  }, [applySession, applyUnavailable, grade, queueSave, reportError]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
