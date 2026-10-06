@@ -2,57 +2,93 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Grade } from '@/core/types';
+import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
+import { translate } from '@/localization';
+import { translateAppShell } from '@/localization/appShell';
 
 const GRADES = [1, 2, 3] as const satisfies readonly Grade[];
 
 export function HomeScreen() {
+  const { preferences, setSelectedGrade } = useAppPreferences();
+  const { locale, selectedGrade } = preferences;
+
+  const openPractice = async (grade: Grade) => {
+    await setSelectedGrade(grade);
+    router.push({
+      pathname: '/practice',
+      params: { grade: String(grade) },
+    });
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.eyebrow}>EduMath Grade 1–3</Text>
-        <Text style={styles.title}>10 Minutes Math</Text>
+        <Text style={styles.eyebrow}>
+          {translateAppShell(locale, 'home.eyebrow')}
+        </Text>
+        <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
         <Text style={styles.subtitle}>
-          Choose your grade. EduMath will use the locked learning path to select
-          the next practice that is currently available.
+          {translateAppShell(locale, 'home.subtitle')}
         </Text>
 
-        <Pressable
-          accessibilityHint="Open your Grade 1–3 learning progress"
-          accessibilityRole="button"
-          onPress={() => router.push('/progress')}
-          style={styles.progressButton}
-        >
-          <Text style={styles.progressButtonText}>View learning progress</Text>
-        </Pressable>
+        <View style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/progress')}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryActionText}>
+              {translateAppShell(locale, 'home.viewProgress')}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/settings')}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryActionText}>
+              {translateAppShell(locale, 'home.openSettings')}
+            </Text>
+          </Pressable>
+        </View>
 
         <View style={styles.gradeList}>
-          {GRADES.map((grade) => (
-            <Pressable
-              accessibilityHint={`Open the Grade ${grade} practice path`}
-              accessibilityRole="button"
-              key={grade}
-              onPress={() =>
-                router.push({
-                  pathname: '/practice',
-                  params: { grade: String(grade) },
-                })
-              }
-              style={styles.gradeCard}
-            >
-              <View>
-                <Text style={styles.gradeTitle}>Grade {grade}</Text>
-                <Text style={styles.gradeDescription}>
-                  Start or resume the recommended practice for this learning path.
+          {GRADES.map((grade) => {
+            const selected = selectedGrade === grade;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={grade}
+                onPress={() => void openPractice(grade)}
+                style={[styles.gradeCard, selected && styles.gradeCardSelected]}
+              >
+                <View style={styles.gradeCopy}>
+                  <View style={styles.gradeTitleRow}>
+                    <Text style={styles.gradeTitle}>
+                      {translateAppShell(locale, 'home.gradeTitle', { grade })}
+                    </Text>
+                    {selected ? (
+                      <Text style={styles.selectedBadge}>
+                        {translateAppShell(locale, 'home.selected')}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Text style={styles.gradeDescription}>
+                    {translateAppShell(locale, 'home.gradeDescription')}
+                  </Text>
+                </View>
+                <Text style={styles.gradeAction}>
+                  {translateAppShell(locale, 'home.practice')}
                 </Text>
-              </View>
-              <Text style={styles.gradeAction}>Practice</Text>
-            </Pressable>
-          ))}
+              </Pressable>
+            );
+          })}
         </View>
 
         <Text style={styles.note}>
-          An unfinished local practice session is resumed before a new session is
-          created, so existing M4 session state is never silently replaced.
+          {translateAppShell(locale, 'home.resumeNote')}
         </Text>
       </View>
     </ScrollView>
@@ -89,8 +125,12 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     marginBottom: 10,
   },
-  progressButton: {
-    alignSelf: 'flex-start',
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  secondaryAction: {
     borderWidth: 1,
     borderColor: '#315EFB',
     borderRadius: 16,
@@ -98,7 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
   },
-  progressButtonText: {
+  secondaryActionText: {
     color: '#315EFB',
     fontSize: 15,
     fontWeight: '800',
@@ -119,10 +159,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 18,
   },
+  gradeCardSelected: {
+    borderColor: '#315EFB',
+    backgroundColor: '#F7F9FF',
+  },
+  gradeCopy: {
+    flex: 1,
+  },
+  gradeTitleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
   gradeTitle: {
     color: '#172033',
     fontSize: 24,
     fontWeight: '900',
+  },
+  selectedBadge: {
+    color: '#315EFB',
+    backgroundColor: '#EAF0FF',
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    fontSize: 11,
+    fontWeight: '800',
   },
   gradeDescription: {
     maxWidth: 410,

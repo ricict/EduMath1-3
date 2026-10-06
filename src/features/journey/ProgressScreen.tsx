@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
 import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
+import { translateAppShell } from '@/localization/appShell';
 
 import {
   loadLearnerJourneySnapshot,
@@ -9,22 +11,24 @@ import {
 } from './learnerJourneyHistory';
 import type { LearnerJourneyGradeSummary } from './learnerJourneyModel';
 
-function practiceStatus(summary: LearnerJourneyGradeSummary): string {
+function practiceStatusKey(summary: LearnerJourneyGradeSummary) {
   if (summary.recommendation.kind === 'practice') {
-    return 'Next practice is available';
+    return 'progress.nextAvailable' as const;
   }
 
   switch (summary.recommendation.reason.code) {
     case 'ALL_GRADE_SKILLS_MASTERED':
-      return 'Grade path complete';
+      return 'progress.gradeComplete' as const;
     case 'NO_CURRICULUM_ELIGIBLE_UNMASTERED_SKILL':
-      return 'Next curriculum step is not available yet';
+      return 'progress.nextUnavailable' as const;
     case 'NO_PRACTICABLE_CURRICULUM_ELIGIBLE_SKILL':
-      return 'Next eligible skill has no practice activity yet';
+      return 'progress.noActivity' as const;
   }
 }
 
 export function ProgressScreen() {
+  const { preferences } = useAppPreferences();
+  const { locale } = preferences;
   const [snapshot, setSnapshot] = useState<LearnerJourneySnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -71,7 +75,9 @@ export function ProgressScreen() {
   if (loading) {
     return (
       <View style={styles.statePage}>
-        <Text style={styles.stateText}>Loading learning progress…</Text>
+        <Text style={styles.stateText}>
+          {translateAppShell(locale, 'progress.loading')}
+        </Text>
       </View>
     );
   }
@@ -80,14 +86,16 @@ export function ProgressScreen() {
     return (
       <View style={styles.statePage}>
         <Text style={styles.errorText}>
-          Learning progress could not be loaded from this device.
+          {translateAppShell(locale, 'progress.error')}
         </Text>
         <Pressable
           accessibilityRole="button"
           onPress={() => void retryProgress()}
           style={styles.retryButton}
         >
-          <Text style={styles.retryButtonText}>Try again</Text>
+          <Text style={styles.retryButtonText}>
+            {translateAppShell(locale, 'progress.retry')}
+          </Text>
         </Pressable>
       </View>
     );
@@ -96,10 +104,14 @@ export function ProgressScreen() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.eyebrow}>Your learning journey</Text>
-        <Text style={styles.title}>Progress</Text>
+        <Text style={styles.eyebrow}>
+          {translateAppShell(locale, 'progress.eyebrow')}
+        </Text>
+        <Text style={styles.title}>
+          {translateAppShell(locale, 'progress.title')}
+        </Text>
         <Text style={styles.subtitle}>
-          Progress is calculated from completed practice stored on this device.
+          {translateAppShell(locale, 'progress.subtitle')}
         </Text>
 
         <View style={styles.overviewCard}>
@@ -107,59 +119,82 @@ export function ProgressScreen() {
             <Text style={styles.overviewValue}>
               {snapshot.completedSessionCount}
             </Text>
-            <Text style={styles.overviewLabel}>Completed sessions</Text>
+            <Text style={styles.overviewLabel}>
+              {translateAppShell(locale, 'progress.completedSessions')}
+            </Text>
           </View>
           <View style={styles.overviewItem}>
             <Text style={styles.overviewValue}>{snapshot.evidenceCount}</Text>
-            <Text style={styles.overviewLabel}>Completed questions</Text>
+            <Text style={styles.overviewLabel}>
+              {translateAppShell(locale, 'progress.completedQuestions')}
+            </Text>
           </View>
         </View>
 
         <View style={styles.gradeList}>
-          {snapshot.grades.map((summary) => (
-            <View key={summary.grade} style={styles.gradeCard}>
-              <View style={styles.gradeHeader}>
-                <Text style={styles.gradeTitle}>Grade {summary.grade}</Text>
-                <Text style={styles.masteredText}>
-                  {summary.masteredSkillCount} / {summary.canonicalSkillCount}{' '}
-                  mastered
+          {snapshot.grades.map((summary) => {
+            const statusText = translateAppShell(
+              locale,
+              practiceStatusKey(summary),
+            );
+
+            return (
+              <View key={summary.grade} style={styles.gradeCard}>
+                <View style={styles.gradeHeader}>
+                  <Text style={styles.gradeTitle}>
+                    {translateAppShell(locale, 'home.gradeTitle', {
+                      grade: summary.grade,
+                    })}
+                  </Text>
+                  <Text style={styles.masteredText}>
+                    {translateAppShell(locale, 'progress.masteredCount', {
+                      mastered: summary.masteredSkillCount,
+                      total: summary.canonicalSkillCount,
+                    })}
+                  </Text>
+                </View>
+
+                <View style={styles.countRow}>
+                  <View style={styles.countItem}>
+                    <Text style={styles.countValue}>
+                      {summary.masteredSkillCount}
+                    </Text>
+                    <Text style={styles.countLabel}>
+                      {translateAppShell(locale, 'progress.mastered')}
+                    </Text>
+                  </View>
+                  <View style={styles.countItem}>
+                    <Text style={styles.countValue}>
+                      {summary.inProgressSkillCount}
+                    </Text>
+                    <Text style={styles.countLabel}>
+                      {translateAppShell(locale, 'progress.inProgress')}
+                    </Text>
+                  </View>
+                  <View style={styles.countItem}>
+                    <Text style={styles.countValue}>
+                      {summary.unseenSkillCount}
+                    </Text>
+                    <Text style={styles.countLabel}>
+                      {translateAppShell(locale, 'progress.notStarted')}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text
+                  accessibilityLabel={statusText}
+                  style={[
+                    styles.practiceStatus,
+                    summary.practiceAvailable
+                      ? styles.practiceAvailable
+                      : styles.practiceUnavailable,
+                  ]}
+                >
+                  {statusText}
                 </Text>
               </View>
-
-              <View style={styles.countRow}>
-                <View style={styles.countItem}>
-                  <Text style={styles.countValue}>
-                    {summary.masteredSkillCount}
-                  </Text>
-                  <Text style={styles.countLabel}>Mastered</Text>
-                </View>
-                <View style={styles.countItem}>
-                  <Text style={styles.countValue}>
-                    {summary.inProgressSkillCount}
-                  </Text>
-                  <Text style={styles.countLabel}>In progress</Text>
-                </View>
-                <View style={styles.countItem}>
-                  <Text style={styles.countValue}>
-                    {summary.unseenSkillCount}
-                  </Text>
-                  <Text style={styles.countLabel}>Not started</Text>
-                </View>
-              </View>
-
-              <Text
-                accessibilityLabel={practiceStatus(summary)}
-                style={[
-                  styles.practiceStatus,
-                  summary.practiceAvailable
-                    ? styles.practiceAvailable
-                    : styles.practiceUnavailable,
-                ]}
-              >
-                {practiceStatus(summary)}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </View>
     </ScrollView>

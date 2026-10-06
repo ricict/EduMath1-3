@@ -1,10 +1,10 @@
 import { Stack } from 'expo-router';
 
-import { ProgressScreen } from '@/features/journey/ProgressScreen';
+import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
 import { translateAppShell } from '@/localization/appShell';
 
-export default function ProgressRoute() {
+export default function SettingsRoute() {
   const { preferences } = useAppPreferences();
 
   return (
@@ -12,10 +12,10 @@ export default function ProgressRoute() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: translateAppShell(preferences.locale, 'nav.progress'),
+          title: translateAppShell(preferences.locale, 'nav.settings'),
         }}
       />
-      <ProgressScreen />
+      <SettingsScreen />
     </>
   );
 }

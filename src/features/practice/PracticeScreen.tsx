@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Grade } from '@/core/types';
+import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
 import {
   renderQuestionPrompt,
   translate,
@@ -84,7 +85,8 @@ function renderAnswerAccessibilityLabel(
 }
 
 export function PracticeScreen({ grade }: { grade: Grade }) {
-  const [locale, setLocale] = useState<Locale>('en');
+  const { preferences, setLocale } = useAppPreferences();
+  const { locale } = preferences;
   const [selectedAnswer, setSelectedAnswer] =
     useState<PracticeScreenAnswer | null>(null);
   const [checked, setChecked] = useState(false);
@@ -243,7 +245,7 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
               accessibilityRole="button"
               accessibilityState={{ selected: locale === option }}
               key={option}
-              onPress={() => setLocale(option)}
+              onPress={() => void setLocale(option)}
               style={[styles.languageButton, locale === option && styles.languageButtonSelected]}
             >
               <Text style={styles.languageButtonText}>{option.toUpperCase()}</Text>

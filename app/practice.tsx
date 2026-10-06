@@ -3,9 +3,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { parsePracticeGradeParam } from '@/features/journey/gradeRoute';
 import { PracticeScreen } from '@/features/practice/PracticeScreen';
+import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
+import { translateAppShell } from '@/localization/appShell';
 
 export default function PracticeRoute() {
   const params = useLocalSearchParams<{ grade?: string | string[] }>();
+  const { preferences } = useAppPreferences();
   const grade = parsePracticeGradeParam(params.grade);
 
   if (grade === null) {
@@ -14,7 +17,9 @@ export default function PracticeRoute() {
         <Stack.Screen
           options={{
             headerShown: true,
-            title: 'Practice',
+            title: translateAppShell(preferences.locale, 'nav.practice', {
+              grade: '?',
+            }),
           }}
         />
         <Text style={styles.invalidTitle}>Choose a valid Grade 1–3 practice path.</Text>
@@ -34,7 +39,7 @@ export default function PracticeRoute() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: `Grade ${grade} Practice`,
+          title: translateAppShell(preferences.locale, 'nav.practice', { grade }),
         }}
       />
       <PracticeScreen grade={grade} />
