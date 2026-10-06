@@ -74,6 +74,23 @@ test('clock questions preserve time invariants across many seeds', () => {
         hour: question.data.hour,
         minute: question.data.minute,
       });
+      assert.equal(question.answerOptions.length, 4);
+      assert.equal(
+        new Set(
+          question.answerOptions.map(
+            (option) => `${option.hour}:${option.minute}`,
+          ),
+        ).size,
+        4,
+      );
+      assert.equal(
+        question.answerOptions.filter(
+          (option) =>
+            option.hour === question.expectedAnswer.hour &&
+            option.minute === question.expectedAnswer.minute,
+        ).length,
+        1,
+      );
     }
   }
 });
@@ -92,6 +109,24 @@ test('clock difficulty controls hour range and half-hour introduction', () => {
 
     assert.ok(hard.data.hour <= 12);
     assert.ok(hard.data.minute === 0 || hard.data.minute === 30);
+
+    assert.ok(
+      easy.answerOptions.every(
+        (option) => option.hour <= 6 && option.minute === 0,
+      ),
+    );
+    assert.ok(
+      medium.answerOptions.every(
+        (option) => option.hour <= 12 && option.minute === 0,
+      ),
+    );
+    assert.ok(
+      hard.answerOptions.every(
+        (option) =>
+          option.hour <= 12 &&
+          (option.minute === 0 || option.minute === 30),
+      ),
+    );
   }
 });
 
@@ -117,6 +152,22 @@ test('clock generator rejects Grade 3 and non-clock presentation requests', () =
         representation: 'visual',
       }),
     /does not support representation visual/,
+  );
+});
+
+test('clock answer options are deterministic semantic data rather than UI-generated distractors', () => {
+  const first = generate(20261006, 1, 3);
+  const second = generate(20261006, 1, 3);
+
+  assert.deepEqual(first.answerOptions, second.answerOptions);
+  assert.equal(first.answerOptions.length, 4);
+  assert.equal(
+    first.answerOptions.some(
+      (option) =>
+        option.hour === first.expectedAnswer.hour &&
+        option.minute === first.expectedAnswer.minute,
+    ),
+    true,
   );
 });
 

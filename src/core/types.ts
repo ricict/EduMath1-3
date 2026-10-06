@@ -181,6 +181,7 @@ export interface ReadClockQuestion extends QuestionBase {
     hour: number;
     minute: 0 | 30;
   };
+  answerOptions: readonly TimeAnswer[];
   expectedAnswer: TimeAnswer;
 }
 

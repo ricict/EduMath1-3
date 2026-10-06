@@ -1,4 +1,4 @@
-import type { Difficulty, Question } from '../types';
+import type { Difficulty, Question, ReadClockQuestion } from '../types';
 import type { QuestionValidationResult } from './types';
 
 const MAX_HOUR_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -23,7 +23,8 @@ export function validateTellTimeHourHalfHour(
     return { valid: false, errors };
   }
 
-  const { hour, minute } = question.data;
+  const clockQuestion = question as ReadClockQuestion;
+  const { hour, minute } = clockQuestion.data;
   const maxHour = MAX_HOUR_BY_DIFFICULTY[question.difficulty];
 
   if (!Number.isInteger(hour) || hour < 1 || hour > maxHour) {
@@ -36,16 +37,49 @@ export function validateTellTimeHourHalfHour(
     errors.push('Half-hour questions are enabled only at difficulty 3.');
   }
 
+  if (clockQuestion.answerOptions.length !== 4) {
+    errors.push('Clock answer options must contain exactly four choices.');
+  }
+
+  const optionKeys = clockQuestion.answerOptions.map(
+    (option) => `${option.hour}:${option.minute}`,
+  );
+  if (new Set(optionKeys).size !== optionKeys.length) {
+    errors.push('Clock answer options must be unique.');
+  }
+
+  for (const option of clockQuestion.answerOptions) {
+    if (
+      !Number.isInteger(option.hour) ||
+      option.hour < 1 ||
+      option.hour > maxHour ||
+      (option.minute !== 0 && option.minute !== 30) ||
+      (question.difficulty < 3 && option.minute !== 0)
+    ) {
+      errors.push(
+        'Clock answer options must stay inside the configured difficulty range.',
+      );
+      break;
+    }
+  }
+
+  const correctOptionCount = clockQuestion.answerOptions.filter(
+    (option) => option.hour === hour && option.minute === minute,
+  ).length;
+  if (correctOptionCount !== 1) {
+    errors.push('Clock answer options must contain the correct answer exactly once.');
+  }
+
   if (
-    typeof question.expectedAnswer !== 'object' ||
-    question.expectedAnswer === null ||
-    !('hour' in question.expectedAnswer) ||
-    !('minute' in question.expectedAnswer)
+    typeof clockQuestion.expectedAnswer !== 'object' ||
+    clockQuestion.expectedAnswer === null ||
+    !('hour' in clockQuestion.expectedAnswer) ||
+    !('minute' in clockQuestion.expectedAnswer)
   ) {
     errors.push('Clock expected answer must contain hour and minute.');
   } else if (
-    question.expectedAnswer.hour !== hour ||
-    question.expectedAnswer.minute !== minute
+    clockQuestion.expectedAnswer.hour !== hour ||
+    clockQuestion.expectedAnswer.minute !== minute
   ) {
     errors.push('Expected time does not match the generated clock semantics.');
   }
