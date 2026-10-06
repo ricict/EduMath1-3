@@ -29,7 +29,32 @@ export function ProgressScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const loadProgress = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadLearnerJourneySnapshot(localPracticeSessionStore)
+      .then((nextSnapshot) => {
+        if (!cancelled) {
+          setSnapshot(nextSnapshot);
+          setError(false);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const retryProgress = useCallback(async () => {
+    setLoading(true);
+
     try {
       const nextSnapshot = await loadLearnerJourneySnapshot(
         localPracticeSessionStore,
@@ -42,15 +67,6 @@ export function ProgressScreen() {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    void loadProgress();
-  }, [loadProgress]);
-
-  const retryProgress = useCallback(() => {
-    setLoading(true);
-    void loadProgress();
-  }, [loadProgress]);
 
   if (loading) {
     return (
@@ -68,7 +84,7 @@ export function ProgressScreen() {
         </Text>
         <Pressable
           accessibilityRole="button"
-          onPress={retryProgress}
+          onPress={() => void retryProgress()}
           style={styles.retryButton}
         >
           <Text style={styles.retryButtonText}>Try again</Text>
