@@ -1,0 +1,370 @@
+import { generateQuestion } from '../question-engine/registry';
+import type { Question } from '../types';
+import {
+  DEFAULT_PRACTICE_TARGET_MS,
+  PRACTICE_SESSION_SCHEMA_VERSION,
+  type LearnerAnswer,
+  type PracticeSession,
+  type QuestionAttempt,
+  type SessionQuestionReference,
+} from './types';
+import type { Difficulty, Grade, SkillId } from '../types';
+
+const MAX_UINT32 = 0xffffffff;
+
+export interface StartPracticeSessionInput {
+  id: string;
+  grade: Grade;
+  skillId: SkillId;
+  difficulty: Difficulty;
+  sessionSeed: number;
+  startedAtMs: number;
+  targetDurationMs?: number;
+}
+
+export interface IssuedQuestion {
+  session: PracticeSession;
+  question: Question;
+}
+
+export interface SubmittedAnswer {
+  session: PracticeSession;
+  question: Question;
+  correct: boolean;
+}
+
+function assertTimestamp(name: string, value: number): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`${name} must be a non-negative finite number.`);
+  }
+}
+
+function assertTimestampNotBefore(
+  name: string,
+  value: number,
+  minimum: number,
+): void {
+  assertTimestamp(name, value);
+
+  if (value < minimum) {
+    throw new Error(`${name} cannot be earlier than ${minimum}.`);
+  }
+}
+
+function normalizeSeed(seed: number): number {
+  if (!Number.isSafeInteger(seed)) {
+    throw new Error('Session seed must be a safe integer.');
+  }
+
+  return seed >>> 0;
+}
+
+function getActiveAttemptIndex(session: PracticeSession): number {
+  let activeIndex = -1;
+
+  for (let index = 0; index < session.attempts.length; index += 1) {
+    if (session.attempts[index].status === 'active') {
+      if (activeIndex !== -1) {
+        throw new Error('Session contains multiple active question attempts.');
+      }
+      activeIndex = index;
+    }
+  }
+
+  if (activeIndex !== -1 && activeIndex !== session.attempts.length - 1) {
+    throw new Error('Only the most recent question attempt may remain active.');
+  }
+
+  return activeIndex;
+}
+
+function reconstructQuestion(reference: SessionQuestionReference): Question {
+  const question = generateQuestion(reference.generationContext);
+
+  if (question.id !== reference.questionId) {
+    throw new Error('Stored question ID does not match deterministic reconstruction.');
+  }
+  if (question.questionType !== reference.questionType) {
+    throw new Error('Stored question type does not match deterministic reconstruction.');
+  }
+  if (question.representation !== reference.representation) {
+    throw new Error('Stored representation does not match deterministic reconstruction.');
+  }
+
+  return question;
+}
+
+function replaceAttempt(
+  session: PracticeSession,
+  index: number,
+  attempt: QuestionAttempt,
+): readonly QuestionAttempt[] {
+  return session.attempts.map((current, currentIndex) =>
+    currentIndex === index ? attempt : current,
+  );
+}
+
+export function deriveQuestionSeed(sessionSeed: number, ordinal: number): number {
+  if (!Number.isInteger(ordinal) || ordinal < 0 || ordinal > MAX_UINT32) {
+    throw new Error('Question ordinal must be an unsigned 32-bit integer.');
+  }
+
+  return (normalizeSeed(sessionSeed) + ordinal) >>> 0;
+}
+
+export function startPracticeSession(
+  input: StartPracticeSessionInput,
+): PracticeSession {
+  const id = input.id.trim();
+  if (!id) {
+    throw new Error('Practice session ID must be a non-empty opaque identifier.');
+  }
+
+  assertTimestamp('startedAtMs', input.startedAtMs);
+
+  const targetDurationMs =
+    input.targetDurationMs ?? DEFAULT_PRACTICE_TARGET_MS;
+  if (!Number.isSafeInteger(targetDurationMs) || targetDurationMs <= 0) {
+    throw new Error('Practice target duration must be a positive safe integer.');
+  }
+
+  return {
+    schemaVersion: PRACTICE_SESSION_SCHEMA_VERSION,
+    id,
+    sessionSeed: normalizeSeed(input.sessionSeed),
+    plan: {
+      grade: input.grade,
+      skillId: input.skillId,
+      difficulty: input.difficulty,
+      targetDurationMs,
+    },
+    status: 'active',
+    startedAtMs: input.startedAtMs,
+    activeSinceMs: input.startedAtMs,
+    accumulatedActiveDurationMs: 0,
+    completedAtMs: null,
+    attempts: [],
+  };
+}
+
+export function issueNextQuestion(session: PracticeSession): IssuedQuestion {
+  if (session.status !== 'active') {
+    throw new Error('Questions can be issued only while a session is active.');
+  }
+  if (getActiveAttemptIndex(session) !== -1) {
+    throw new Error('Complete the active question before issuing the next question.');
+  }
+
+  const ordinal = session.attempts.length;
+  const generationContext = {
+    grade: session.plan.grade,
+    skillId: session.plan.skillId,
+    difficulty: session.plan.difficulty,
+    seed: deriveQuestionSeed(session.sessionSeed, ordinal),
+  } as const;
+  const question = generateQuestion(generationContext);
+  const attempt: QuestionAttempt = {
+    question: {
+      ordinal,
+      generationContext,
+      questionId: question.id,
+      questionType: question.questionType,
+      representation: question.representation,
+    },
+    status: 'active',
+    answers: [],
+    completedAtMs: null,
+  };
+
+  return {
+    session: {
+      ...session,
+      attempts: [...session.attempts, attempt],
+    },
+    question,
+  };
+}
+
+export function restoreActiveQuestion(session: PracticeSession): Question | null {
+  const activeIndex = getActiveAttemptIndex(session);
+
+  if (activeIndex === -1) {
+    return null;
+  }
+
+  return reconstructQuestion(session.attempts[activeIndex].question);
+}
+
+export function evaluateLearnerAnswer(
+  question: Question,
+  answer: LearnerAnswer,
+): boolean {
+  switch (question.questionType) {
+    case 'numeric-choice':
+      return answer.kind === 'numeric' && answer.value === question.expectedAnswer;
+
+    case 'relation-choice':
+      return answer.kind === 'relation' && answer.value === question.expectedAnswer;
+
+    case 'fraction-choice':
+      return (
+        answer.kind === 'fraction' &&
+        answer.value.numerator === question.expectedAnswer.numerator &&
+        answer.value.denominator === question.expectedAnswer.denominator
+      );
+
+    case 'time-choice':
+      return (
+        answer.kind === 'time' &&
+        answer.value.hour === question.expectedAnswer.hour &&
+        answer.value.minute === question.expectedAnswer.minute
+      );
+  }
+}
+
+export function submitAnswer(
+  session: PracticeSession,
+  answer: LearnerAnswer,
+  submittedAtMs: number,
+): SubmittedAnswer {
+  if (session.status !== 'active' || session.activeSinceMs === null) {
+    throw new Error('Answers can be submitted only while a session is active.');
+  }
+
+  assertTimestampNotBefore(
+    'submittedAtMs',
+    submittedAtMs,
+    session.activeSinceMs,
+  );
+
+  const activeIndex = getActiveAttemptIndex(session);
+  if (activeIndex === -1) {
+    throw new Error('No active question is available for an answer.');
+  }
+
+  const activeAttempt = session.attempts[activeIndex];
+  const question = reconstructQuestion(activeAttempt.question);
+  const correct = evaluateLearnerAnswer(question, answer);
+  const updatedAttempt: QuestionAttempt = {
+    ...activeAttempt,
+    status: correct ? 'completed' : 'active',
+    answers: [
+      ...activeAttempt.answers,
+      {
+        answer,
+        correct,
+        submittedAtMs,
+      },
+    ],
+    completedAtMs: correct ? submittedAtMs : null,
+  };
+
+  return {
+    session: {
+      ...session,
+      attempts: replaceAttempt(session, activeIndex, updatedAttempt),
+    },
+    question,
+    correct,
+  };
+}
+
+export function pausePracticeSession(
+  session: PracticeSession,
+  pausedAtMs: number,
+): PracticeSession {
+  if (session.status !== 'active' || session.activeSinceMs === null) {
+    throw new Error('Only an active session can be paused.');
+  }
+
+  assertTimestampNotBefore('pausedAtMs', pausedAtMs, session.activeSinceMs);
+
+  return {
+    ...session,
+    status: 'paused',
+    activeSinceMs: null,
+    accumulatedActiveDurationMs:
+      session.accumulatedActiveDurationMs +
+      (pausedAtMs - session.activeSinceMs),
+  };
+}
+
+export function resumePracticeSession(
+  session: PracticeSession,
+  resumedAtMs: number,
+): PracticeSession {
+  if (session.status !== 'paused') {
+    throw new Error('Only a paused session can be resumed.');
+  }
+
+  assertTimestampNotBefore('resumedAtMs', resumedAtMs, session.startedAtMs);
+
+  return {
+    ...session,
+    status: 'active',
+    activeSinceMs: resumedAtMs,
+  };
+}
+
+export function completePracticeSession(
+  session: PracticeSession,
+  completedAtMs: number,
+): PracticeSession {
+  if (session.status === 'completed') {
+    throw new Error('Practice session is already completed.');
+  }
+  if (getActiveAttemptIndex(session) !== -1) {
+    throw new Error('Complete the active question before completing the session.');
+  }
+
+  assertTimestampNotBefore('completedAtMs', completedAtMs, session.startedAtMs);
+
+  if (session.status === 'active') {
+    if (session.activeSinceMs === null) {
+      throw new Error('Active session is missing its active start timestamp.');
+    }
+    assertTimestampNotBefore(
+      'completedAtMs',
+      completedAtMs,
+      session.activeSinceMs,
+    );
+
+    return {
+      ...session,
+      status: 'completed',
+      activeSinceMs: null,
+      accumulatedActiveDurationMs:
+        session.accumulatedActiveDurationMs +
+        (completedAtMs - session.activeSinceMs),
+      completedAtMs,
+    };
+  }
+
+  return {
+    ...session,
+    status: 'completed',
+    activeSinceMs: null,
+    completedAtMs,
+  };
+}
+
+export function getActivePracticeDurationMs(
+  session: PracticeSession,
+  nowMs: number,
+): number {
+  assertTimestampNotBefore('nowMs', nowMs, session.startedAtMs);
+
+  if (session.status !== 'active') {
+    return session.accumulatedActiveDurationMs;
+  }
+  if (session.activeSinceMs === null) {
+    throw new Error('Active session is missing its active start timestamp.');
+  }
+
+  assertTimestampNotBefore('nowMs', nowMs, session.activeSinceMs);
+
+  return (
+    session.accumulatedActiveDurationMs +
+    (nowMs - session.activeSinceMs)
+  );
+}
