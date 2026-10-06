@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { renderQuestionPrompt, translate, type Locale } from '@/localization';
 
 import { VisualQuestion } from './visual/VisualQuestion';
-import { usePracticeSession } from './usePracticeSession';
+import { type PracticeUnavailableReason, usePracticeSession } from './usePracticeSession';
 
 const ANSWERS = Array.from({ length: 11 }, (_, value) => value);
 
@@ -14,6 +14,24 @@ function formatDuration(durationMs: number): string {
   const seconds = totalSeconds % 60;
 
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function renderUnavailableMessage(
+  locale: Locale,
+  reason: PracticeUnavailableReason,
+): string {
+  if (reason.kind === 'question-type') {
+    return translate(locale, 'status.unsupportedPracticeType');
+  }
+
+  switch (reason.code) {
+    case 'ALL_GRADE_SKILLS_MASTERED':
+      return translate(locale, 'status.allGradeSkillsMastered');
+    case 'NO_CURRICULUM_ELIGIBLE_UNMASTERED_SKILL':
+      return translate(locale, 'status.noCurriculumEligiblePractice');
+    case 'NO_PRACTICABLE_CURRICULUM_ELIGIBLE_SKILL':
+      return translate(locale, 'status.noPracticableSkill');
+  }
 }
 
 export function PracticeScreen() {
@@ -59,6 +77,16 @@ export function PracticeScreen() {
     return (
       <View style={styles.statePage}>
         <Text style={styles.stateText}>{translate(locale, 'status.loading')}</Text>
+      </View>
+    );
+  }
+
+  if (practice.unavailable) {
+    return (
+      <View style={styles.statePage}>
+        <Text style={styles.stateText}>
+          {renderUnavailableMessage(locale, practice.unavailable)}
+        </Text>
       </View>
     );
   }
@@ -121,7 +149,12 @@ export function PracticeScreen() {
       <View style={styles.container}>
         <Text style={styles.eyebrow}>EduMath Grade 1–3 · M4</Text>
         <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
-        <Text style={styles.subtitle}>{translate(locale, 'app.subtitle')}</Text>
+        <Text style={styles.subtitle}>
+          {translate(locale, 'label.practicePlan', {
+            grade: practice.session.plan.grade,
+            difficulty: practice.session.plan.difficulty,
+          })}
+        </Text>
 
         <View style={styles.languageRow}>
           <Text style={styles.languageLabel}>{translate(locale, 'label.language')}</Text>

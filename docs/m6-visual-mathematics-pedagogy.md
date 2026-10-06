@@ -107,9 +107,13 @@ Rendering the same semantic question therefore yields the same mathematical visu
 
 ## 9. Answer interaction
 
-The first slice keeps the existing numeric-choice interaction for values 0–10.
+The first child-facing M6 integration supports `numeric-choice` questions.
 
-M6 does not manufacture distractors or answer-option mathematics in the visual component. A future change to answer-option semantics should be represented explicitly in the question contract rather than hidden in React.
+This includes the new visual number-recognition and addition-combine questions as well as compatible symbolic numeric questions.
+
+The practice controller now rejects a newly recommended non-numeric question type before persisting that new session and exposes an explicit unsupported-practice state instead of submitting incompatible numeric answers.
+
+M6 still does not manufacture distractors or answer-option mathematics in the visual component. A future change to answer-option semantics should be represented explicitly in the question contract rather than hidden in React.
 
 ## 10. Concrete → visual → abstract
 
@@ -134,10 +138,25 @@ Tests verify:
 
 The React component remains thin over the tested visual model.
 
-## 12. Current boundary
+## 12. Adaptive/session integration
 
-This first M6 increment does not yet connect the M5 adaptive recommendation/session bridge to the child-facing practice controller.
+After the first visual slice passed CI, the child-facing practice controller was connected to the existing M5 `startRecommendedPractice(...)` bridge.
 
-That decision follows only after this visual slice is green in CI.
+The integration rules are:
+
+- an existing resumable M4 session is still resumed first;
+- when a fresh session is needed, M5 selects the Grade 1 skill and difficulty;
+- zero-history Grade 1 therefore starts at `number_recognition_10`, difficulty 1;
+- the returned M4 session and first M3 question are persisted only when the current practice screen supports their question type;
+- unsupported M5/M3 states remain explicit and never trigger an unrelated fallback;
+- completing a session preserves M4 history so the next fresh session can recompute M5 mastery and recommendation.
+
+The screen no longer claims that every session is `addition_within_10`; it displays the active grade and difficulty generically.
+
+## 13. Current boundary
+
+The first M6 vertical slice now reaches the real adaptive Grade 1 entry path for supported numeric-choice practice.
+
+The current child-facing answer interaction does not yet support `relation-choice`, `fraction-choice`, or `time-choice`.
 
 Fractions, clocks, number lines, shapes, pictograms, tables, and charts remain future M6 work and must extend the contract only when their concrete requirements are implemented.

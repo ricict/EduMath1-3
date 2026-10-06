@@ -13,7 +13,7 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
 - **M6 — Visual Mathematics & Pedagogy: IN PROGRESS**
 
-M1 through M5 were completed on 2026-10-06. M6 is now in progress, beginning with typed visual rendering for `number_recognition_10` and `addition_concept`. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 derives explainable mastery state, applies strict curriculum prerequisites, recommends eligible practice, and can start the recommended M4 session while preserving the original M1 Grade 1 addition regression contract.
+M1 through M5 were completed on 2026-10-06. M6 is now in progress, beginning with typed visual rendering for `number_recognition_10` and `addition_concept`; the child-facing practice controller now starts fresh Grade 1 sessions through the locked M5 recommendation-to-M4 bridge for supported numeric-choice practice. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 derives explainable mastery state, applies strict curriculum prerequisites, recommends eligible practice, and can start the recommended M4 session while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 

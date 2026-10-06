@@ -25,7 +25,12 @@ type MessageKey =
   | 'feedback.sessionComplete'
   | 'status.loading'
   | 'status.persistenceError'
+  | 'status.allGradeSkillsMastered'
+  | 'status.noCurriculumEligiblePractice'
+  | 'status.noPracticableSkill'
+  | 'status.unsupportedPracticeType'
   | 'label.language'
+  | 'label.practicePlan'
   | 'label.questionCount'
   | 'label.activePractice';
 
@@ -55,6 +60,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.sessionComplete': 'Practice session complete!',
     'status.loading': 'Restoring your practice session…',
     'status.persistenceError': 'Local practice storage is unavailable.',
+    'status.allGradeSkillsMastered': 'You completed the current grade practice path.',
+    'status.noCurriculumEligiblePractice': 'The next practice is not available yet.',
+    'status.noPracticableSkill': 'The next eligible skill does not have a practice activity yet.',
+    'status.unsupportedPracticeType': 'This practice type is not available on this screen yet.',
+    'label.practicePlan': 'Grade {grade} · Level {difficulty}',
     'label.language': 'Language',
     'label.questionCount': 'Question {count}',
     'label.activePractice': 'Active practice {elapsed} / {target}',
@@ -84,6 +94,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.sessionComplete': 'Sesi latihan selesai!',
     'status.loading': 'Memulihkan sesi latihan…',
     'status.persistenceError': 'Penyimpanan latihan lokal tidak tersedia.',
+    'status.allGradeSkillsMastered': 'Kamu telah menyelesaikan jalur latihan untuk kelas ini.',
+    'status.noCurriculumEligiblePractice': 'Latihan berikutnya belum tersedia.',
+    'status.noPracticableSkill': 'Keterampilan berikutnya belum memiliki aktivitas latihan.',
+    'status.unsupportedPracticeType': 'Jenis latihan ini belum tersedia di layar ini.',
+    'label.practicePlan': 'Kelas {grade} · Level {difficulty}',
     'label.language': 'Bahasa',
     'label.questionCount': 'Soal {count}',
     'label.activePractice': 'Latihan aktif {elapsed} / {target}',
@@ -113,6 +128,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.sessionComplete': 'เซสชันฝึกเสร็จแล้ว!',
     'status.loading': 'กำลังกู้คืนเซสชันฝึก…',
     'status.persistenceError': 'ไม่สามารถใช้พื้นที่จัดเก็บการฝึกในเครื่องได้',
+    'status.allGradeSkillsMastered': 'คุณเรียนจบเส้นทางฝึกของระดับชั้นนี้แล้ว',
+    'status.noCurriculumEligiblePractice': 'แบบฝึกหัดถัดไปยังไม่พร้อมใช้งาน',
+    'status.noPracticableSkill': 'ทักษะถัดไปยังไม่มีแบบฝึกหัดให้ใช้งาน',
+    'status.unsupportedPracticeType': 'แบบฝึกหัดประเภทนี้ยังไม่รองรับบนหน้าจอนี้',
+    'label.practicePlan': 'ชั้น {grade} · ระดับ {difficulty}',
     'label.language': 'ภาษา',
     'label.questionCount': 'ข้อ {count}',
     'label.activePractice': 'เวลาฝึกจริง {elapsed} / {target}',

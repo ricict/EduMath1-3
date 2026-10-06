@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { startRecommendedPractice } from '@/core/adaptive/startRecommendedPractice';
+import type { RecommendationUnavailableCode } from '@/core/adaptive/types';
 import {
   checkpointPracticeSession,
   completePracticeSession,
@@ -17,28 +19,27 @@ import type { PracticeSession } from '@/core/session/types';
 import type { Question } from '@/core/types';
 import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
 
-const DEMO_GRADE = 1 as const;
-const DEMO_SKILL = 'addition_within_10' as const;
-const DEMO_DIFFICULTY = 3 as const;
+import { supportsPracticeScreenQuestion } from './practiceCompatibility';
 
-function createFreshSession(nowMs: number): {
-  session: PracticeSession;
-  question: Question;
-} {
-  const session = startPracticeSession({
+const PRACTICE_GRADE = 1 as const;
+
+export type PracticeUnavailableReason =
+  | {
+      kind: 'adaptive';
+      code: RecommendationUnavailableCode;
+    }
+  | {
+      kind: 'question-type';
+      questionType: Question['questionType'];
+    };
+
+async function createFreshSession(nowMs: number) {
+  return startRecommendedPractice(localPracticeSessionStore, {
     id: `local-${nowMs.toString(36)}`,
-    grade: DEMO_GRADE,
-    skillId: DEMO_SKILL,
-    difficulty: DEMO_DIFFICULTY,
+    grade: PRACTICE_GRADE,
     sessionSeed: nowMs >>> 0,
     startedAtMs: nowMs,
   });
-  const issued = issueNextQuestion(session);
-
-  return {
-    session: issued.session,
-    question: issued.question,
-  };
 }
 
 export interface PracticeSessionController {
@@ -47,6 +48,7 @@ export interface PracticeSessionController {
   session: PracticeSession | null;
   question: Question | null;
   activeDurationMs: number;
+  unavailable: PracticeUnavailableReason | null;
   submitNumericAnswer(value: number): Promise<boolean>;
   nextQuestion(): Promise<void>;
   finishSession(): Promise<void>;
@@ -59,6 +61,9 @@ export function usePracticeSession(): PracticeSessionController {
   const [session, setSession] = useState<PracticeSession | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [clockNowMs, setClockNowMs] = useState(() => Date.now());
+  const [unavailable, setUnavailable] = useState<PracticeUnavailableReason | null>(
+    null,
+  );
 
   const sessionRef = useRef<PracticeSession | null>(null);
   const saveChainRef = useRef<Promise<void>>(Promise.resolve());
@@ -66,6 +71,13 @@ export function usePracticeSession(): PracticeSessionController {
   const applySession = useCallback((nextSession: PracticeSession) => {
     sessionRef.current = nextSession;
     setSession(nextSession);
+  }, []);
+
+  const applyUnavailable = useCallback((reason: PracticeUnavailableReason) => {
+    sessionRef.current = null;
+    setSession(null);
+    setQuestion(null);
+    setUnavailable(reason);
   }, []);
 
   const queueSave = useCallback((nextSession: PracticeSession) => {
@@ -93,11 +105,31 @@ export function usePracticeSession(): PracticeSessionController {
 
   const startFresh = useCallback(async () => {
     const nowMs = Date.now();
-    const fresh = createFreshSession(nowMs);
+    const fresh = await createFreshSession(nowMs);
+
+    if (fresh.kind === 'unavailable') {
+      applyUnavailable({
+        kind: 'adaptive',
+        code: fresh.recommendation.reason.code,
+      });
+      setClockNowMs(nowMs);
+      return;
+    }
+
+    if (!supportsPracticeScreenQuestion(fresh.question)) {
+      applyUnavailable({
+        kind: 'question-type',
+        questionType: fresh.question.questionType,
+      });
+      setClockNowMs(nowMs);
+      return;
+    }
+
+    setUnavailable(null);
     setQuestion(fresh.question);
     setClockNowMs(nowMs);
     await persistCheckpoint(fresh.session, nowMs);
-  }, [persistCheckpoint]);
+  }, [applyUnavailable, persistCheckpoint]);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,24 +148,77 @@ export function usePracticeSession(): PracticeSessionController {
         }
 
         if (!restored || restored.status === 'completed') {
-          const fresh = createFreshSession(nowMs);
+          const fresh = await createFreshSession(nowMs);
+
+          if (fresh.kind === 'unavailable') {
+            if (!cancelled) {
+              applyUnavailable({
+                kind: 'adaptive',
+                code: fresh.recommendation.reason.code,
+              });
+              setClockNowMs(nowMs);
+              setError(null);
+            }
+            return;
+          }
+
+          if (!supportsPracticeScreenQuestion(fresh.question)) {
+            if (!cancelled) {
+              applyUnavailable({
+                kind: 'question-type',
+                questionType: fresh.question.questionType,
+              });
+              setClockNowMs(nowMs);
+              setError(null);
+            }
+            return;
+          }
+
           restored = fresh.session;
 
           if (!cancelled) {
+            setUnavailable(null);
             setQuestion(fresh.question);
           }
         } else {
           const activeQuestion = restoreActiveQuestion(restored);
 
           if (activeQuestion) {
+            if (!supportsPracticeScreenQuestion(activeQuestion)) {
+              if (!cancelled) {
+                applyUnavailable({
+                  kind: 'question-type',
+                  questionType: activeQuestion.questionType,
+                });
+                setClockNowMs(nowMs);
+                setError(null);
+              }
+              return;
+            }
+
             if (!cancelled) {
+              setUnavailable(null);
               setQuestion(activeQuestion);
             }
           } else {
             const issued = issueNextQuestion(restored);
+
+            if (!supportsPracticeScreenQuestion(issued.question)) {
+              if (!cancelled) {
+                applyUnavailable({
+                  kind: 'question-type',
+                  questionType: issued.question.questionType,
+                });
+                setClockNowMs(nowMs);
+                setError(null);
+              }
+              return;
+            }
+
             restored = issued.session;
 
             if (!cancelled) {
+              setUnavailable(null);
               setQuestion(issued.question);
             }
           }
@@ -163,7 +248,7 @@ export function usePracticeSession(): PracticeSessionController {
     return () => {
       cancelled = true;
     };
-  }, [applySession, queueSave, reportError]);
+  }, [applySession, applyUnavailable, queueSave, reportError]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -298,6 +383,7 @@ export function usePracticeSession(): PracticeSessionController {
     session,
     question,
     activeDurationMs,
+    unavailable,
     submitNumericAnswer,
     nextQuestion,
     finishSession,
