@@ -7,6 +7,7 @@ type MessageKey =
   | 'app.subtitle'
   | 'question.addition'
   | 'question.subtraction'
+  | 'question.multiplication'
   | 'question.numberComparison'
   | 'action.check'
   | 'action.next'
@@ -20,6 +21,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'Grade 1 · Addition within 10',
     'question.addition': 'What is {a} + {b}?',
     'question.subtraction': 'What is {a} - {b}?',
+    'question.multiplication': 'What is {a} × {b}?',
     'question.numberComparison': 'Compare {left} and {right}. Choose <, =, or >.',
     'action.check': 'Check answer',
     'action.next': 'Next question',
@@ -32,6 +34,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'Kelas 1 · Penjumlahan sampai 10',
     'question.addition': 'Berapakah {a} + {b}?',
     'question.subtraction': 'Berapakah {a} - {b}?',
+    'question.multiplication': 'Berapakah {a} × {b}?',
     'question.numberComparison': 'Bandingkan {left} dan {right}. Pilih <, =, atau >.',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
@@ -44,6 +47,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'ชั้นประถมศึกษาปีที่ 1 · การบวกไม่เกิน 10',
     'question.addition': '{a} + {b} เท่ากับเท่าไร?',
     'question.subtraction': '{a} - {b} เท่ากับเท่าไร?',
+    'question.multiplication': '{a} × {b} เท่ากับเท่าไร?',
     'question.numberComparison': 'เปรียบเทียบ {left} และ {right} เลือก <, = หรือ >',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',

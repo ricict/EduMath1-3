@@ -55,6 +55,7 @@ export type RepresentationType =
 export type QuestionPromptKey =
   | 'question.addition'
   | 'question.subtraction'
+  | 'question.multiplication'
   | 'question.numberComparison';
 
 export interface QuestionBase {
@@ -69,7 +70,7 @@ export interface QuestionBase {
   promptKey: QuestionPromptKey;
 }
 
-export interface ArithmeticQuestion extends QuestionBase {
+export interface AddSubtractQuestion extends QuestionBase {
   questionType: 'numeric-choice';
   representation: 'symbolic';
   promptKey: 'question.addition' | 'question.subtraction';
@@ -80,6 +81,23 @@ export interface ArithmeticQuestion extends QuestionBase {
   };
   expectedAnswer: number;
 }
+
+export type MultiplicationFactFamily = 2 | 5 | 10;
+
+export interface MultiplicationQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'symbolic';
+  promptKey: 'question.multiplication';
+  data: {
+    operation: 'multiplication';
+    a: number;
+    b: number;
+    factFamily: MultiplicationFactFamily;
+  };
+  expectedAnswer: number;
+}
+
+export type ArithmeticQuestion = AddSubtractQuestion | MultiplicationQuestion;
 
 export type ComparisonRelation = 'less-than' | 'equal' | 'greater-than';
 

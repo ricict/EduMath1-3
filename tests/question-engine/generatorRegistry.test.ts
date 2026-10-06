@@ -34,12 +34,12 @@ test('registry dispatch preserves the M1 deterministic reference case', () => {
 });
 
 test('registry rejects skills without an implemented generator', () => {
-  assert.equal(supportsQuestionGeneration('multiplication_facts_2_5_10'), false);
+  assert.equal(supportsQuestionGeneration('division_facts_2_5_10'), false);
   assert.throws(
     () =>
       generateQuestion({
         grade: 2,
-        skillId: 'multiplication_facts_2_5_10',
+        skillId: 'division_facts_2_5_10',
         difficulty: 1,
         seed: 1,
       }),
