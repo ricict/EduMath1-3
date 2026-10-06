@@ -285,3 +285,87 @@ time-choice
 Clock rendering is also not yet implemented.
 
 The next coherent M6 visual family is therefore `tell_time_hour_half_hour`, which will require both semantic clock rendering and `time-choice` interaction without changing the locked M4 session model.
+
+
+## 18. Analog-clock visual and time-choice increment
+
+The third M6 visual family extends the rendering contract to
+`tell_time_hour_half_hour`.
+
+As with fractions, M6 first exposed a concrete downstream semantic gap:
+`time-choice` questions carried the correct `TimeAnswer` but no explicit
+child-facing answer choices. React was not allowed to invent time distractors.
+
+The M3 `ReadClockQuestion` contract was therefore extended narrowly with
+deterministic `answerOptions`. The generated clock time itself remains
+unchanged: answer-option PRNG consumption occurs only after `hour` and
+`minute` have already been generated.
+
+The M6 clock visual consumes the exact semantic:
+
+```text
+hour
+minute
+```
+
+and derives only display geometry:
+
+```text
+minute-hand angle = minute × 6°
+hour-hand angle   = hour × 30° + minute × 0.5°
+```
+
+This correctly places the hour hand halfway between numerals at `:30`.
+The geometry is pure and unit-tested rather than screenshot-authoritative.
+
+The analog clock uses React Native primitives only. No SVG/canvas dependency
+or generalized graphics engine was added.
+
+The child-facing practice interaction now supports:
+
+```text
+numeric-choice
+fraction-choice
+time-choice
+```
+
+Time choices come directly from deterministic M3 `answerOptions`, are shown
+as `h:mm`, and are submitted to M4 as:
+
+```text
+{
+  kind: 'time',
+  value: {
+    hour,
+    minute
+  }
+}
+```
+
+Localization provides EN/ID/TH accessibility wording for both the clock visual
+and time answer choices.
+
+Verification checkpoints:
+
+```text
+Semantic time options
+Commit : ef59ab8a88f43dc9fa2a54d3baa3bcf135580008
+Run    : 44
+Result : SUCCESS
+Tests  : 120 passed / 0 failed
+
+Analog clock rendering
+Commit : 15d28952b5df8e2299a51f9ddf5b16f13c0b5aa2
+Run    : 45
+Result : SUCCESS
+Tests  : 121 passed / 0 failed
+
+Time-choice interaction
+Commit : 97ab7989065202cd31dda796032553e2511f1578
+Run    : 46
+Result : SUCCESS
+Tests  : 124 passed / 0 failed
+```
+
+The only remaining registered question interaction not yet supported by the
+practice screen is `relation-choice`.
