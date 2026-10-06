@@ -161,9 +161,44 @@ Tests      : 157 passed / 0 failed / 0 skipped
 Conclusion : success
 ```
 
-### M7.3 — Progress surface
+### M7.3 — Progress surface — COMPLETE / VERIFIED
 
-Render the pure M7 progress projection. Keep grouping/presentation outside M5.
+The app now exposes an explicit `/progress` route from the learner-facing home screen.
+
+Progress loading follows the frozen authority chain:
+
+```text
+M4 completed local sessions
+        ↓
+M5 loadLearnerModel(...)
+        ↓
+M7 buildLearnerJourney(...)
+        ↓
+thin ProgressScreen presentation
+```
+
+The progress surface shows:
+
+- completed local practice-session count;
+- completed-question evidence count;
+- Grade 1–3 canonical skill totals;
+- mastered / in-progress / not-started skill counts;
+- the existing M5 practice availability state for each grade.
+
+The UI does not independently calculate mastery, change thresholds, cache mastery, mutate historical evidence, or create fallback recommendations. Grade 3 and other blocked contexts remain explicitly unavailable according to M5 rather than being fabricated by the presentation layer.
+
+The new `loadLearnerJourneySnapshot(...)` boundary consumes only `LocalSessionStore.listCompleted`, delegates history interpretation to M5 `loadLearnerModel(...)`, and then applies the already-verified M7.1 projection.
+
+Two intermediate CI failures were limited to React hook lint on the initial asynchronous progress load. Run 66 exposed the first synchronous-state pattern, and run 67 confirmed the analyzer followed the extracted callback. The final narrow patch moves initial state updates into Promise callbacks within the effect while keeping retry state changes event-driven.
+
+Verification:
+
+```text
+Run number : 68
+Head SHA   : 3ff763a7697fb94e6325d780b3e602b2a08977e0
+Tests      : 159 passed / 0 failed / 0 skipped
+Conclusion : success
+```
 
 ### M7.4 — App preferences and settings
 
@@ -195,12 +230,12 @@ M7 is complete only when:
 
 ## 9. Current checkpoint and next authorized increment
 
-M7.1 and M7.2 are complete and verified.
+M7.1, M7.2, and M7.3 are complete and verified.
 
 The next authorized increment is:
 
-**M7.3 — Progress surface**
+**M7.4 — App preferences and settings**
 
-M7.3 may render the already-pure learner-journey projection and load the existing M4/M5 learner state for presentation. It must not introduce a second mastery calculation, mastery persistence/cache, new curriculum sequencing, or remote analytics.
+M7.4 may add a device-local app-preference namespace for presentation preferences, including selected Grade 1–3 context and EN / ID / TH locale. Preferences must remain separate from M4 practice-session persistence and must not change question identity, seeds, scoring, mastery evidence, curriculum eligibility, or recommendation semantics.
 
-M7.4 settings/persistence and M7.5 product polish remain out of scope until M7.3 is independently verified.
+M7.5 product polish remains out of scope until M7.4 is independently verified.
