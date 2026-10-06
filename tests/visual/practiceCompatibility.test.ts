@@ -127,6 +127,8 @@ test('relation-choice is supported by the completed M6 interaction boundary', ()
       operation: 'number-comparison',
       left: 2,
       right: 3,
+      scaleMin: 0,
+      scaleMax: 10,
     },
     expectedAnswer: 'less-than',
   };
