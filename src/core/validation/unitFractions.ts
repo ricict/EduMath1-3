@@ -1,5 +1,5 @@
 import { canonicalSkills } from '../curriculum/canonicalSkills';
-import type { Difficulty, Question } from '../types';
+import type { Difficulty, Question, UnitFractionQuestion } from '../types';
 import type { QuestionValidationResult } from './types';
 
 const DENOMINATORS_BY_DIFFICULTY: Readonly<Record<Difficulty, readonly number[]>> = {
@@ -24,6 +24,8 @@ export function validateUnitFractionQuestion(
     return { valid: false, errors };
   }
 
+  const unitFractionQuestion = question as UnitFractionQuestion;
+
   const canonicalDenominators =
     canonicalSkills.unit_fractions.constraints?.allowedDenominators;
 
@@ -32,7 +34,8 @@ export function validateUnitFractionQuestion(
     return { valid: false, errors };
   }
 
-  const { denominator, numerator, shadedParts, totalParts } = question.data;
+  const { denominator, numerator, shadedParts, totalParts } =
+    unitFractionQuestion.data;
 
   if (numerator !== 1 || shadedParts !== 1) {
     errors.push('A unit fraction must represent exactly one selected equal part.');
@@ -51,20 +54,20 @@ export function validateUnitFractionQuestion(
   }
 
   if (
-    question.answerOptions.length < 2 ||
-    question.answerOptions.length > 4
+    unitFractionQuestion.answerOptions.length < 2 ||
+    unitFractionQuestion.answerOptions.length > 4
   ) {
     errors.push('Unit-fraction answer options must contain between two and four choices.');
   }
 
-  const optionKeys = question.answerOptions.map(
+  const optionKeys = unitFractionQuestion.answerOptions.map(
     (option) => `${option.numerator}/${option.denominator}`,
   );
   if (new Set(optionKeys).size !== optionKeys.length) {
     errors.push('Unit-fraction answer options must be unique.');
   }
 
-  for (const option of question.answerOptions) {
+  for (const option of unitFractionQuestion.answerOptions) {
     if (
       option.numerator !== 1 ||
       !canonicalDenominators.includes(option.denominator) ||
@@ -79,7 +82,7 @@ export function validateUnitFractionQuestion(
     }
   }
 
-  const correctOptionCount = question.answerOptions.filter(
+  const correctOptionCount = unitFractionQuestion.answerOptions.filter(
     (option) =>
       option.numerator === 1 &&
       option.denominator === denominator,
@@ -89,15 +92,15 @@ export function validateUnitFractionQuestion(
   }
 
   if (
-    typeof question.expectedAnswer !== 'object' ||
-    question.expectedAnswer === null ||
-    !('numerator' in question.expectedAnswer) ||
-    !('denominator' in question.expectedAnswer)
+    typeof unitFractionQuestion.expectedAnswer !== 'object' ||
+    unitFractionQuestion.expectedAnswer === null ||
+    !('numerator' in unitFractionQuestion.expectedAnswer) ||
+    !('denominator' in unitFractionQuestion.expectedAnswer)
   ) {
     errors.push('Unit-fraction expected answer must be a fraction value.');
   } else if (
-    question.expectedAnswer.numerator !== 1 ||
-    question.expectedAnswer.denominator !== denominator
+    unitFractionQuestion.expectedAnswer.numerator !== 1 ||
+    unitFractionQuestion.expectedAnswer.denominator !== denominator
   ) {
     errors.push('Expected fraction answer does not match the generated visual semantics.');
   }
