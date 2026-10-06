@@ -1,6 +1,6 @@
 # M7 — Learner Journey & App Shell
 
-Status: **DEFINED / FROZEN / IN PROGRESS**
+Status: **COMPLETE / TERMINAL-LOCKED**
 
 Defined: **2026-10-07**
 
@@ -234,38 +234,73 @@ Tests      : 162 passed / 0 failed / 0 skipped
 Conclusion : success
 ```
 
-### M7.5 — Learner-facing polish and completion audit
+### M7.5 — Learner-facing polish and completion audit — COMPLETE / VERIFIED
 
-Remove development-only metadata from child-facing surfaces, verify accessibility/navigation states, document unsupported-content boundaries, and run the full regression suite.
+The final learner-facing polish removes development-only milestone, session-ID, and seed metadata from normal practice surfaces. Language selection now lives in the persisted app-preference/settings system rather than being duplicated inside every active practice screen.
+
+The invalid-practice route is localized in EN / ID / TH and still rejects non-canonical grade parameters explicitly rather than falling back to a different grade or mathematical activity.
+
+The README was reconciled with the live repository, including the five current question types, the 12 registered generator skills, the M6 visual boundary, and the M7 journey/settings structure.
+
+The M7 completion regression locks:
+
+- no `M4`, session-ID, or seed development metadata in the child-facing practice source;
+- localized invalid-route messaging in EN / ID / TH;
+- M4 practice-session schema version remains exactly 1;
+- registered generator count remains exactly 12 at this terminal checkpoint;
+- the locked M1 deterministic regression remains `seed 20261006 → 4 + 1 = 5`.
+
+The final structural audit found no repository paths or package dependencies for backend services, accounts/profiles, Firebase, Supabase, remote analytics, telemetry, Sentry, Segment, or Amplitude.
+
+Verification:
+
+```text
+Run number : 72
+Head SHA   : 532313468835df4248d4f830a05bd324c8bb1639
+Tree SHA   : 3027f1d6ee8bb67272fa7b26f813597304a66958
+Tests      : 165 passed / 0 failed / 0 skipped
+Conclusion : success
+```
 
 The exact number of commits may differ, but each increment must remain coherent and independently verified.
 
-## 8. Completion criteria
+## 8. Completion criteria — PASS
 
-M7 is complete only when:
+M7 completion audit is **PASS**:
 
-- the app no longer launches directly into a hard-coded Grade 1 practice screen;
-- home, practice, progress, and settings journeys are explicit;
-- practice receives grade context from the app shell;
-- M5 remains the sole recommendation/mastery authority;
-- learner progress shown in UI is reproducibly derived from M4/M5 state;
-- locale and selected grade are restored from device-local app preferences;
-- M4 persistence schema version remains 1;
-- unsupported generator/curriculum contexts remain explicit rather than silently substituted;
-- no mathematical content or distractors are generated in navigation/UI code;
-- no child PII, account, backend, telemetry, or cloud dependency is introduced;
-- the M1 deterministic regression remains unchanged;
-- TypeScript, lint, and all tests pass in GitHub Actions;
-- README and this document accurately describe the final M7 state.
+- **PASS** — app root is a learner-facing Home route, not hard-coded Grade 1 practice;
+- **PASS** — Home, Practice, Progress, and Settings journeys are explicit;
+- **PASS** — practice receives typed grade context from the app shell;
+- **PASS** — M5 remains the sole recommendation/mastery authority;
+- **PASS** — progress is reproducibly derived from completed M4 history through M5 before M7 projection;
+- **PASS** — locale and selected grade restore from the separate device-local M7 preference record;
+- **PASS** — M4 persistence schema remains version 1;
+- **PASS** — unsupported curriculum/generator contexts remain explicit and no fallback mathematics is invented;
+- **PASS** — React navigation/presentation does not generate mathematical distractors or replace M3/M6 semantics;
+- **PASS** — no child PII, account system, backend, telemetry, remote analytics, ads, or cloud sync is introduced;
+- **PASS** — locked M1 deterministic regression remains unchanged;
+- **PASS** — development-only milestone/session/seed metadata is absent from normal child-facing practice;
+- **PASS** — EN / ID / TH shell/practice presentation is app-level and persisted;
+- **PASS** — TypeScript, lint, and the full 165-test suite passed GitHub Actions Run 72;
+- **PASS** — README and this document were reconciled with the live terminal implementation state.
 
-## 9. Current checkpoint and next authorized increment
+## 9. Terminal lock
 
-M7.1 through M7.4 are complete and verified.
+M7 — Learner Journey & App Shell is **COMPLETE / TERMINAL-LOCKED**.
 
-The next authorized increment is:
+Terminal implementation checkpoint before this documentation lock:
 
-**M7.5 — Learner-facing polish and completion audit**
+```text
+Commit     : 532313468835df4248d4f830a05bd324c8bb1639
+Tree       : 3027f1d6ee8bb67272fa7b26f813597304a66958
+Run number : 72
+Run ID     : 37513565209
+Status     : completed
+Conclusion : success
+Tests      : 165 passed / 0 failed / 0 skipped
+```
 
-M7.5 must remain a completion/audit increment. It may remove development-only child-facing metadata, close remaining navigation/accessibility/localization gaps, verify explicit unsupported-content boundaries, reconcile README/documentation with the live repository, and run the full regression suite.
+All M1–M7 contracts remain authoritative. Further product/build work must not be appended to M7.
 
-M7.5 must not expand curriculum/generator scope, change M5 mastery policy, alter M4 schema version 1, introduce cloud/backend/telemetry/PII, or begin M8.
+No M8 implementation is authorized by this document. The next milestone must be defined prospectively in a new milestone context before Android build/release work begins.
+

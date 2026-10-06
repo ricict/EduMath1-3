@@ -12,9 +12,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M4 — Learning Session & Offline Storage: COMPLETE**
 - **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
 - **M6 — Visual Mathematics & Pedagogy: COMPLETE / TERMINAL-LOCKED**
-- **M7 — Learner Journey & App Shell: IN PROGRESS**
+- **M7 — Learner Journey & App Shell: COMPLETE / TERMINAL-LOCKED**
 
-M1 through M6 are complete and locked. M6 terminally established the semantic-to-visual boundary and representative visual coverage, including large numerals, object groups, fractions, clocks, number lines, common 2D shapes, tally/simple tables, pictograms, and unit-scale bar charts. M7 now owns the learner-facing application shell around those locked engines. M7.1 through M7.4 are complete: the app has a pure Grade 1–3 learner-journey projection, a home route, explicit grade-aware practice entry, progress derived from completed M4 history through the locked M5 learner model, and device-local EN/ID/TH plus selected-grade preferences in a namespace separate from M4. Final learner-facing polish and the M7 completion audit remain prospective. M7 does not redefine curriculum, mastery, question generation, or visual mathematics.
+M1 through M7 are complete and locked. M6 terminally established the semantic-to-visual boundary and representative visual coverage. M7 terminally established the learner-facing app shell: Home, grade-aware Practice, Progress derived from completed M4 history through M5, Settings, and device-local EN/ID/TH plus selected-grade preferences in a namespace separate from M4. Development-only session/seed metadata has been removed from normal child-facing practice, unsupported contexts remain explicit, and M7 does not redefine curriculum, mastery, question generation, or visual mathematics.
 
 ## Technical stack
 
@@ -388,4 +388,6 @@ M5 does not claim that every Grade 1–3 canonical skill is already practiceable
 
 M6 — Visual Mathematics & Pedagogy is **COMPLETE / TERMINAL-LOCKED**. Representative child-facing coverage now includes large numerals, object groups, equal-part fractions, analog clocks, number lines, common 2D shapes, tally/simple tables, simple pictograms, and unit-scale bar charts. All currently defined question types have supported child-facing answer interaction, visual rendering remains semantic-model-driven and PRNG-free, M4 persistence remains schema version 1, and the locked M1 deterministic regression remains unchanged. The terminal implementation checkpoint before the documentation lock is commit `4cf4595705da9bfe96c567cd675f4b44c6939019`, GitHub Actions Run 59, with 151 passed / 0 failed.
 
-See docs/m2-curriculum-engine.md for M2, docs/m3-question-generation-engine.md for M3, docs/m4-learning-session-offline-storage.md for M4, and docs/m5-mastery-adaptive-learning.md for the M5 completion lock.
+M7 — Learner Journey & App Shell is **COMPLETE / TERMINAL-LOCKED**. The terminal implementation checkpoint before the documentation lock is commit `532313468835df4248d4f830a05bd324c8bb1639`, tree `3027f1d6ee8bb67272fa7b26f813597304a66958`, GitHub Actions Run 72, with 165 passed / 0 failed / 0 skipped.
+
+See docs/m2-curriculum-engine.md for M2, docs/m3-question-generation-engine.md for M3, docs/m4-learning-session-offline-storage.md for M4, docs/m5-mastery-adaptive-learning.md for M5, docs/m6-visual-mathematics-pedagogy.md for M6, and docs/m7-learner-journey-app-shell.md for the M7 terminal lock.
