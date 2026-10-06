@@ -2,7 +2,6 @@ import type { ComparisonRelation, Question } from '@/core/types';
 
 import type { PracticeScreenAnswer } from './practiceCompatibility';
 
-const NUMERIC_ANSWERS = Array.from({ length: 11 }, (_, value) => value);
 const RELATION_ANSWERS: readonly ComparisonRelation[] = [
   'less-than',
   'equal',
@@ -25,7 +24,7 @@ export function getPracticeAnswerOptions(
 ): readonly PracticeScreenAnswer[] | null {
   switch (question.questionType) {
     case 'numeric-choice':
-      return NUMERIC_ANSWERS.map((value) => ({
+      return question.answerOptions.map((value) => ({
         kind: 'numeric',
         value,
       }));

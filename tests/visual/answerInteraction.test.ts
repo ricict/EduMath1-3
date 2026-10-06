@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { generateAdditionWithin10 } from '../../src/core/question-engine/additionWithin10';
 import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
+import { generateMultiplicationFacts2510 } from '../../src/core/question-engine/multiplicationFacts2510';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import { evaluateLearnerAnswer } from '../../src/core/session/session';
@@ -12,7 +13,7 @@ import {
   isSamePracticeAnswer,
 } from '../../src/features/practice/answerInteraction';
 
-test('numeric interaction preserves the existing 0 through 10 answer surface', () => {
+test('numeric interaction consumes M3 semantic answerOptions exactly', () => {
   const question = generateAdditionWithin10({
     grade: 1,
     skillId: 'addition_within_10',
@@ -22,9 +23,51 @@ test('numeric interaction preserves the existing 0 through 10 answer surface', (
   const options = getPracticeAnswerOptions(question);
 
   assert.ok(options);
-  assert.equal(options.length, 11);
-  assert.deepEqual(options[0], { kind: 'numeric', value: 0 });
-  assert.deepEqual(options[10], { kind: 'numeric', value: 10 });
+  assert.deepEqual(
+    options,
+    question.answerOptions.map((value) => ({
+      kind: 'numeric',
+      value,
+    })),
+  );
+  assert.equal(
+    options.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
+    1,
+  );
+});
+
+test('numeric interaction supports multiplication answers above ten without UI range logic', () => {
+  let question = generateMultiplicationFacts2510({
+    grade: 2,
+    skillId: 'multiplication_facts_2_5_10',
+    difficulty: 3,
+    seed: 0,
+  });
+
+  for (let seed = 1; seed < 512 && question.expectedAnswer <= 10; seed += 1) {
+    question = generateMultiplicationFacts2510({
+      grade: 2,
+      skillId: 'multiplication_facts_2_5_10',
+      difficulty: 3,
+      seed,
+    });
+  }
+
+  assert.ok(question.expectedAnswer > 10);
+
+  const options = getPracticeAnswerOptions(question);
+  assert.ok(options);
+  assert.deepEqual(
+    options,
+    question.answerOptions.map((value) => ({
+      kind: 'numeric',
+      value,
+    })),
+  );
+  assert.equal(
+    options.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
+    1,
+  );
 });
 
 test('relation interaction exposes the complete typed comparison domain', () => {
