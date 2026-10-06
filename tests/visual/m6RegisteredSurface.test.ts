@@ -48,7 +48,11 @@ test('every registered generator has a valid child-facing M6 practice surface', 
           const visualModel = buildVisualQuestionModel(question);
           if (
             question.representation === 'visual' ||
-            question.representation === 'clock'
+            question.representation === 'clock' ||
+            question.representation === 'number-line' ||
+            question.representation === 'table' ||
+            question.representation === 'pictogram' ||
+            question.representation === 'bar-chart'
           ) {
             assert.ok(
               visualModel,

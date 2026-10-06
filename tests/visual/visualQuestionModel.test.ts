@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { generateAdditionConcept } from '../../src/core/question-engine/additionConcept';
+import { generateBarChartsUnitScale } from '../../src/core/question-engine/barChartsUnitScale';
 import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
 import { generateIdentify2DShapes } from '../../src/core/question-engine/identify2dShapes';
 import { generateNumberRecognition10 } from '../../src/core/question-engine/numberRecognition10';
+import { generatePictogramsSimple } from '../../src/core/question-engine/pictogramsSimple';
+import { generateTallyAndSimpleTables } from '../../src/core/question-engine/tallyAndSimpleTables';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import type { Question } from '../../src/core/types';
@@ -165,6 +168,48 @@ test('2D-shape visual model preserves the generated semantic shape exactly', () 
   });
 });
 
+test('data-display visual models preserve generated rows, target groups, and unit semantics exactly', () => {
+  const table = generateTallyAndSimpleTables({
+    grade: 1,
+    skillId: 'tally_and_simple_tables',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const pictogram = generatePictogramsSimple({
+    grade: 2,
+    skillId: 'pictograms_simple',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const bar = generateBarChartsUnitScale({
+    grade: 3,
+    skillId: 'bar_charts_unit_scale',
+    difficulty: 3,
+    seed: 20261006,
+  });
+
+  assert.deepEqual(buildVisualQuestionModel(table), {
+    kind: 'tally-table',
+    questionId: table.id,
+    rows: table.data.rows,
+    targetLabel: table.data.targetLabel,
+  });
+  assert.deepEqual(buildVisualQuestionModel(pictogram), {
+    kind: 'pictogram',
+    questionId: pictogram.id,
+    rows: pictogram.data.rows,
+    targetLabel: pictogram.data.targetLabel,
+    symbolValue: 1,
+  });
+  assert.deepEqual(buildVisualQuestionModel(bar), {
+    kind: 'unit-bar-chart',
+    questionId: bar.id,
+    rows: bar.data.rows,
+    targetLabel: bar.data.targetLabel,
+    scaleUnit: 1,
+  });
+});
+
 test('visual accessibility wording stays localized while semantic values stay unchanged', () => {
   assert.equal(
     translate('en', 'visual.numberRecognitionLabel', { target: 7 }),
@@ -203,5 +248,19 @@ test('visual accessibility wording stays localized while semantic values stay un
       shape: translateShapeName('id', 'circle'),
     }),
     'Bentuk yang ditampilkan: Lingkaran',
+  );
+  assert.equal(
+    translate('en', 'visual.dataRowLabel', { group: 'B', count: 4 }),
+    'Group B: 4 items',
+  );
+  assert.equal(
+    translate('id', 'visual.pictogramKey'),
+    'Setiap simbol mewakili 1 benda.',
+  );
+  assert.equal(
+    translate('th', 'visual.barChartLabel', {
+      rows: translate('th', 'visual.dataRowLabel', { group: 'C', count: 3 }),
+    }),
+    'แผนภูมิแท่งมาตราส่วนหน่วย กลุ่ม C: 3 ชิ้น',
   );
 });

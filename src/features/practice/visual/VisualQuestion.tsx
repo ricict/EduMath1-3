@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { Question, Shape2D } from '@/core/types';
+import type { DataDisplayRow, Question, Shape2D } from '@/core/types';
 import {
   translate,
   translateShapeName,
@@ -28,6 +28,31 @@ function getClockNumberPosition(value: number) {
     left: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.cos(radians) - 14,
     top: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.sin(radians) - 14,
   };
+}
+
+function dataRowsAccessibilityText(
+  locale: Locale,
+  rows: readonly DataDisplayRow[],
+): string {
+  return rows
+    .map((row) =>
+      translate(locale, 'visual.dataRowLabel', {
+        group: row.label,
+        count: row.count,
+      }),
+    )
+    .join('; ');
+}
+
+function tallyText(count: number): string {
+  const groupsOfFive = Math.floor(count / 5);
+  const remainder = count % 5;
+  return [
+    ...Array.from({ length: groupsOfFive }, () => '||||/'),
+    '|'.repeat(remainder),
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 function ShapeFigure({ shape }: { shape: Shape2D }) {
@@ -178,6 +203,92 @@ export function VisualQuestion({ question, locale }: VisualQuestionProps) {
         style={styles.shapeCard}
       >
         <ShapeFigure shape={model.shape} />
+      </View>
+    );
+  }
+
+  if (model.kind === 'tally-table') {
+    const rowsText = dataRowsAccessibilityText(locale, model.rows);
+
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.tallyTableLabel', {
+          rows: rowsText,
+        })}
+        style={styles.dataCard}
+      >
+        <View accessible={false} style={styles.tableHeaderRow}>
+          <Text style={styles.tableHeaderCell}>
+            {translate(locale, 'visual.dataGroupHeader')}
+          </Text>
+          <Text style={[styles.tableHeaderCell, styles.tableValueCell]}>
+            {translate(locale, 'visual.tallyHeader')}
+          </Text>
+        </View>
+        {model.rows.map((row) => (
+          <View accessible={false} key={row.label} style={styles.dataRow}>
+            <Text style={styles.dataGroupLabel}>{row.label}</Text>
+            <Text style={[styles.tallyMarks, styles.tableValueCell]}>
+              {tallyText(row.count)}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  if (model.kind === 'pictogram') {
+    const rowsText = dataRowsAccessibilityText(locale, model.rows);
+
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.pictogramLabel', {
+          rows: rowsText,
+        })}
+        style={styles.dataCard}
+      >
+        <Text accessible={false} style={styles.pictogramKey}>
+          {translate(locale, 'visual.pictogramKey')}
+        </Text>
+        {model.rows.map((row) => (
+          <View accessible={false} key={row.label} style={styles.dataRow}>
+            <Text style={styles.dataGroupLabel}>{row.label}</Text>
+            <View style={styles.pictogramSymbols}>
+              {Array.from({ length: row.count }, (_, index) => (
+                <Text key={index} style={styles.pictogramSymbol}>
+                  ●
+                </Text>
+              ))}
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  if (model.kind === 'unit-bar-chart') {
+    const rowsText = dataRowsAccessibilityText(locale, model.rows);
+
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.barChartLabel', {
+          rows: rowsText,
+        })}
+        style={styles.dataCard}
+      >
+        {model.rows.map((row) => (
+          <View accessible={false} key={row.label} style={styles.dataRow}>
+            <Text style={styles.dataGroupLabel}>{row.label}</Text>
+            <View style={styles.barTrack}>
+              {Array.from({ length: row.count }, (_, index) => (
+                <View key={index} style={styles.barUnit} />
+              ))}
+            </View>
+          </View>
+        ))}
       </View>
     );
   }
@@ -404,6 +515,86 @@ const styles = StyleSheet.create({
   shapeRectangle: {
     width: 176,
     height: 112,
+    backgroundColor: '#315EFB',
+  },
+  dataCard: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
+    borderWidth: 2,
+    borderColor: '#D7DFE8',
+    borderRadius: 20,
+    backgroundColor: '#F8FAFD',
+    padding: 16,
+    gap: 10,
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#D7DFE8',
+    paddingBottom: 8,
+  },
+  tableHeaderCell: {
+    width: 72,
+    color: '#526071',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  tableValueCell: {
+    flex: 1,
+  },
+  dataRow: {
+    minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dataGroupLabel: {
+    width: 48,
+    color: '#172033',
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  tallyMarks: {
+    color: '#172033',
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  pictogramKey: {
+    color: '#526071',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+  },
+  pictogramSymbols: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  pictogramSymbol: {
+    color: '#315EFB',
+    fontSize: 24,
+    lineHeight: 28,
+  },
+  barTrack: {
+    flex: 1,
+    minHeight: 26,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderBottomWidth: 2,
+    borderBottomColor: '#526071',
+  },
+  barUnit: {
+    width: 24,
+    minHeight: 24,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
     backgroundColor: '#315EFB',
   },
   numberLineCard: {

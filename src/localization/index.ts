@@ -14,6 +14,9 @@ type MessageKey =
   | 'question.unitFraction'
   | 'question.readClock'
   | 'question.identify2dShape'
+  | 'question.readTallyTable'
+  | 'question.readPictogram'
+  | 'question.readBarChart'
   | 'visual.numberRecognitionLabel'
   | 'visual.additionFirstGroupLabel'
   | 'visual.additionSecondGroupLabel'
@@ -21,6 +24,13 @@ type MessageKey =
   | 'visual.clockLabel'
   | 'visual.numberLineComparisonLabel'
   | 'visual.shapeLabel'
+  | 'visual.tallyTableLabel'
+  | 'visual.pictogramLabel'
+  | 'visual.barChartLabel'
+  | 'visual.dataRowLabel'
+  | 'visual.dataGroupHeader'
+  | 'visual.tallyHeader'
+  | 'visual.pictogramKey'
   | 'answer.relationLessThan'
   | 'answer.relationEqual'
   | 'answer.relationGreaterThan'
@@ -64,6 +74,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
       'One of {denominator} equal parts is shaded. Which fraction is shown?',
     'question.readClock': 'What time does the clock show?',
     'question.identify2dShape': 'What shape is shown?',
+    'question.readTallyTable': 'How many items are in group {group}?',
+    'question.readPictogram':
+      'According to the pictogram, how many items are in group {group}?',
+    'question.readBarChart':
+      'According to the bar chart, how many items are in group {group}?',
     'visual.numberRecognitionLabel': 'Shown number: {target}',
     'visual.additionFirstGroupLabel': 'First group: {count} objects',
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
@@ -72,6 +87,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberLineComparisonLabel':
       'Number line from {min} to {max}. Compare {left} and {right}.',
     'visual.shapeLabel': 'Shown shape: {shape}',
+    'visual.tallyTableLabel': 'Tally table. {rows}',
+    'visual.pictogramLabel': 'Pictogram. {rows}',
+    'visual.barChartLabel': 'Unit-scale bar chart. {rows}',
+    'visual.dataRowLabel': 'Group {group}: {count} items',
+    'visual.dataGroupHeader': 'Group',
+    'visual.tallyHeader': 'Tally',
+    'visual.pictogramKey': 'Each symbol represents 1 item.',
     'answer.relationLessThan': 'Less than',
     'answer.relationEqual': 'Equal to',
     'answer.relationGreaterThan': 'Greater than',
@@ -114,6 +136,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
       'Satu dari {denominator} bagian yang sama diarsir. Pecahan apa yang ditunjukkan?',
     'question.readClock': 'Jam menunjukkan pukul berapa?',
     'question.identify2dShape': 'Bentuk apa yang ditunjukkan?',
+    'question.readTallyTable': 'Ada berapa benda di kelompok {group}?',
+    'question.readPictogram':
+      'Menurut piktogram, ada berapa benda di kelompok {group}?',
+    'question.readBarChart':
+      'Menurut diagram batang, ada berapa benda di kelompok {group}?',
     'visual.numberRecognitionLabel': 'Angka yang ditampilkan: {target}',
     'visual.additionFirstGroupLabel': 'Kelompok pertama: {count} benda',
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
@@ -122,6 +149,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberLineComparisonLabel':
       'Garis bilangan dari {min} sampai {max}. Bandingkan {left} dan {right}.',
     'visual.shapeLabel': 'Bentuk yang ditampilkan: {shape}',
+    'visual.tallyTableLabel': 'Tabel turus. {rows}',
+    'visual.pictogramLabel': 'Piktogram. {rows}',
+    'visual.barChartLabel': 'Diagram batang skala satuan. {rows}',
+    'visual.dataRowLabel': 'Kelompok {group}: {count} benda',
+    'visual.dataGroupHeader': 'Kelompok',
+    'visual.tallyHeader': 'Turus',
+    'visual.pictogramKey': 'Setiap simbol mewakili 1 benda.',
     'answer.relationLessThan': 'Kurang dari',
     'answer.relationEqual': 'Sama dengan',
     'answer.relationGreaterThan': 'Lebih dari',
@@ -164,6 +198,11 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
       'ระบายสี 1 ส่วนจากทั้งหมด {denominator} ส่วนที่เท่ากัน เศษส่วนที่แสดงคืออะไร?',
     'question.readClock': 'นาฬิกาแสดงเวลากี่โมง?',
     'question.identify2dShape': 'รูปทรงที่แสดงคือรูปอะไร?',
+    'question.readTallyTable': 'กลุ่ม {group} มีสิ่งของกี่ชิ้น?',
+    'question.readPictogram':
+      'จากแผนภูมิรูปภาพ กลุ่ม {group} มีสิ่งของกี่ชิ้น?',
+    'question.readBarChart':
+      'จากแผนภูมิแท่ง กลุ่ม {group} มีสิ่งของกี่ชิ้น?',
     'visual.numberRecognitionLabel': 'ตัวเลขที่แสดง: {target}',
     'visual.additionFirstGroupLabel': 'กลุ่มแรกมีสิ่งของ {count} ชิ้น',
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
@@ -172,6 +211,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberLineComparisonLabel':
       'เส้นจำนวนจาก {min} ถึง {max} เปรียบเทียบ {left} และ {right}',
     'visual.shapeLabel': 'รูปทรงที่แสดง: {shape}',
+    'visual.tallyTableLabel': 'ตารางรอยขีดนับ {rows}',
+    'visual.pictogramLabel': 'แผนภูมิรูปภาพ {rows}',
+    'visual.barChartLabel': 'แผนภูมิแท่งมาตราส่วนหน่วย {rows}',
+    'visual.dataRowLabel': 'กลุ่ม {group}: {count} ชิ้น',
+    'visual.dataGroupHeader': 'กลุ่ม',
+    'visual.tallyHeader': 'รอยขีดนับ',
+    'visual.pictogramKey': 'แต่ละสัญลักษณ์แทน 1 ชิ้น',
     'answer.relationLessThan': 'น้อยกว่า',
     'answer.relationEqual': 'เท่ากับ',
     'answer.relationGreaterThan': 'มากกว่า',
@@ -250,6 +296,16 @@ export function renderQuestionPrompt(question: Question, locale: Locale): string
 
   if (question.data.operation === 'identify-2d-shape') {
     return translate(locale, question.promptKey);
+  }
+
+  if (
+    question.data.operation === 'read-tally-table' ||
+    question.data.operation === 'read-pictogram' ||
+    question.data.operation === 'read-unit-bar-chart'
+  ) {
+    return translate(locale, question.promptKey, {
+      group: question.data.targetLabel,
+    });
   }
 
   return translate(locale, question.promptKey, {

@@ -1,4 +1,9 @@
-import type { Question, Shape2D } from '@/core/types';
+import type {
+  DataDisplayRow,
+  DataGroupLabel,
+  Question,
+  Shape2D,
+} from '@/core/types';
 
 export interface NumberRecognitionVisualModel {
   kind: 'number-recognition';
@@ -54,6 +59,29 @@ export interface Identify2DShapeVisualModel {
   shape: Shape2D;
 }
 
+export interface TallyTableVisualModel {
+  kind: 'tally-table';
+  questionId: string;
+  rows: readonly DataDisplayRow[];
+  targetLabel: DataGroupLabel;
+}
+
+export interface PictogramVisualModel {
+  kind: 'pictogram';
+  questionId: string;
+  rows: readonly DataDisplayRow[];
+  targetLabel: DataGroupLabel;
+  symbolValue: 1;
+}
+
+export interface UnitBarChartVisualModel {
+  kind: 'unit-bar-chart';
+  questionId: string;
+  rows: readonly DataDisplayRow[];
+  targetLabel: DataGroupLabel;
+  scaleUnit: 1;
+}
+
 export function getClockHandDegrees(
   hour: number,
   minute: 0 | 30,
@@ -73,7 +101,10 @@ export type VisualQuestionModel =
   | UnitFractionVisualModel
   | ReadClockVisualModel
   | NumberLineComparisonVisualModel
-  | Identify2DShapeVisualModel;
+  | Identify2DShapeVisualModel
+  | TallyTableVisualModel
+  | PictogramVisualModel
+  | UnitBarChartVisualModel;
 
 export function buildVisualQuestionModel(
   question: Question,
@@ -146,6 +177,32 @@ export function buildVisualQuestionModel(
         kind: 'identify-2d-shape',
         questionId: question.id,
         shape: question.data.shape,
+      };
+
+    case 'read-tally-table':
+      return {
+        kind: 'tally-table',
+        questionId: question.id,
+        rows: question.data.rows,
+        targetLabel: question.data.targetLabel,
+      };
+
+    case 'read-pictogram':
+      return {
+        kind: 'pictogram',
+        questionId: question.id,
+        rows: question.data.rows,
+        targetLabel: question.data.targetLabel,
+        symbolValue: question.data.symbolValue,
+      };
+
+    case 'read-unit-bar-chart':
+      return {
+        kind: 'unit-bar-chart',
+        questionId: question.id,
+        rows: question.data.rows,
+        targetLabel: question.data.targetLabel,
+        scaleUnit: question.data.scaleUnit,
       };
 
     default:

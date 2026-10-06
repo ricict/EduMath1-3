@@ -11,22 +11,28 @@ import type {
 } from '../types';
 import { additionConceptGenerator } from './additionConcept';
 import { additionWithin10Generator } from './additionWithin10';
+import { barChartsUnitScaleGenerator } from './barChartsUnitScale';
 import { compareOrderNumbers20Generator } from './compareOrderNumbers20';
 import type { QuestionGenerator } from './generator';
 import { identify2DShapesGenerator } from './identify2dShapes';
 import { multiplicationFacts2510Generator } from './multiplicationFacts2510';
 import { numberRecognition10Generator } from './numberRecognition10';
+import { pictogramsSimpleGenerator } from './pictogramsSimple';
 import {
   assertQuestionGeneratorRegistryValid,
   validateQuestionGeneratorRegistry,
 } from './registryValidation';
 import { subtractionWithin10Generator } from './subtractionWithin10';
+import { tallyAndSimpleTablesGenerator } from './tallyAndSimpleTables';
 import { tellTimeHourHalfHourGenerator } from './tellTimeHourHalfHour';
 import { unitFractionsGenerator } from './unitFractions';
 
 export const registeredQuestionGenerators = [
   numberRecognition10Generator,
   additionConceptGenerator,
+  tallyAndSimpleTablesGenerator,
+  pictogramsSimpleGenerator,
+  barChartsUnitScaleGenerator,
   additionWithin10Generator,
   subtractionWithin10Generator,
   compareOrderNumbers20Generator,

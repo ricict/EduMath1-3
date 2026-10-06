@@ -66,7 +66,10 @@ export type QuestionPromptKey =
   | 'question.numberComparison'
   | 'question.unitFraction'
   | 'question.readClock'
-  | 'question.identify2dShape';
+  | 'question.identify2dShape'
+  | 'question.readTallyTable'
+  | 'question.readPictogram'
+  | 'question.readBarChart';
 
 export interface QuestionBase {
   id: string;
@@ -207,13 +210,64 @@ export interface Identify2DShapeQuestion extends QuestionBase {
   expectedAnswer: Shape2D;
 }
 
+export type DataGroupLabel = 'A' | 'B' | 'C';
+
+export interface DataDisplayRow {
+  label: DataGroupLabel;
+  count: number;
+}
+
+export interface SimpleTallyTableQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'table';
+  promptKey: 'question.readTallyTable';
+  data: {
+    operation: 'read-tally-table';
+    rows: readonly DataDisplayRow[];
+    targetLabel: DataGroupLabel;
+  };
+  answerOptions: readonly number[];
+  expectedAnswer: number;
+}
+
+export interface SimplePictogramQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'pictogram';
+  promptKey: 'question.readPictogram';
+  data: {
+    operation: 'read-pictogram';
+    rows: readonly DataDisplayRow[];
+    targetLabel: DataGroupLabel;
+    symbolValue: 1;
+  };
+  answerOptions: readonly number[];
+  expectedAnswer: number;
+}
+
+export interface UnitBarChartQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'bar-chart';
+  promptKey: 'question.readBarChart';
+  data: {
+    operation: 'read-unit-bar-chart';
+    rows: readonly DataDisplayRow[];
+    targetLabel: DataGroupLabel;
+    scaleUnit: 1;
+  };
+  answerOptions: readonly number[];
+  expectedAnswer: number;
+}
+
 export type Question =
   | NumberRecognitionQuestion
   | ArithmeticQuestion
   | NumberComparisonQuestion
   | UnitFractionQuestion
   | ReadClockQuestion
-  | Identify2DShapeQuestion;
+  | Identify2DShapeQuestion
+  | SimpleTallyTableQuestion
+  | SimplePictogramQuestion
+  | UnitBarChartQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;

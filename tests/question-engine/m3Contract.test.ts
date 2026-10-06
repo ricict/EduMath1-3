@@ -25,10 +25,13 @@ test('M3 registry collectively covers Grades 1-3 and representative generation m
     [...capabilities].sort(),
     [
       'addition',
+      'bar-chart',
+      'data-table',
       'fraction',
       'multiplication',
       'number-comparison',
       'number-identification',
+      'pictogram',
       'shape',
       'subtraction',
       'time',
@@ -40,7 +43,7 @@ test('M3 registry collectively covers Grades 1-3 and representative generation m
   );
   assert.deepEqual(
     [...representations].sort(),
-    ['clock', 'number-line', 'symbolic', 'visual'],
+    ['bar-chart', 'clock', 'number-line', 'pictogram', 'symbolic', 'table', 'visual'],
   );
 });
 
