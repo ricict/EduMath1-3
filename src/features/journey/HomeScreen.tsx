@@ -16,6 +16,15 @@ export function HomeScreen() {
           the next practice that is currently available.
         </Text>
 
+        <Pressable
+          accessibilityHint="Open your Grade 1–3 learning progress"
+          accessibilityRole="button"
+          onPress={() => router.push('/progress')}
+          style={styles.progressButton}
+        >
+          <Text style={styles.progressButtonText}>View learning progress</Text>
+        </Pressable>
+
         <View style={styles.gradeList}>
           {GRADES.map((grade) => (
             <Pressable
@@ -79,6 +88,20 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 25,
     marginBottom: 10,
+  },
+  progressButton: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#315EFB',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  progressButtonText: {
+    color: '#315EFB',
+    fontSize: 15,
+    fontWeight: '800',
   },
   gradeList: {
     gap: 12,
