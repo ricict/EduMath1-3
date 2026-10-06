@@ -1,6 +1,6 @@
 # M6 — Visual Mathematics & Pedagogy
 
-Status: **IN PROGRESS**
+Status: **COMPLETE / TERMINAL-LOCKED**
 
 Started: **2026-10-06**
 
@@ -671,3 +671,131 @@ from that canonical contract and the current architecture before code is
 added. After table coverage, M6 still needs representative
 `pictograms_simple` and `bar_charts_unit_scale` coverage before a terminal
 scope audit can consider M6 complete.
+
+
+## 25. Increment 6 — representative data displays
+
+The final representative M6 visual family increment implements the three
+remaining data-display families identified by the M6 scope audit:
+
+```text
+tally_and_simple_tables -> table
+pictograms_simple       -> pictogram
+bar_charts_unit_scale   -> bar-chart
+```
+
+Each family is generated deterministically in M3, validated separately,
+converted by the pure M6 semantic-to-visual model, and rendered with React
+Native primitives. React does not create counts, target groups, answer
+choices, chart scales, or pictogram keys.
+
+The semantic contracts are intentionally small:
+
+```text
+table
+  rows
+  targetLabel
+
+pictogram
+  rows
+  targetLabel
+  symbolValue = 1
+
+unit bar chart
+  rows
+  targetLabel
+  scaleUnit = 1
+```
+
+All three families reuse `numeric-choice` with deterministic M3
+`answerOptions`, so no additional learner-answer variant or persistence
+schema change is required.
+
+EN/ID/TH localization covers the prompts and accessibility equivalents for
+the displayed rows. The visual layer remains PRNG-free and does not infer
+curriculum ranges.
+
+Verification:
+
+```text
+Representative data-display implementation
+Commit : 4cf4595705da9bfe96c567cd675f4b44c6939019
+Run    : 59
+Result : SUCCESS
+Tests  : 151 passed / 0 failed
+```
+
+## 26. M6 terminal scope audit
+
+M6 is complete against its defined representative Visual Mathematics &
+Pedagogy scope.
+
+Representative child-facing visual families now covered:
+
+```text
+large numeral
+object/counter groups
+equal-part fraction strip
+analog clock
+number line
+common 2D shapes
+tally/simple table
+simple pictogram
+unit-scale bar chart
+```
+
+Child-facing answer interaction covers every currently defined
+`QuestionType`:
+
+```text
+numeric-choice
+relation-choice
+fraction-choice
+time-choice
+shape-choice
+```
+
+The terminal audit confirms:
+
+- M3 remains semantic, deterministic, seed-driven, validation-separated, and
+  localization-independent;
+- M6 introduces no visual PRNG and React does not regenerate mathematics;
+- deterministic answer options remain M3-owned;
+- localization remains separate from mathematical semantics;
+- accessible semantic equivalents exist for implemented visual content;
+- pure semantic-model tests remain the primary visual correctness boundary;
+- the M4 persistence schema remains version 1;
+- the typed shape learner-answer extension round-trips under schema v1;
+- the M5 recommendation-to-M4 bridge is unchanged;
+- the locked M1 regression remains unchanged:
+
+```text
+grade      : 1
+skill      : addition_within_10
+difficulty : 3
+seed       : 20261006
+
+4 + 1 = 5
+```
+
+- the registry-wide M6 surface audit requires every registered generator to
+  expose a supported child-facing answer surface and every declared visual
+  representation to have an M6 visual model;
+- GitHub Actions Run 59 passed TypeScript, lint, and all 151 unit tests.
+
+M6 deliberately does **not** mean that all 60 canonical M2 skills now have
+their own M3 generator or specialized visual renderer. That broader
+curriculum-generation expansion is outside this milestone's representative
+visual/pedagogy completion boundary and must not be retroactively folded into
+M6.
+
+Terminal status:
+
+```text
+M6 — Visual Mathematics & Pedagogy
+COMPLETE / TERMINAL-LOCKED
+```
+
+Do not reopen or redesign M1–M6 except for a concrete downstream defect that
+requires a narrowly justified additive correction. New milestone work belongs
+in M7.
