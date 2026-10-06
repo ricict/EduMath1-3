@@ -9,8 +9,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M1 — Foundation Bootstrap: COMPLETE**
 - **M2 — Curriculum & Canonical Skill Engine: COMPLETE**
 - **M3 — Question Generation Engine: COMPLETE**
+- **M4 — Learning Session & Offline Storage: COMPLETE**
 
-M1, M2, and M3 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry while preserving the original M1 Grade 1 addition regression contract.
+M1 through M4 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 
@@ -19,6 +20,7 @@ M1, M2, and M3 were completed on 2026-10-06. M2 defines the canonical mathematic
 - React 19.2
 - TypeScript
 - Expo Router
+- Expo SQLite key-value storage
 - Node's test runner executed through `tsx`
 - ESLint using `eslint-config-expo`
 
@@ -117,6 +119,53 @@ Implemented semantic representations include:
 
 Localization remains responsible for child-facing English, Indonesian, and Thai wording.
 
+### Versioned offline learning sessions
+
+M4 introduces a typed practice-session domain under `src/core/session/`.
+
+A session records only the semantic information needed to run and reconstruct practice:
+
+- opaque local session ID;
+- canonical grade, `SkillId`, and difficulty;
+- session-level deterministic seed;
+- ordered question attempts;
+- question generation context and generated question identity;
+- semantic learner answers and correctness;
+- active/paused/completed lifecycle;
+- active-practice duration;
+- schema version.
+
+Question position `n` uses the deterministic seed rule:
+
+```text
+questionSeed = (sessionSeed + ordinal) modulo 2^32
+```
+
+The session layer calls M3 `generateQuestion(...)` through the registry. It does not call individual arithmetic/fraction/time generators directly and does not duplicate mathematical rules.
+
+The default practice target is ten minutes, but it is a target rather than a hard wall-clock completion rule. Paused/background time is excluded from active-practice duration. Active state is checkpointed before persistence, and an unexpectedly interrupted persisted session is recovered conservatively so unknown offline time is not counted as practice.
+
+### Local persistence
+
+M4 persistence is versioned and storage-agnostic at the core boundary.
+
+The concrete device adapter uses `expo-sqlite/kv-store`, which supplies persistent key-value storage without introducing an ORM or cloud dependency.
+
+Stored sessions are validated on restore against:
+
+- schema version;
+- canonical grade/skill/difficulty;
+- deterministic question seed and identity;
+- question type and representation;
+- semantic answer correctness;
+- attempt ordering and lifecycle consistency;
+- session timing consistency.
+
+One resumable session pointer supports interruption/resumption. Completed sessions remain stored by ID and are indexed locally so later milestones can consume historical outcomes without M4 calculating mastery.
+
+The current React Native practice screen remains deliberately narrow: it demonstrates the existing Grade 1 `addition_within_10` experience, but now all generation, answer evaluation, timing, interruption/resumption, and persistence flow through the M4 session contracts.
+
+
 ## M3 representative generators
 
 The completed M3 architecture includes six deterministic representative generators:
@@ -154,15 +203,19 @@ src/
       seededRandom.ts             # Deterministic PRNG
       ...                         # Representative generator modules
     validation/                   # Generator-specific mathematical validators
+    session/                      # M4 session lifecycle + persistence contracts
     types.ts                      # Shared semantic question/domain types
-  features/practice/              # Minimal M1 practice UI
+  features/practice/              # Thin session-driven practice UI
+  infrastructure/storage/         # Expo SQLite device adapter
   localization/                   # EN / ID / TH semantic rendering
 tests/
   curriculum/                     # M2 curriculum/graph tests
   question-engine/                # M1 regressions + M3 generator/registry tests
+  session/                        # M4 lifecycle/persistence tests
 docs/
   m2-curriculum-engine.md         # M2 rationale and boundaries
   m3-question-generation-engine.md # M3 architecture and completion lock
+  m4-learning-session-offline-storage.md # M4 architecture and completion lock
 .github/workflows/ci.yml          # Automated quality gate
 ```
 
@@ -205,6 +258,24 @@ Skipped  : 0
 
 The M3 suite includes high-volume per-generator invariant tests plus a generic registry matrix that runs every registered skill across its declared grades, difficulty levels, and deterministic seed samples.
 
+The M4 completion candidate contains **76 test definitions**:
+
+- 56 pre-existing M1–M3 tests;
+- 12 session lifecycle/determinism tests;
+- 8 persistence/restore/index tests.
+
+M4 implementation quality gate:
+
+```text
+Run number : 27
+Run ID     : 37453142860
+Head SHA   : 568f610bd2dcd155a304b2cd807add121ca060e2
+Status     : completed
+Conclusion : success
+```
+
+The final M4 documentation commit must also pass the full GitHub Actions quality gate before the milestone is terminally locked.
+
 ## Curriculum and pedagogy claims
 
 The canonical catalog remains an internal mathematical ontology, not a provider curriculum.
@@ -232,4 +303,24 @@ M3 is complete because:
 - the M1 locked seed remains unchanged;
 - TypeScript, lint, and unit tests pass in GitHub Actions.
 
-See `docs/m2-curriculum-engine.md` for M2 and `docs/m3-question-generation-engine.md` for the M3 design and completion lock.
+## M4 completion criteria
+
+M4 is complete because:
+
+- practice-session and question-attempt contracts are typed and versioned;
+- session lifecycle supports active, paused, resumed, and completed states;
+- the default ten-minute duration is a target, not a forced wall-clock cutoff;
+- deterministic per-question seeds derive from session seed + ordinal;
+- M3 registry generation and validation remain authoritative;
+- incorrect and correct learner answers are retained semantically;
+- interrupted sessions can reconstruct the exact issued question;
+- paused/background time is excluded from active-practice duration;
+- unexpected process interruption does not silently add unknown offline time;
+- persisted state is validated before restore;
+- completed sessions are retained and locally indexed;
+- the concrete Expo adapter is offline/device-local and uses `expo-sqlite/kv-store`;
+- the React screen is session-driven rather than generator-driven;
+- no accounts, child PII, tracking, remote storage, mastery scoring, or adaptive sequencing were introduced;
+- all M1–M3 regression contracts remain green.
+
+See `docs/m2-curriculum-engine.md` for M2, `docs/m3-question-generation-engine.md` for M3, and `docs/m4-learning-session-offline-storage.md` for the M4 design and completion lock.
