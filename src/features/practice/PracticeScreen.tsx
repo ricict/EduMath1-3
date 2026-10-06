@@ -9,6 +9,7 @@ import {
   translateShapeName,
   type Locale,
 } from '@/localization';
+import { translateAppShell } from '@/localization/appShell';
 
 import {
   formatPracticeAnswerText,
@@ -85,7 +86,7 @@ function renderAnswerAccessibilityLabel(
 }
 
 export function PracticeScreen({ grade }: { grade: Grade }) {
-  const { preferences, setLocale } = useAppPreferences();
+  const { preferences } = useAppPreferences();
   const { locale } = preferences;
   const [selectedAnswer, setSelectedAnswer] =
     useState<PracticeScreenAnswer | null>(null);
@@ -176,7 +177,9 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
     return (
       <ScrollView contentContainerStyle={styles.page}>
         <View style={styles.container}>
-          <Text style={styles.eyebrow}>EduMath Grade 1–3 · M4</Text>
+          <Text style={styles.eyebrow}>
+            {translateAppShell(locale, 'home.eyebrow')}
+          </Text>
           <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
           <View style={styles.card}>
             <Text style={styles.completedTitle}>
@@ -229,7 +232,9 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.eyebrow}>EduMath Grade 1–3 · M4</Text>
+        <Text style={styles.eyebrow}>
+            {translateAppShell(locale, 'home.eyebrow')}
+          </Text>
         <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
         <Text style={styles.subtitle}>
           {translate(locale, 'label.practicePlan', {
@@ -237,21 +242,6 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
             difficulty: practice.session.plan.difficulty,
           })}
         </Text>
-
-        <View style={styles.languageRow}>
-          <Text style={styles.languageLabel}>{translate(locale, 'label.language')}</Text>
-          {(['en', 'id', 'th'] as const).map((option) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: locale === option }}
-              key={option}
-              onPress={() => void setLocale(option)}
-              style={[styles.languageButton, locale === option && styles.languageButtonSelected]}
-            >
-              <Text style={styles.languageButtonText}>{option.toUpperCase()}</Text>
-            </Pressable>
-          ))}
-        </View>
 
         <View style={styles.sessionMeta}>
           <Text style={styles.progress}>
@@ -335,9 +325,6 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
           ) : null}
         </View>
 
-        <Text style={styles.seed}>
-          Session: {practice.session.id} · Seed: {practice.session.sessionSeed}
-        </Text>
       </View>
     </ScrollView>
   );
@@ -382,34 +369,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#526071',
     marginBottom: 14,
-  },
-  languageRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  languageLabel: {
-    color: '#526071',
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  languageButton: {
-    borderWidth: 1,
-    borderColor: '#C7D0DC',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  languageButtonSelected: {
-    borderColor: '#315EFB',
-    backgroundColor: '#EAF0FF',
-  },
-  languageButtonText: {
-    color: '#172033',
-    fontWeight: '700',
   },
   sessionMeta: {
     flexDirection: 'row',
@@ -514,11 +473,5 @@ const styles = StyleSheet.create({
     color: '#B44136',
     fontWeight: '700',
     textAlign: 'center',
-  },
-  seed: {
-    textAlign: 'center',
-    marginTop: 4,
-    color: '#738094',
-    fontSize: 12,
   },
 });

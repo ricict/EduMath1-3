@@ -112,13 +112,10 @@ Implemented question types:
 - `numeric-choice`;
 - `relation-choice`;
 - `fraction-choice`;
-- `time-choice`.
+- `time-choice`;
+- `shape-choice`.
 
-Implemented semantic representations include:
-
-- symbolic;
-- visual;
-- clock.
+Implemented semantic representations include symbolic, visual, number-line, clock, table, pictogram, and bar-chart surfaces.
 
 Localization remains responsible for child-facing English, Indonesian, and Thai wording.
 
@@ -166,23 +163,29 @@ Stored sessions are validated on restore against:
 
 One resumable session pointer supports interruption/resumption. Completed sessions remain stored by ID and are indexed locally so later milestones can consume historical outcomes without M4 calculating mastery.
 
-The current React Native practice screen remains deliberately narrow: it demonstrates the existing Grade 1 `addition_within_10` experience, but now all generation, answer evaluation, timing, interruption/resumption, and persistence flow through the M4 session contracts.
+The current React Native practice screen is grade-aware and consumes the registered M3/M6 child-facing question surfaces through M4 session contracts. Generation, answer evaluation, timing, interruption/resumption, and persistence remain outside React presentation logic.
 
 
 ## M3 representative generators
 
-The M3 completion lock originally contained six deterministic representative generators. M5 later added two narrowly scoped Grade 1 entry-path generators without changing the M3 architecture:
+The current registered generator suite contains **12 generators**. The M3 architecture remains incremental: these generators do not represent all 60 M2 canonical skills.
 
-- `number_recognition_10` — Grade 1, M5 entry-path root;
-- `addition_concept` — Grade 1, M5 prerequisite bridge using visual combine-group semantics;
-- `addition_within_10` — Grade 1, preserved M1 regression generator;
-- `subtraction_within_10` — Grade 1;
-- `compare_order_numbers_20` — Grade 1;
-- `multiplication_facts_2_5_10` — Grades 2–3;
-- `unit_fractions` — Grades 2–3, consumes canonical `allowedDenominators`;
-- `tell_time_hour_half_hour` — Grades 1–2, semantic clock representation.
+Current registered skills are:
 
-The current registered generator suite contains nine generators and exercises Grades 1, 2, and 3 with representative capabilities for number identification, addition, subtraction, number comparison, multiplication, fractions, time, and 2D-shape identification.
+- `number_recognition_10`;
+- `addition_concept`;
+- `tally_and_simple_tables`;
+- `pictograms_simple`;
+- `bar_charts_unit_scale`;
+- `addition_within_10`;
+- `subtraction_within_10`;
+- `compare_order_numbers_20`;
+- `identify_2d_shapes`;
+- `multiplication_facts_2_5_10`;
+- `unit_fractions`;
+- `tell_time_hour_half_hour`.
+
+Together they exercise Grades 1–3 and numeric, relation, fraction, time, shape, symbolic, visual, number-line, clock, table, pictogram, and bar-chart contracts while preserving explicit unsupported states for the remaining canonical skills.
 
 The locked M1 reference remains:
 
@@ -210,21 +213,30 @@ src/
     validation/                   # Generator-specific mathematical validators
     session/                      # M4 session lifecycle + persistence contracts
     types.ts                      # Shared semantic question/domain types
-  features/practice/              # Thin session-driven practice UI
-  infrastructure/storage/         # Expo SQLite device adapter
-  localization/                   # EN / ID / TH semantic rendering
+  features/
+    journey/                      # M7 home/progress learner journey
+    practice/                     # Thin session-driven practice UI
+    settings/                     # M7 device-local presentation preferences
+  infrastructure/storage/         # Expo SQLite session + preference adapters
+  localization/                   # EN / ID / TH semantic and shell rendering
 tests/
   curriculum/                     # M2 curriculum/graph tests
   question-engine/                # M1 regressions + M3 generator/registry tests
   session/                        # M4 lifecycle/persistence tests
+  visual/                         # M6 visual/interaction regressions
+  journey/                        # M7 journey/progress regressions
+  settings/                       # M7 preference persistence regressions
 docs/
   m2-curriculum-engine.md         # M2 rationale and boundaries
   m3-question-generation-engine.md # M3 architecture and completion lock
   m4-learning-session-offline-storage.md # M4 architecture and completion lock
+  m5-mastery-adaptive-learning.md # M5 mastery/adaptive completion lock
+  m6-visual-mathematics-pedagogy.md # M6 terminal lock
+  m7-learner-journey-app-shell.md # M7 architecture and completion state
 .github/workflows/ci.yml          # Automated quality gate
 ```
 
-Full visual pedagogy components are intentionally not implemented by M3. Visual and clock generators emit semantic representation data; later UI work can render those semantics without moving mathematical rules into React screens.
+M3 remains semantic and renderer-independent. M6 now consumes those semantics through a tested visual-model boundary, so React renders mathematical content without becoming a second generator.
 
 ## Run locally
 

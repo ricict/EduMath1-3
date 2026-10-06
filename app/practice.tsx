@@ -22,13 +22,17 @@ export default function PracticeRoute() {
             }),
           }}
         />
-        <Text style={styles.invalidTitle}>Choose a valid Grade 1–3 practice path.</Text>
+        <Text style={styles.invalidTitle}>
+          {translateAppShell(preferences.locale, 'practice.invalidGrade')}
+        </Text>
         <Pressable
           accessibilityRole="button"
           onPress={() => router.replace('/')}
           style={styles.homeButton}
         >
-          <Text style={styles.homeButtonText}>Back to home</Text>
+          <Text style={styles.homeButtonText}>
+            {translateAppShell(preferences.locale, 'practice.backHome')}
+          </Text>
         </Pressable>
       </View>
     );

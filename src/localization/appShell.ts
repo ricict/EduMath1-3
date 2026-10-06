@@ -4,6 +4,8 @@ export type AppShellMessageKey =
   | 'nav.progress'
   | 'nav.settings'
   | 'nav.practice'
+  | 'practice.invalidGrade'
+  | 'practice.backHome'
   | 'home.eyebrow'
   | 'home.subtitle'
   | 'home.viewProgress'
@@ -46,6 +48,8 @@ const messages: Readonly<
     'nav.progress': 'Progress',
     'nav.settings': 'Settings',
     'nav.practice': 'Grade {grade} Practice',
+    'practice.invalidGrade': 'Choose a valid Grade 1–3 practice path.',
+    'practice.backHome': 'Back to home',
     'home.eyebrow': 'EduMath Grade 1–3',
     'home.subtitle':
       'Choose your grade. EduMath will use your learning path to select the next available practice.',
@@ -92,6 +96,8 @@ const messages: Readonly<
     'nav.progress': 'Kemajuan',
     'nav.settings': 'Pengaturan',
     'nav.practice': 'Latihan Kelas {grade}',
+    'practice.invalidGrade': 'Pilih jalur latihan Kelas 1–3 yang valid.',
+    'practice.backHome': 'Kembali ke beranda',
     'home.eyebrow': 'EduMath Kelas 1–3',
     'home.subtitle':
       'Pilih kelas. EduMath akan menggunakan jalur belajarmu untuk memilih latihan berikutnya yang tersedia.',
@@ -138,6 +144,8 @@ const messages: Readonly<
     'nav.progress': 'ความก้าวหน้า',
     'nav.settings': 'การตั้งค่า',
     'nav.practice': 'แบบฝึกหัดชั้น {grade}',
+    'practice.invalidGrade': 'เลือกระดับชั้น 1–3 ที่ถูกต้องสำหรับแบบฝึกหัด',
+    'practice.backHome': 'กลับหน้าแรก',
     'home.eyebrow': 'EduMath ชั้น 1–3',
     'home.subtitle':
       'เลือกระดับชั้น EduMath จะใช้เส้นทางการเรียนรู้ของคุณเพื่อเลือกแบบฝึกหัดถัดไปที่พร้อมใช้งาน',
