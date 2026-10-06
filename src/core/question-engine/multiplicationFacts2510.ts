@@ -38,8 +38,8 @@ export function generateMultiplicationFacts2510(
 
   const random = createSeededRandom(context.seed);
   const factFamilies = FACT_FAMILIES_BY_DIFFICULTY[context.difficulty];
-  const factFamily = factFamilies[random.integer(0, factFamilies.length - 1)];
   const multiplier = random.integer(0, 10);
+  const factFamily = factFamilies[random.integer(0, factFamilies.length - 1)];
   const familyFirst = random.next() < 0.5;
   const a = familyFirst ? factFamily : multiplier;
   const b = familyFirst ? multiplier : factFamily;
