@@ -163,6 +163,7 @@ export interface UnitFractionQuestion extends QuestionBase {
     numerator: 1;
     denominator: number;
   };
+  answerOptions: readonly FractionAnswer[];
   expectedAnswer: FractionAnswer;
 }
 

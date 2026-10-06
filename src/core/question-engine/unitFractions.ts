@@ -1,12 +1,13 @@
 import { canonicalSkills } from '../curriculum/canonicalSkills';
 import type {
   Difficulty,
+  FractionAnswer,
   QuestionGenerationContext,
   UnitFractionQuestion,
 } from '../types';
 import { validateUnitFractionQuestion } from '../validation/unitFractions';
 import type { QuestionGenerator } from './generator';
-import { createSeededRandom } from './seededRandom';
+import { createSeededRandom, type SeededRandom } from './seededRandom';
 
 const DENOMINATORS_BY_DIFFICULTY: Readonly<Record<Difficulty, readonly number[]>> = {
   1: [2, 4],
@@ -25,6 +26,44 @@ function getCanonicalDenominators(): readonly number[] {
   }
 
   return denominators;
+}
+
+function shuffleDenominators(
+  values: readonly number[],
+  random: SeededRandom,
+): number[] {
+  const shuffled = [...values];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = random.integer(0, index);
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+function createFractionAnswerOptions(
+  permittedDenominators: readonly number[],
+  correctDenominator: number,
+  random: SeededRandom,
+): readonly FractionAnswer[] {
+  const alternatives = shuffleDenominators(
+    permittedDenominators.filter(
+      (denominator) => denominator !== correctDenominator,
+    ),
+    random,
+  ).slice(0, 3);
+
+  return shuffleDenominators(
+    [correctDenominator, ...alternatives],
+    random,
+  ).map((denominator) => ({
+    numerator: 1,
+    denominator,
+  }));
 }
 
 export function generateUnitFraction(
@@ -60,6 +99,11 @@ export function generateUnitFraction(
     permittedDenominators[
       random.integer(0, permittedDenominators.length - 1)
     ];
+  const answerOptions = createFractionAnswerOptions(
+    permittedDenominators,
+    denominator,
+    random,
+  );
 
   return {
     id: `unit_fractions:${context.grade}:${context.seed}:1:${denominator}`,
@@ -78,6 +122,7 @@ export function generateUnitFraction(
       numerator: 1,
       denominator,
     },
+    answerOptions,
     expectedAnswer: {
       numerator: 1,
       denominator,

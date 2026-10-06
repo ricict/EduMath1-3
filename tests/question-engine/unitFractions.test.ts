@@ -80,6 +80,24 @@ test('unit fraction questions preserve canonical mathematical invariants across 
         numerator: 1,
         denominator: question.data.denominator,
       });
+      assert.ok(question.answerOptions.length >= 2);
+      assert.ok(question.answerOptions.length <= 4);
+      assert.equal(
+        new Set(
+          question.answerOptions.map(
+            (option) => `${option.numerator}/${option.denominator}`,
+          ),
+        ).size,
+        question.answerOptions.length,
+      );
+      assert.equal(
+        question.answerOptions.filter(
+          (option) =>
+            option.numerator === question.expectedAnswer.numerator &&
+            option.denominator === question.expectedAnswer.denominator,
+        ).length,
+        1,
+      );
     }
   }
 });
@@ -97,6 +115,13 @@ test('unit fraction difficulty restricts denominator complexity', () => {
       assert.ok(
         (allowed[difficulty] as readonly number[]).includes(
           question.data.denominator,
+        ),
+      );
+      assert.ok(
+        question.answerOptions.every((option) =>
+          (allowed[difficulty] as readonly number[]).includes(
+            option.denominator,
+          ),
         ),
       );
     }
@@ -125,6 +150,23 @@ test('unit fraction generator rejects unsupported grade and representation reque
         representation: 'symbolic',
       }),
     /does not support representation symbolic/,
+  );
+});
+
+test('unit fraction answer options are deterministic semantic data rather than UI-generated distractors', () => {
+  const first = generate(20261006, 2, 3);
+  const second = generate(20261006, 2, 3);
+
+  assert.deepEqual(first.answerOptions, second.answerOptions);
+  assert.ok(first.answerOptions.length >= 2);
+  assert.ok(first.answerOptions.length <= 4);
+  assert.equal(
+    first.answerOptions.some(
+      (option) =>
+        option.numerator === first.expectedAnswer.numerator &&
+        option.denominator === first.expectedAnswer.denominator,
+    ),
+    true,
   );
 });
 

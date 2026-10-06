@@ -83,6 +83,10 @@ test('future visual families are not silently treated as supported', () => {
       numerator: 1,
       denominator: 2,
     },
+    answerOptions: [
+      { numerator: 1, denominator: 2 },
+      { numerator: 1, denominator: 4 },
+    ],
     expectedAnswer: {
       numerator: 1,
       denominator: 2,

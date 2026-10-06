@@ -51,6 +51,44 @@ export function validateUnitFractionQuestion(
   }
 
   if (
+    question.answerOptions.length < 2 ||
+    question.answerOptions.length > 4
+  ) {
+    errors.push('Unit-fraction answer options must contain between two and four choices.');
+  }
+
+  const optionKeys = question.answerOptions.map(
+    (option) => `${option.numerator}/${option.denominator}`,
+  );
+  if (new Set(optionKeys).size !== optionKeys.length) {
+    errors.push('Unit-fraction answer options must be unique.');
+  }
+
+  for (const option of question.answerOptions) {
+    if (
+      option.numerator !== 1 ||
+      !canonicalDenominators.includes(option.denominator) ||
+      !DENOMINATORS_BY_DIFFICULTY[question.difficulty].includes(
+        option.denominator,
+      )
+    ) {
+      errors.push(
+        'Unit-fraction answer options must use canonical denominators enabled at the current difficulty.',
+      );
+      break;
+    }
+  }
+
+  const correctOptionCount = question.answerOptions.filter(
+    (option) =>
+      option.numerator === 1 &&
+      option.denominator === denominator,
+  ).length;
+  if (correctOptionCount !== 1) {
+    errors.push('Unit-fraction answer options must contain the correct answer exactly once.');
+  }
+
+  if (
     typeof question.expectedAnswer !== 'object' ||
     question.expectedAnswer === null ||
     !('numerator' in question.expectedAnswer) ||
