@@ -24,6 +24,10 @@ test('registry dispatch preserves the M1 deterministic reference case', () => {
     seed: 20261006,
   });
 
+  if (question.data.operation !== 'addition') {
+    throw new Error('Expected the addition_within_10 generator to return addition semantics.');
+  }
+
   assert.equal(question.data.a, 4);
   assert.equal(question.data.b, 1);
   assert.equal(question.expectedAnswer, 5);
