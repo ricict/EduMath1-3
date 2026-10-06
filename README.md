@@ -113,4 +113,6 @@ M1 does not claim official alignment with Cambridge, Indonesia's national curric
 
 ## Current milestone status
 
-M1 implementation is present in the repository. Completion is declared only after the repository state and automated quality checks are verified against the M1 Definition of Done.
+**M1 — Foundation Bootstrap: COMPLETE.**
+
+The repository structure and automated quality gate were verified on 2026-10-06. TypeScript validation, Expo linting, and all M1 unit tests passed. Future milestones should preserve these boundaries and keep the quality gate green.
