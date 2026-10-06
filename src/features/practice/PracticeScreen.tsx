@@ -1,43 +1,124 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { generateAdditionWithin10 } from '@/core/question-engine/additionWithin10';
-import { validateQuestion } from '@/core/validation/validateQuestion';
 import { renderQuestionPrompt, translate, type Locale } from '@/localization';
 
+import { usePracticeSession } from './usePracticeSession';
+
 const ANSWERS = Array.from({ length: 11 }, (_, value) => value);
-const INITIAL_SEED = 20261006;
+
+function formatDuration(durationMs: number): string {
+  const totalSeconds = Math.max(0, Math.floor(durationMs / 1_000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
 
 export function PracticeScreen() {
   const [locale, setLocale] = useState<Locale>('en');
-  const [seed, setSeed] = useState(INITIAL_SEED);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
+  const [lastResult, setLastResult] = useState<boolean | null>(null);
 
-  const question = useMemo(
-    () =>
-      generateAdditionWithin10({
-        grade: 1,
-        skillId: 'addition_within_10',
-        difficulty: 3,
-        seed,
-      }),
-    [seed],
-  );
+  const practice = usePracticeSession();
 
-  const validation = validateQuestion(question);
-  const isCorrect = selectedAnswer === question.expectedAnswer;
-
-  const nextQuestion = () => {
-    setSeed((current) => current + 1);
+  const resetAnswerUi = () => {
     setSelectedAnswer(null);
     setChecked(false);
+    setLastResult(null);
   };
+
+  const checkAnswer = async () => {
+    if (selectedAnswer === null) {
+      return;
+    }
+
+    const correct = await practice.submitNumericAnswer(selectedAnswer);
+    setChecked(true);
+    setLastResult(correct);
+  };
+
+  const nextQuestion = async () => {
+    await practice.nextQuestion();
+    resetAnswerUi();
+  };
+
+  const finishSession = async () => {
+    await practice.finishSession();
+    resetAnswerUi();
+  };
+
+  const startNewSession = async () => {
+    await practice.startNewSession();
+    resetAnswerUi();
+  };
+
+  if (practice.loading) {
+    return (
+      <View style={styles.statePage}>
+        <Text style={styles.stateText}>{translate(locale, 'status.loading')}</Text>
+      </View>
+    );
+  }
+
+  if (practice.error && !practice.session) {
+    return (
+      <View style={styles.statePage}>
+        <Text style={styles.validationError}>
+          {translate(locale, 'status.persistenceError')}
+        </Text>
+      </View>
+    );
+  }
+
+  if (practice.session?.status === 'completed') {
+    return (
+      <ScrollView contentContainerStyle={styles.page}>
+        <View style={styles.container}>
+          <Text style={styles.eyebrow}>EduMath Grade 1–3 · M4</Text>
+          <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
+          <View style={styles.card}>
+            <Text style={styles.completedTitle}>
+              {translate(locale, 'feedback.sessionComplete')}
+            </Text>
+            <Text style={styles.progress}>
+              {translate(locale, 'label.activePractice', {
+                elapsed: formatDuration(practice.activeDurationMs),
+                target: formatDuration(practice.session.plan.targetDurationMs),
+              })}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void startNewSession()}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>
+                {translate(locale, 'action.startNew')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  if (!practice.session || !practice.question) {
+    return (
+      <View style={styles.statePage}>
+        <Text style={styles.validationError}>
+          {translate(locale, 'status.persistenceError')}
+        </Text>
+      </View>
+    );
+  }
+
+  const canFinish = checked && lastResult === true;
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.container}>
-        <Text style={styles.eyebrow}>EduMath Grade 1–3 · M1</Text>
+        <Text style={styles.eyebrow}>EduMath Grade 1–3 · M4</Text>
         <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
         <Text style={styles.subtitle}>{translate(locale, 'app.subtitle')}</Text>
 
@@ -56,8 +137,24 @@ export function PracticeScreen() {
           ))}
         </View>
 
+        <View style={styles.sessionMeta}>
+          <Text style={styles.progress}>
+            {translate(locale, 'label.questionCount', {
+              count: practice.session.attempts.length,
+            })}
+          </Text>
+          <Text style={styles.progress}>
+            {translate(locale, 'label.activePractice', {
+              elapsed: formatDuration(practice.activeDurationMs),
+              target: formatDuration(practice.session.plan.targetDurationMs),
+            })}
+          </Text>
+        </View>
+
         <View style={styles.card}>
-          <Text style={styles.question}>{renderQuestionPrompt(question, locale)}</Text>
+          <Text style={styles.question}>
+            {renderQuestionPrompt(practice.question, locale)}
+          </Text>
 
           <View style={styles.answerGrid}>
             {ANSWERS.map((answer) => (
@@ -68,6 +165,7 @@ export function PracticeScreen() {
                 onPress={() => {
                   setSelectedAnswer(answer);
                   setChecked(false);
+                  setLastResult(null);
                 }}
                 style={[styles.answerButton, selectedAnswer === answer && styles.answerButtonSelected]}
               >
@@ -76,35 +174,63 @@ export function PracticeScreen() {
             ))}
           </View>
 
-          {checked && selectedAnswer !== null ? (
-            <Text style={[styles.feedback, isCorrect ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
-              {translate(locale, isCorrect ? 'feedback.correct' : 'feedback.incorrect')}
+          {checked && selectedAnswer !== null && lastResult !== null ? (
+            <Text style={[styles.feedback, lastResult ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
+              {translate(locale, lastResult ? 'feedback.correct' : 'feedback.incorrect')}
             </Text>
           ) : null}
 
-          {validation.valid ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={selectedAnswer === null}
+            onPress={() => void (canFinish ? nextQuestion() : checkAnswer())}
+            style={[styles.primaryButton, selectedAnswer === null && styles.primaryButtonDisabled]}
+          >
+            <Text style={styles.primaryButtonText}>
+              {translate(locale, canFinish ? 'action.next' : 'action.check')}
+            </Text>
+          </Pressable>
+
+          {canFinish ? (
             <Pressable
               accessibilityRole="button"
-              disabled={selectedAnswer === null}
-              onPress={isCorrect && checked ? nextQuestion : () => setChecked(true)}
-              style={[styles.primaryButton, selectedAnswer === null && styles.primaryButtonDisabled]}
+              onPress={() => void finishSession()}
+              style={styles.secondaryButton}
             >
-              <Text style={styles.primaryButtonText}>
-                {translate(locale, isCorrect && checked ? 'action.next' : 'action.check')}
+              <Text style={styles.secondaryButtonText}>
+                {translate(locale, 'action.finish')}
               </Text>
             </Pressable>
-          ) : (
-            <Text style={styles.validationError}>Question validation failed.</Text>
-          )}
+          ) : null}
+
+          {practice.error ? (
+            <Text style={styles.validationError}>
+              {translate(locale, 'status.persistenceError')}
+            </Text>
+          ) : null}
         </View>
 
-        <Text style={styles.seed}>Seed: {seed}</Text>
+        <Text style={styles.seed}>
+          Session: {practice.session.id} · Seed: {practice.session.sessionSeed}
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  statePage: {
+    flex: 1,
+    backgroundColor: '#F4F7FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  stateText: {
+    color: '#526071',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   page: {
     flexGrow: 1,
     backgroundColor: '#F4F7FB',
@@ -160,6 +286,18 @@ const styles = StyleSheet.create({
     color: '#172033',
     fontWeight: '700',
   },
+  sessionMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 4,
+  },
+  progress: {
+    color: '#526071',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -170,6 +308,12 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
+  },
+  completedTitle: {
+    color: '#157A45',
+    fontSize: 26,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   question: {
     fontSize: 36,
@@ -225,6 +369,18 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: '#C7D0DC',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#526071',
     fontSize: 16,
     fontWeight: '800',
   },

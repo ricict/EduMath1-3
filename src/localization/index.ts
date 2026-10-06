@@ -13,9 +13,16 @@ type MessageKey =
   | 'question.readClock'
   | 'action.check'
   | 'action.next'
+  | 'action.finish'
+  | 'action.startNew'
   | 'feedback.correct'
   | 'feedback.incorrect'
-  | 'label.language';
+  | 'feedback.sessionComplete'
+  | 'status.loading'
+  | 'status.persistenceError'
+  | 'label.language'
+  | 'label.questionCount'
+  | 'label.activePractice';
 
 const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> = {
   en: {
@@ -30,9 +37,16 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.readClock': 'What time does the clock show?',
     'action.check': 'Check answer',
     'action.next': 'Next question',
+    'action.finish': 'Finish session',
+    'action.startNew': 'Start new session',
     'feedback.correct': 'Correct!',
     'feedback.incorrect': 'Try again.',
+    'feedback.sessionComplete': 'Practice session complete!',
+    'status.loading': 'Restoring your practice session…',
+    'status.persistenceError': 'Local practice storage is unavailable.',
     'label.language': 'Language',
+    'label.questionCount': 'Question {count}',
+    'label.activePractice': 'Active practice {elapsed} / {target}',
   },
   id: {
     'app.title': '10 Menit Matematika',
@@ -46,9 +60,16 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.readClock': 'Jam menunjukkan pukul berapa?',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
+    'action.finish': 'Selesaikan sesi',
+    'action.startNew': 'Mulai sesi baru',
     'feedback.correct': 'Benar!',
     'feedback.incorrect': 'Coba lagi.',
+    'feedback.sessionComplete': 'Sesi latihan selesai!',
+    'status.loading': 'Memulihkan sesi latihan…',
+    'status.persistenceError': 'Penyimpanan latihan lokal tidak tersedia.',
     'label.language': 'Bahasa',
+    'label.questionCount': 'Soal {count}',
+    'label.activePractice': 'Latihan aktif {elapsed} / {target}',
   },
   th: {
     'app.title': 'คณิตศาสตร์ 10 นาที',
@@ -62,9 +83,16 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.readClock': 'นาฬิกาแสดงเวลากี่โมง?',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
+    'action.finish': 'จบเซสชัน',
+    'action.startNew': 'เริ่มเซสชันใหม่',
     'feedback.correct': 'ถูกต้อง!',
     'feedback.incorrect': 'ลองอีกครั้ง',
+    'feedback.sessionComplete': 'เซสชันฝึกเสร็จแล้ว!',
+    'status.loading': 'กำลังกู้คืนเซสชันฝึก…',
+    'status.persistenceError': 'ไม่สามารถใช้พื้นที่จัดเก็บการฝึกในเครื่องได้',
     'label.language': 'ภาษา',
+    'label.questionCount': 'ข้อ {count}',
+    'label.activePractice': 'เวลาฝึกจริง {elapsed} / {target}',
   },
 };
 
