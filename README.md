@@ -10,8 +10,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M2 — Curriculum & Canonical Skill Engine: COMPLETE**
 - **M3 — Question Generation Engine: COMPLETE**
 - **M4 — Learning Session & Offline Storage: COMPLETE**
+- **M5 — Mastery & Adaptive Learning Engine: IN PROGRESS**
 
-M1 through M4 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence while preserving the original M1 Grade 1 addition regression contract.
+M1 through M4 were completed on 2026-10-06. M5 is now in progress. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 now derives explainable mastery state and curriculum-constrained practice recommendations from validated completed-session history while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 
@@ -323,4 +324,43 @@ M4 is complete because:
 - no accounts, child PII, tracking, remote storage, mastery scoring, or adaptive sequencing were introduced;
 - all M1–M3 regression contracts remain green.
 
-See `docs/m2-curriculum-engine.md` for M2, `docs/m3-question-generation-engine.md` for M3, and `docs/m4-learning-session-offline-storage.md` for the M4 design and completion lock.
+## M5 current increment
+
+M5 is **IN PROGRESS**.
+
+The first M5 increment establishes a deterministic, explainable mastery/adaptation domain under `src/core/adaptive/`.
+
+Current engineering policy:
+
+- mastery evidence comes only from validated completed M4 sessions;
+- one completed question contributes one evidence unit;
+- first-submission correctness is the independent-success signal;
+- retries remain visible as struggle evidence but cannot create extra success units;
+- mastery is tracked per canonical skill and difficulty;
+- each difficulty needs at least five evidence units;
+- a difficulty is mastered when at least four of its most recent five questions were correct on the first submission;
+- a canonical skill is mastered only after difficulties 1, 2, and 3 are all mastered;
+- all thresholds are engineering policy, not externally validated pedagogical cutoffs;
+- prerequisite eligibility uses the full M2 transitive prerequisite closure;
+- generator availability is checked separately from curriculum eligibility;
+- eligible in-progress practice is preferred over unseen practice;
+- remaining ties follow M2 deterministic topological order.
+
+No derived mastery cache is persisted yet. M5 rebuilds the learner model from `LocalSessionStore.listCompleted()`, keeping M4 schema version 1 unchanged.
+
+A real integration blocker is now explicit: the six representative M3 generators are attached to skills with prerequisites, while currently eligible Grade 1 root skills have no generators. A new learner therefore receives an explicit no-practicable-skill result rather than a silent prerequisite bypass or unrelated fallback.
+
+M5 implementation checkpoint:
+
+```text
+Commit     : 972e81db4ce7e8660be1eb9c4911691927841314
+Run number : 29
+Run ID     : 37470514354
+Status     : completed
+Conclusion : success
+Tests      : 92 passed / 0 failed
+```
+
+Practice UI integration remains intentionally deferred until the mastery/adaptation contract and the generator/prerequisite entry-path blocker are resolved.
+
+See `docs/m2-curriculum-engine.md` for M2, `docs/m3-question-generation-engine.md` for M3, `docs/m4-learning-session-offline-storage.md` for the M4 completion lock, and `docs/m5-mastery-adaptive-learning.md` for the current M5 design.
