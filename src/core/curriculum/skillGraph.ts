@@ -12,7 +12,8 @@ export type SkillGraphIssueCode =
   | 'INVALID_GRADES'
   | 'PREREQUISITE_AFTER_SKILL'
   | 'INVALID_DOMAIN_TOPIC'
-  | 'MISSING_REPRESENTATION';
+  | 'MISSING_REPRESENTATION'
+  | 'INVALID_CONSTRAINTS';
 
 export interface SkillGraphIssue {
   code: SkillGraphIssueCode;
@@ -73,6 +74,49 @@ export function validateSkillGraph(
         skillId: skill.id,
         message: `Skill ${skill.id} must support at least one representation.`,
       });
+    }
+
+    const ranges = [
+      ['valueRange', skill.constraints?.valueRange],
+      ['resultRange', skill.constraints?.resultRange],
+    ] as const;
+
+    for (const [rangeName, range] of ranges) {
+      if (
+        range &&
+        (!Number.isFinite(range.min) || !Number.isFinite(range.max) || range.min > range.max)
+      ) {
+        issues.push({
+          code: 'INVALID_CONSTRAINTS',
+          skillId: skill.id,
+          message: `Skill ${skill.id} has an invalid ${rangeName}.`,
+        });
+      }
+    }
+
+    const denominators = skill.constraints?.allowedDenominators;
+    if (denominators) {
+      const uniqueDenominators = new Set(denominators);
+      const sortedDenominators = [...denominators].sort((a, b) => a - b);
+      const denominatorsAreSorted = sortedDenominators.every(
+        (denominator, index) => denominator === denominators[index],
+      );
+      const denominatorsAreValid = denominators.every(
+        (denominator) => Number.isInteger(denominator) && denominator >= 2,
+      );
+
+      if (
+        denominators.length === 0 ||
+        uniqueDenominators.size !== denominators.length ||
+        !denominatorsAreSorted ||
+        !denominatorsAreValid
+      ) {
+        issues.push({
+          code: 'INVALID_CONSTRAINTS',
+          skillId: skill.id,
+          message: `Skill ${skill.id} has invalid allowed denominators.`,
+        });
+      }
     }
 
     const prerequisiteSet = new Set<string>();

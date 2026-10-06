@@ -141,7 +141,8 @@ This catalog is deliberately a canonical mathematical ontology rather than a cop
 7. grade metadata that is empty, duplicated, or unsorted;
 8. prerequisites whose first applicable grade is later than the dependent skill;
 9. invalid domain/topic pairs;
-10. missing representations.
+10. missing representations;
+11. malformed numeric ranges or allowed-denominator constraints.
 
 It also provides:
 
@@ -215,7 +216,7 @@ The suite reported:
 - fail: 0;
 - skipped: 0.
 
-The 16 tests consist of 11 M2 curriculum/graph tests plus 5 M1 regression tests.
+That implementation run contained 11 M2 curriculum/graph tests plus 5 M1 regression tests. The final M2 suite adds explicit malformed-constraint coverage, bringing the current total to 17 tests.
 
 ## Deferred items
 

@@ -141,3 +141,21 @@ test('validator rejects malformed grade metadata and empty representations', () 
   assert.ok(result.issues.some((issue) => issue.code === 'INVALID_GRADES'));
   assert.ok(result.issues.some((issue) => issue.code === 'MISSING_REPRESENTATION'));
 });
+
+test('validator rejects malformed numeric constraints', () => {
+  const invalidRange = cloneSkill(canonicalSkills.number_recognition_10, {
+    constraints: { valueRange: { min: 10, max: 0 } },
+  });
+  const invalidDenominators = cloneSkill(canonicalSkills.number_recognition_10, {
+    constraints: { allowedDenominators: [4, 2, 2, 1] },
+  });
+
+  const rangeResult = validateSkillGraph([invalidRange]);
+  const denominatorResult = validateSkillGraph([invalidDenominators]);
+
+  assert.equal(rangeResult.valid, false);
+  assert.ok(rangeResult.issues.some((issue) => issue.code === 'INVALID_CONSTRAINTS'));
+
+  assert.equal(denominatorResult.valid, false);
+  assert.ok(denominatorResult.issues.some((issue) => issue.code === 'INVALID_CONSTRAINTS'));
+});

@@ -100,7 +100,8 @@ The curriculum engine rejects or detects:
 - malformed grade applicability metadata;
 - prerequisites introduced after a dependent skill;
 - invalid domain/topic combinations;
-- skills with no declared representation.
+- skills with no declared representation;
+- malformed numeric ranges or allowed-denominator constraints.
 
 The canonical catalog is validated automatically in the test suite.
 
@@ -163,7 +164,7 @@ This runs:
 2. `expo lint`
 3. deterministic/unit tests via `tsx --test`
 
-At M2 implementation verification, the suite contains 16 tests: 11 curriculum/skill-graph tests plus the 5 existing M1 regression tests.
+At M2 implementation verification, the suite contains 17 tests: 12 curriculum/skill-graph tests plus the 5 existing M1 regression tests.
 
 ## Curriculum and pedagogy claims
 
