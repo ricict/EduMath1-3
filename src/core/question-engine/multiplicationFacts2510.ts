@@ -6,6 +6,7 @@ import type {
 } from '../types';
 import { validateMultiplicationFacts2510 } from '../validation/multiplicationFacts2510';
 import type { QuestionGenerator } from './generator';
+import { createNumericAnswerOptions } from './numericAnswerOptions';
 import { createSeededRandom } from './seededRandom';
 
 const FACT_FAMILIES_BY_DIFFICULTY: Readonly<
@@ -43,6 +44,14 @@ export function generateMultiplicationFacts2510(
   const familyFirst = random.next() < 0.5;
   const a = familyFirst ? factFamily : multiplier;
   const b = familyFirst ? multiplier : factFamily;
+  const expectedAnswer = a * b;
+  const answerOptions = createNumericAnswerOptions(
+    expectedAnswer,
+    Array.from({ length: 11 }, (_, candidateMultiplier) =>
+      candidateMultiplier * factFamily,
+    ),
+    random,
+  );
 
   return {
     id: `multiplication_facts_2_5_10:${context.grade}:${context.seed}:${a}:${b}`,
@@ -60,7 +69,8 @@ export function generateMultiplicationFacts2510(
       b,
       factFamily,
     },
-    expectedAnswer: a * b,
+    answerOptions,
+    expectedAnswer,
   };
 }
 

@@ -5,6 +5,7 @@ import type {
 } from '../types';
 import { validateAdditionConcept } from '../validation/additionConcept';
 import type { QuestionGenerator } from './generator';
+import { createNumericAnswerOptions, integerRangeInclusive } from './numericAnswerOptions';
 import { createSeededRandom } from './seededRandom';
 
 const MAX_TOTAL_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -30,9 +31,15 @@ export function generateAdditionConcept(
   }
 
   const random = createSeededRandom(context.seed);
-  const total = random.integer(1, MAX_TOTAL_BY_DIFFICULTY[context.difficulty]);
+  const maxTotal = MAX_TOTAL_BY_DIFFICULTY[context.difficulty];
+  const total = random.integer(1, maxTotal);
   const a = random.integer(0, total);
   const b = total - a;
+  const answerOptions = createNumericAnswerOptions(
+    total,
+    integerRangeInclusive(0, maxTotal),
+    random,
+  );
 
   return {
     id: `addition_concept:${context.seed}:${a}:${b}`,
@@ -49,6 +56,7 @@ export function generateAdditionConcept(
       a,
       b,
     },
+    answerOptions,
     expectedAnswer: total,
   };
 }

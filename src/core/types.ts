@@ -86,6 +86,7 @@ export interface NumberRecognitionQuestion extends QuestionBase {
     operation: 'number-recognition';
     target: number;
   };
+  answerOptions: readonly number[];
   expectedAnswer: number;
 }
 
@@ -98,6 +99,7 @@ export interface AdditionConceptQuestion extends QuestionBase {
     a: number;
     b: number;
   };
+  answerOptions: readonly number[];
   expectedAnswer: number;
 }
 
@@ -110,6 +112,7 @@ export interface AddSubtractQuestion extends QuestionBase {
     a: number;
     b: number;
   };
+  answerOptions: readonly number[];
   expectedAnswer: number;
 }
 
@@ -125,6 +128,7 @@ export interface MultiplicationQuestion extends QuestionBase {
     b: number;
     factFamily: MultiplicationFactFamily;
   };
+  answerOptions: readonly number[];
   expectedAnswer: number;
 }
 

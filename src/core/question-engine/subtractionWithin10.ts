@@ -1,6 +1,7 @@
 import type { ArithmeticQuestion, Difficulty, QuestionGenerationContext } from '../types';
 import { validateSubtractionWithin10 } from '../validation/subtractionWithin10';
 import type { QuestionGenerator } from './generator';
+import { createNumericAnswerOptions, integerRangeInclusive } from './numericAnswerOptions';
 import { createSeededRandom } from './seededRandom';
 
 const MAX_MINUEND_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -29,6 +30,12 @@ export function generateSubtractionWithin10(
   const maxMinuend = MAX_MINUEND_BY_DIFFICULTY[context.difficulty];
   const a = random.integer(1, maxMinuend);
   const b = random.integer(0, a);
+  const expectedAnswer = a - b;
+  const answerOptions = createNumericAnswerOptions(
+    expectedAnswer,
+    integerRangeInclusive(0, maxMinuend),
+    random,
+  );
 
   return {
     id: `subtraction_within_10:${context.seed}:${a}:${b}`,
@@ -45,7 +52,8 @@ export function generateSubtractionWithin10(
       a,
       b,
     },
-    expectedAnswer: a - b,
+    answerOptions,
+    expectedAnswer,
   };
 }
 

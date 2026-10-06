@@ -1,8 +1,10 @@
 import type {
   Difficulty,
   MultiplicationFactFamily,
+  MultiplicationQuestion,
   Question,
 } from '../types';
+import { validateNumericAnswerOptions } from './numericAnswerOptions';
 import type { QuestionValidationResult } from './types';
 
 const FACT_FAMILIES_BY_DIFFICULTY: Readonly<
@@ -29,7 +31,8 @@ export function validateMultiplicationFacts2510(
     return { valid: false, errors };
   }
 
-  const { a, b, factFamily } = question.data;
+  const multiplicationQuestion = question as MultiplicationQuestion;
+  const { a, b, factFamily } = multiplicationQuestion.data;
   const allowedFamilies = FACT_FAMILIES_BY_DIFFICULTY[question.difficulty];
 
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
@@ -44,16 +47,29 @@ export function validateMultiplicationFacts2510(
   if (a !== factFamily && b !== factFamily) {
     errors.push('One factor must match the declared 2, 5, or 10 fact family.');
   }
-  if (typeof question.expectedAnswer !== 'number') {
+  if (typeof multiplicationQuestion.expectedAnswer !== 'number') {
     errors.push('Multiplication expected answer must be numeric.');
   } else {
-    if (question.expectedAnswer !== a * b) {
+    if (multiplicationQuestion.expectedAnswer !== a * b) {
       errors.push('Expected answer must equal a × b.');
     }
-    if (question.expectedAnswer < 0 || question.expectedAnswer > 100) {
+    if (
+      multiplicationQuestion.expectedAnswer < 0 ||
+      multiplicationQuestion.expectedAnswer > 100
+    ) {
       errors.push('Multiplication result must remain within the canonical 0–100 range.');
     }
   }
+  errors.push(
+    ...validateNumericAnswerOptions(
+      multiplicationQuestion.answerOptions,
+      multiplicationQuestion.expectedAnswer,
+      (value) =>
+        value >= 0 &&
+        value <= factFamily * 10 &&
+        value % factFamily === 0,
+    ),
+  );
 
   return {
     valid: errors.length === 0,

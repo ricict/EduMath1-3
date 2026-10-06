@@ -1,5 +1,12 @@
-import type { Question } from '../types';
+import type { AddSubtractQuestion, Difficulty, Question } from '../types';
+import { validateNumericAnswerOptions } from './numericAnswerOptions';
 import type { QuestionValidationResult } from './types';
+
+const MAX_SUM_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
+  1: 5,
+  2: 7,
+  3: 10,
+};
 
 export function validateAdditionWithin10(question: Question): QuestionValidationResult {
   const errors: string[] = [];
@@ -15,7 +22,8 @@ export function validateAdditionWithin10(question: Question): QuestionValidation
     return { valid: false, errors };
   }
 
-  const { a, b } = question.data;
+  const additionQuestion = question as AddSubtractQuestion;
+  const { a, b } = additionQuestion.data;
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     errors.push('Operands must be integers.');
   }
@@ -25,9 +33,18 @@ export function validateAdditionWithin10(question: Question): QuestionValidation
   if (a + b > 10) {
     errors.push('The result must not exceed 10.');
   }
-  if (question.expectedAnswer !== a + b) {
+  if (additionQuestion.expectedAnswer !== a + b) {
     errors.push('Expected answer must equal a + b.');
   }
+  errors.push(
+    ...validateNumericAnswerOptions(
+      additionQuestion.answerOptions,
+      additionQuestion.expectedAnswer,
+      (value) =>
+        value >= 0 &&
+        value <= MAX_SUM_BY_DIFFICULTY[question.difficulty],
+    ),
+  );
 
   return {
     valid: errors.length === 0,

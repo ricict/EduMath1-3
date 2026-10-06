@@ -1,6 +1,7 @@
 import type { ArithmeticQuestion, Difficulty, QuestionGenerationContext } from '../types';
 import { validateAdditionWithin10 } from '../validation/additionWithin10';
 import type { QuestionGenerator } from './generator';
+import { createNumericAnswerOptions, integerRangeInclusive } from './numericAnswerOptions';
 import { createSeededRandom } from './seededRandom';
 
 const MAX_SUM_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -30,6 +31,11 @@ export function generateAdditionWithin10(
   const sum = random.integer(1, maxSum);
   const a = random.integer(0, sum);
   const b = sum - a;
+  const answerOptions = createNumericAnswerOptions(
+    sum,
+    integerRangeInclusive(0, maxSum),
+    random,
+  );
 
   return {
     id: `addition_within_10:${context.seed}:${a}:${b}`,
@@ -46,6 +52,7 @@ export function generateAdditionWithin10(
       a,
       b,
     },
+    answerOptions,
     expectedAnswer: sum,
   };
 }

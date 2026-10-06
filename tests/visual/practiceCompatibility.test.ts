@@ -46,6 +46,7 @@ test('numeric visual and symbolic questions share the same answer interaction bo
         operation: 'number-recognition',
         target: 4,
       },
+      answerOptions: [1, 2, 4, 5],
       expectedAnswer: 4,
     },
     {
@@ -63,6 +64,7 @@ test('numeric visual and symbolic questions share the same answer interaction bo
         a: 2,
         b: 3,
       },
+      answerOptions: [2, 3, 4, 5],
       expectedAnswer: 5,
     },
   ];

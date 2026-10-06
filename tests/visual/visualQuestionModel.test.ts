@@ -64,6 +64,7 @@ test('symbolic questions remain outside the first M6 visual slice', () => {
       a: 2,
       b: 3,
     },
+    answerOptions: [2, 3, 4, 5],
     expectedAnswer: 5,
   };
 

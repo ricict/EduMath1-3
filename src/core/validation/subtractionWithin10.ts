@@ -1,5 +1,12 @@
-import type { Question } from '../types';
+import type { AddSubtractQuestion, Difficulty, Question } from '../types';
+import { validateNumericAnswerOptions } from './numericAnswerOptions';
 import type { QuestionValidationResult } from './types';
+
+const MAX_MINUEND_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
+  1: 5,
+  2: 7,
+  3: 10,
+};
 
 export function validateSubtractionWithin10(question: Question): QuestionValidationResult {
   const errors: string[] = [];
@@ -15,7 +22,8 @@ export function validateSubtractionWithin10(question: Question): QuestionValidat
     return { valid: false, errors };
   }
 
-  const { a, b } = question.data;
+  const subtractionQuestion = question as AddSubtractQuestion;
+  const { a, b } = subtractionQuestion.data;
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     errors.push('Operands must be integers.');
   }
@@ -28,9 +36,18 @@ export function validateSubtractionWithin10(question: Question): QuestionValidat
   if (a > 10) {
     errors.push('The minuend must not exceed 10.');
   }
-  if (question.expectedAnswer !== a - b) {
+  if (subtractionQuestion.expectedAnswer !== a - b) {
     errors.push('Expected answer must equal a - b.');
   }
+  errors.push(
+    ...validateNumericAnswerOptions(
+      subtractionQuestion.answerOptions,
+      subtractionQuestion.expectedAnswer,
+      (value) =>
+        value >= 0 &&
+        value <= MAX_MINUEND_BY_DIFFICULTY[question.difficulty],
+    ),
+  );
 
   return {
     valid: errors.length === 0,

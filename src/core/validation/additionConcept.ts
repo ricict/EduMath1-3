@@ -1,5 +1,12 @@
-import type { Question } from '../types';
+import type { AdditionConceptQuestion, Difficulty, Question } from '../types';
+import { validateNumericAnswerOptions } from './numericAnswerOptions';
 import type { QuestionValidationResult } from './types';
+
+const MAX_TOTAL_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
+  1: 5,
+  2: 7,
+  3: 10,
+};
 
 export function validateAdditionConcept(
   question: Question,
@@ -17,7 +24,8 @@ export function validateAdditionConcept(
     return { valid: false, errors };
   }
 
-  const { a, b } = question.data;
+  const conceptQuestion = question as AdditionConceptQuestion;
+  const { a, b } = conceptQuestion.data;
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     errors.push('Concept groups must contain integer quantities.');
   }
@@ -27,9 +35,18 @@ export function validateAdditionConcept(
   if (a + b > 10) {
     errors.push('Combined concept total must not exceed 10.');
   }
-  if (question.expectedAnswer !== a + b) {
+  if (conceptQuestion.expectedAnswer !== a + b) {
     errors.push('Expected answer must equal the combined group total.');
   }
+  errors.push(
+    ...validateNumericAnswerOptions(
+      conceptQuestion.answerOptions,
+      conceptQuestion.expectedAnswer,
+      (value) =>
+        value >= 0 &&
+        value <= MAX_TOTAL_BY_DIFFICULTY[question.difficulty],
+    ),
+  );
 
   return {
     valid: errors.length === 0,

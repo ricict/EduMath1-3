@@ -5,6 +5,7 @@ import type {
 } from '../types';
 import { validateNumberRecognition10 } from '../validation/numberRecognition10';
 import type { QuestionGenerator } from './generator';
+import { createNumericAnswerOptions, integerRangeInclusive } from './numericAnswerOptions';
 import { createSeededRandom } from './seededRandom';
 
 const MAX_NUMBER_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -30,7 +31,13 @@ export function generateNumberRecognition10(
   }
 
   const random = createSeededRandom(context.seed);
-  const target = random.integer(0, MAX_NUMBER_BY_DIFFICULTY[context.difficulty]);
+  const maxNumber = MAX_NUMBER_BY_DIFFICULTY[context.difficulty];
+  const target = random.integer(0, maxNumber);
+  const answerOptions = createNumericAnswerOptions(
+    target,
+    integerRangeInclusive(0, maxNumber),
+    random,
+  );
 
   return {
     id: `number_recognition_10:${context.seed}:${target}`,
@@ -46,6 +53,7 @@ export function generateNumberRecognition10(
       operation: 'number-recognition',
       target,
     },
+    answerOptions,
     expectedAnswer: target,
   };
 }
