@@ -61,14 +61,14 @@ test('addition concept semantics render independently in all locales', () => {
 
   assert.match(
     renderQuestionPrompt(question, 'en'),
-    /^There are d+ objects and d+ more objects. How many are there altogether?$/,
+    /^There are \d+ objects and \d+ more objects\. How many are there altogether\?$/,
   );
   assert.match(
     renderQuestionPrompt(question, 'id'),
-    /^Ada d+ benda dan ditambah d+ benda lagi. Berapa jumlah semuanya?$/,
+    /^Ada \d+ benda dan ditambah \d+ benda lagi\. Berapa jumlah semuanya\?$/,
   );
   assert.match(
     renderQuestionPrompt(question, 'th'),
-    /^มีสิ่งของ d+ ชิ้น และเพิ่มอีก d+ ชิ้น รวมทั้งหมดมีกี่ชิ้น?$/,
+    /^มีสิ่งของ \d+ ชิ้น และเพิ่มอีก \d+ ชิ้น รวมทั้งหมดมีกี่ชิ้น\?$/,
   );
 });

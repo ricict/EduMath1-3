@@ -112,7 +112,7 @@ export function translate(
   key: MessageKey,
   params: Readonly<Record<string, string | number>> = {},
 ): string {
-  return messages[locale][key].replace(/{(w+)}/g, (placeholder, parameterName: string) => {
+  return messages[locale][key].replace(/\{(\w+)\}/g, (placeholder, parameterName: string) => {
     const value = params[parameterName];
     return value === undefined ? placeholder : String(value);
   });
