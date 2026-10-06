@@ -120,20 +120,46 @@ M7 does **not** include:
 
 ## 7. Planned implementation increments
 
-### M7.1 — Pure learner-journey projection
+### M7.1 — Pure learner-journey projection — COMPLETE / VERIFIED
 
-Create a pure M7 model that projects a learner model plus canonical grade context into learner-facing summary data without introducing new mastery authority.
+The pure `learnerJourneyModel` now projects the locked M2 catalog plus the existing M5 learner/recommendation state into learner-facing Grade 1–3 summaries.
 
-It should expose, at minimum:
+It exposes:
 
 - canonical skill counts by grade;
 - mastered / in-progress / unseen counts by grade;
-- current M5 recommendation or explicit unavailable reason;
+- the current M5 recommendation or explicit unavailable reason;
 - whether practice is currently generator-practicable.
 
-### M7.2 — App shell and grade-aware practice entry
+It does not cache, mutate, or independently calculate mastery.
 
-Replace the direct-practice root with a home route and explicit practice route. Refactor the practice controller to receive grade context instead of hard-coding Grade 1.
+Verification:
+
+```text
+Run number : 63
+Head SHA   : b216b15b845d0b4a341a400f5fb1939f35adf3ba
+Tests      : 155 passed / 0 failed
+Conclusion : success
+```
+
+### M7.2 — App shell and grade-aware practice entry — COMPLETE / VERIFIED
+
+The app root now renders a learner-facing home route rather than opening practice directly.
+
+The home route offers explicit Grade 1–3 entry. The practice route validates the grade parameter and passes a typed `Grade` into `PracticeScreen` and `usePracticeSession`. The previous hard-coded Grade 1 constant has been removed.
+
+M4 still owns the single resumable-session pointer. If an unfinished local session exists, that session is restored before a newly requested grade session is created. This prevents the M7 shell from silently replacing or orphaning resumable M4 state and requires no M4 schema change.
+
+Invalid or non-canonical route grades fail explicitly rather than silently falling back to Grade 1.
+
+Verification:
+
+```text
+Run number : 64
+Head SHA   : b41a6caf44744de729085443125398afefa1076c
+Tests      : 157 passed / 0 failed / 0 skipped
+Conclusion : success
+```
 
 ### M7.3 — Progress surface
 
@@ -167,10 +193,14 @@ M7 is complete only when:
 - TypeScript, lint, and all tests pass in GitHub Actions;
 - README and this document accurately describe the final M7 state.
 
-## 9. First authorized implementation increment
+## 9. Current checkpoint and next authorized increment
 
-After this definition commit passes CI, M7.1 is authorized:
+M7.1 and M7.2 are complete and verified.
 
-**Implement a pure, tested learner-journey projection derived from the existing M2 canonical catalog and M5 learner/recommendation state.**
+The next authorized increment is:
 
-No React navigation changes are authorized before that pure projection exists and passes CI.
+**M7.3 — Progress surface**
+
+M7.3 may render the already-pure learner-journey projection and load the existing M4/M5 learner state for presentation. It must not introduce a second mastery calculation, mastery persistence/cache, new curriculum sequencing, or remote analytics.
+
+M7.4 settings/persistence and M7.5 product polish remain out of scope until M7.3 is independently verified.
