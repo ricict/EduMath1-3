@@ -42,7 +42,8 @@ export type Difficulty = 1 | 2 | 3;
 export type QuestionType =
   | 'numeric-choice'
   | 'relation-choice'
-  | 'fraction-choice';
+  | 'fraction-choice'
+  | 'time-choice';
 
 export type RepresentationType =
   | 'symbolic'
@@ -60,7 +61,8 @@ export type QuestionPromptKey =
   | 'question.subtraction'
   | 'question.multiplication'
   | 'question.numberComparison'
-  | 'question.unitFraction';
+  | 'question.unitFraction'
+  | 'question.readClock';
 
 export interface QuestionBase {
   id: string;
@@ -136,10 +138,28 @@ export interface UnitFractionQuestion extends QuestionBase {
   expectedAnswer: FractionAnswer;
 }
 
+export interface TimeAnswer {
+  hour: number;
+  minute: 0 | 30;
+}
+
+export interface ReadClockQuestion extends QuestionBase {
+  questionType: 'time-choice';
+  representation: 'clock';
+  promptKey: 'question.readClock';
+  data: {
+    operation: 'read-clock';
+    hour: number;
+    minute: 0 | 30;
+  };
+  expectedAnswer: TimeAnswer;
+}
+
 export type Question =
   | ArithmeticQuestion
   | NumberComparisonQuestion
-  | UnitFractionQuestion;
+  | UnitFractionQuestion
+  | ReadClockQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;

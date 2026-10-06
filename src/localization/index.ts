@@ -10,6 +10,7 @@ type MessageKey =
   | 'question.multiplication'
   | 'question.numberComparison'
   | 'question.unitFraction'
+  | 'question.readClock'
   | 'action.check'
   | 'action.next'
   | 'feedback.correct'
@@ -26,6 +27,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.numberComparison': 'Compare {left} and {right}. Choose <, =, or >.',
     'question.unitFraction':
       'One of {denominator} equal parts is shaded. Which fraction is shown?',
+    'question.readClock': 'What time does the clock show?',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'feedback.correct': 'Correct!',
@@ -41,6 +43,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.numberComparison': 'Bandingkan {left} dan {right}. Pilih <, =, atau >.',
     'question.unitFraction':
       'Satu dari {denominator} bagian yang sama diarsir. Pecahan apa yang ditunjukkan?',
+    'question.readClock': 'Jam menunjukkan pukul berapa?',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'feedback.correct': 'Benar!',
@@ -56,6 +59,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.numberComparison': 'เปรียบเทียบ {left} และ {right} เลือก <, = หรือ >',
     'question.unitFraction':
       'ระบายสี 1 ส่วนจากทั้งหมด {denominator} ส่วนที่เท่ากัน เศษส่วนที่แสดงคืออะไร?',
+    'question.readClock': 'นาฬิกาแสดงเวลากี่โมง?',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'feedback.correct': 'ถูกต้อง!',
@@ -87,6 +91,10 @@ export function renderQuestionPrompt(question: Question, locale: Locale): string
     return translate(locale, question.promptKey, {
       denominator: question.data.denominator,
     });
+  }
+
+  if (question.data.operation === 'read-clock') {
+    return translate(locale, question.promptKey);
   }
 
   return translate(locale, question.promptKey, {

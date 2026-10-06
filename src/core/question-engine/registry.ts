@@ -18,6 +18,7 @@ import {
   validateQuestionGeneratorRegistry,
 } from './registryValidation';
 import { subtractionWithin10Generator } from './subtractionWithin10';
+import { tellTimeHourHalfHourGenerator } from './tellTimeHourHalfHour';
 import { unitFractionsGenerator } from './unitFractions';
 
 export const registeredQuestionGenerators = [
@@ -26,6 +27,7 @@ export const registeredQuestionGenerators = [
   compareOrderNumbers20Generator,
   multiplicationFacts2510Generator,
   unitFractionsGenerator,
+  tellTimeHourHalfHourGenerator,
 ] as const satisfies readonly QuestionGenerator[];
 
 export const registeredQuestionGeneratorValidation =

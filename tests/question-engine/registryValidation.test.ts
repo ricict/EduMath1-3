@@ -27,7 +27,7 @@ test('registered M3 generator registry is valid', () => {
       .map((issue) => issue.message)
       .join('\n'),
   );
-  assert.equal(registeredQuestionGenerators.length, 5);
+  assert.equal(registeredQuestionGenerators.length, 6);
 });
 
 test('registry validator rejects duplicate generator IDs and skill ownership', () => {
