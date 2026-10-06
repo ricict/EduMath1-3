@@ -369,3 +369,186 @@ Tests  : 124 passed / 0 failed
 
 The only remaining registered question interaction not yet supported by the
 practice screen is `relation-choice`.
+
+
+## 19. Relation-choice interaction
+
+M6 completed the fourth pre-existing M3 answer interaction by mapping the
+semantic comparison domain:
+
+```text
+less-than
+equal
+greater-than
+```
+
+to child-facing mathematical symbols:
+
+```text
+<
+=
+>
+```
+
+No comparison distractor generator was needed because the semantic domain is
+already complete and closed in `ComparisonRelation`.
+
+Selected relations are submitted to M4 as typed `LearnerAnswer` values with
+`kind: 'relation'`.
+
+Verification:
+
+```text
+Relation interaction
+Commit : e95610a9a031619a33d198a6bb49facbac43329b
+Run    : 48
+Result : FAILURE — TypeScript exhaustiveness after every current QuestionType became supported
+
+Narrow runtime-compatibility correction
+Commit : d2dd5b5803cde28cac327edfe8b0d2207d616efa
+Run    : 49
+Result : SUCCESS
+Tests  : 126 passed / 0 failed
+```
+
+## 20. Numeric-choice semantic-option correction
+
+A completion audit exposed a real cross-grade defect in the original UI
+assumption: the practice screen hard-coded numeric answers `0–10`, while the
+registered `multiplication_facts_2_5_10` generator can produce answers up to
+100.
+
+M6 did not solve this by making React calculate a larger numeric range.
+Instead, every registered `numeric-choice` generator now emits deterministic
+semantic `answerOptions`.
+
+The correct mathematical result is generated before the option shuffling, so
+the locked M1 mathematics remains unchanged:
+
+```text
+grade 1
+addition_within_10
+difficulty 3
+seed 20261006
+→ 4 + 1 = 5
+```
+
+The child-facing interaction now consumes the numeric `answerOptions`
+directly, just as it already does for fractions and time.
+
+Verification:
+
+```text
+Semantic numeric options
+Commit : 9a04ce3d7bc19fadaecaa9a913cde38486d7d440
+Run    : 50
+Result : SUCCESS
+Tests  : 129 passed / 0 failed
+
+Registered child-facing surface audit
+Commit : cbd667c629d35610952fb6e8e4703b513d8fb74e
+Run    : 51
+Result : SUCCESS
+Tests  : 131 passed / 0 failed
+```
+
+The registry-wide M6 test verifies that every currently registered generator
+has a valid child-facing answer surface and that every registered
+`visual`/`clock` question has an M6 visual model.
+
+## 21. Scope audit: why M6 remains in progress
+
+Passing the registered-generator audit is necessary but not sufficient for
+M6 completion.
+
+The canonical M2 model contains additional visual families that were part of
+the planned M6 pedagogy scope but do not yet have representative M3/M6
+coverage:
+
+- number-line;
+- geometry/shapes;
+- tables;
+- pictograms;
+- bar charts.
+
+M6 therefore remains **IN PROGRESS**. It must not be marked complete merely
+because the earlier eight-generator registry is fully renderable.
+
+## 22. Number-line representation increment
+
+The next representative family extends the existing
+`compare_order_numbers_20` generator rather than creating duplicate
+comparison mathematics.
+
+Canonical M2 already permits `number-line` for this skill. M3 now supports
+an explicit opt-in generation request:
+
+```text
+representation: 'number-line'
+```
+
+while an omitted representation still produces the original symbolic
+question. The symbolic seed/ID behavior remains preserved.
+
+The generated comparison semantics now include explicit display bounds:
+
+```text
+scaleMin
+scaleMax
+left
+right
+```
+
+The renderer consumes those values directly. It does not infer a curriculum
+range from difficulty or recalculate the compared values.
+
+The number line uses responsive React Native flex primitives. Values matching
+either compared number receive stronger visual emphasis; localized
+accessibility wording communicates the complete scale and both compared
+values.
+
+Verification encountered two narrow regression failures:
+
+```text
+Run 52 : FAILURE — stale manual comparison fixture lacked scaleMin/scaleMax
+Run 53 : FAILURE — M3 representation-set expectation did not yet include number-line
+```
+
+Both were corrected without changing comparison mathematics.
+
+Final number-line checkpoint:
+
+```text
+Commit : 31f0dc2a0899df957b70dbd411fbee85c0e4e93b
+Run    : 54
+Result : SUCCESS
+Tests  : 133 passed / 0 failed
+```
+
+## 23. Current M6 state
+
+Implemented representative visual families now include:
+
+```text
+large numeral
+object groups
+equal-part fraction strip
+analog clock
+number line
+```
+
+Implemented child-facing interaction types include all currently defined
+question types:
+
+```text
+numeric-choice
+relation-choice
+fraction-choice
+time-choice
+```
+
+The next M6 objective is a representative geometry family beginning with
+`identify_2d_shapes`. That increment must add typed shape semantics,
+shape-choice interaction, persistence-safe learner answers, localized shape
+names/accessibility, and React Native shape rendering before moving to data
+representations.
