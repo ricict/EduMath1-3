@@ -1,16 +1,56 @@
+import type { SkillId } from './curriculum/skillIds';
+
+export type { SkillId } from './curriculum/skillIds';
+
 export type Grade = 1 | 2 | 3;
 
-export type MathDomain = 'number' | 'operations' | 'geometry' | 'measurement' | 'data';
+export type MathDomain =
+  | 'number'
+  | 'operations'
+  | 'algebra'
+  | 'geometry'
+  | 'measurement'
+  | 'data';
 
-export type MathTopic = 'number-sense' | 'addition';
-
-export type SkillId = 'number_recognition_10' | 'addition_concept' | 'addition_within_10';
+export type MathTopic =
+  | 'number-sense'
+  | 'counting'
+  | 'comparison'
+  | 'place-value'
+  | 'fractions'
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'operation-relations'
+  | 'equality'
+  | 'patterns'
+  | 'length'
+  | 'mass'
+  | 'time'
+  | 'money'
+  | '2d-shapes'
+  | '3d-shapes'
+  | 'position'
+  | 'classification'
+  | 'tables'
+  | 'pictograms'
+  | 'bar-charts';
 
 export type Difficulty = 1 | 2 | 3;
 
 export type QuestionType = 'numeric-choice';
 
-export type RepresentationType = 'symbolic' | 'visual';
+export type RepresentationType =
+  | 'symbolic'
+  | 'visual'
+  | 'concrete'
+  | 'number-line'
+  | 'clock'
+  | 'money'
+  | 'table'
+  | 'pictogram'
+  | 'bar-chart';
 
 export type QuestionPromptKey = 'question.addition';
 
