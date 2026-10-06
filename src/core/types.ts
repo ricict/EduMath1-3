@@ -43,7 +43,8 @@ export type QuestionType =
   | 'numeric-choice'
   | 'relation-choice'
   | 'fraction-choice'
-  | 'time-choice';
+  | 'time-choice'
+  | 'shape-choice';
 
 export type RepresentationType =
   | 'symbolic'
@@ -64,7 +65,8 @@ export type QuestionPromptKey =
   | 'question.multiplication'
   | 'question.numberComparison'
   | 'question.unitFraction'
-  | 'question.readClock';
+  | 'question.readClock'
+  | 'question.identify2dShape';
 
 export interface QuestionBase {
   id: string;
@@ -191,12 +193,27 @@ export interface ReadClockQuestion extends QuestionBase {
   expectedAnswer: TimeAnswer;
 }
 
+export type Shape2D = 'circle' | 'triangle' | 'square' | 'rectangle';
+
+export interface Identify2DShapeQuestion extends QuestionBase {
+  questionType: 'shape-choice';
+  representation: 'visual';
+  promptKey: 'question.identify2dShape';
+  data: {
+    operation: 'identify-2d-shape';
+    shape: Shape2D;
+  };
+  answerOptions: readonly Shape2D[];
+  expectedAnswer: Shape2D;
+}
+
 export type Question =
   | NumberRecognitionQuestion
   | ArithmeticQuestion
   | NumberComparisonQuestion
   | UnitFractionQuestion
-  | ReadClockQuestion;
+  | ReadClockQuestion
+  | Identify2DShapeQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;

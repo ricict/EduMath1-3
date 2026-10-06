@@ -1,4 +1,4 @@
-import type { Question } from '@/core/types';
+import type { Question, Shape2D } from '@/core/types';
 
 export type Locale = 'en' | 'id' | 'th';
 
@@ -13,17 +13,24 @@ type MessageKey =
   | 'question.numberComparison'
   | 'question.unitFraction'
   | 'question.readClock'
+  | 'question.identify2dShape'
   | 'visual.numberRecognitionLabel'
   | 'visual.additionFirstGroupLabel'
   | 'visual.additionSecondGroupLabel'
   | 'visual.unitFractionLabel'
   | 'visual.clockLabel'
   | 'visual.numberLineComparisonLabel'
+  | 'visual.shapeLabel'
   | 'answer.relationLessThan'
   | 'answer.relationEqual'
   | 'answer.relationGreaterThan'
   | 'answer.fractionLabel'
   | 'answer.timeLabel'
+  | 'answer.shapeLabel'
+  | 'shape.circle'
+  | 'shape.triangle'
+  | 'shape.square'
+  | 'shape.rectangle'
   | 'action.check'
   | 'action.next'
   | 'action.finish'
@@ -56,6 +63,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'One of {denominator} equal parts is shaded. Which fraction is shown?',
     'question.readClock': 'What time does the clock show?',
+    'question.identify2dShape': 'What shape is shown?',
     'visual.numberRecognitionLabel': 'Shown number: {target}',
     'visual.additionFirstGroupLabel': 'First group: {count} objects',
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
@@ -63,11 +71,17 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.clockLabel': 'Analog clock showing {hour}:{minute}',
     'visual.numberLineComparisonLabel':
       'Number line from {min} to {max}. Compare {left} and {right}.',
+    'visual.shapeLabel': 'Shown shape: {shape}',
     'answer.relationLessThan': 'Less than',
     'answer.relationEqual': 'Equal to',
     'answer.relationGreaterThan': 'Greater than',
     'answer.fractionLabel': 'Fraction {numerator} over {denominator}',
     'answer.timeLabel': 'Time {hour}:{minute}',
+    'answer.shapeLabel': 'Shape {shape}',
+    'shape.circle': 'Circle',
+    'shape.triangle': 'Triangle',
+    'shape.square': 'Square',
+    'shape.rectangle': 'Rectangle',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'action.finish': 'Finish session',
@@ -99,6 +113,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'Satu dari {denominator} bagian yang sama diarsir. Pecahan apa yang ditunjukkan?',
     'question.readClock': 'Jam menunjukkan pukul berapa?',
+    'question.identify2dShape': 'Bentuk apa yang ditunjukkan?',
     'visual.numberRecognitionLabel': 'Angka yang ditampilkan: {target}',
     'visual.additionFirstGroupLabel': 'Kelompok pertama: {count} benda',
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
@@ -106,11 +121,17 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.clockLabel': 'Jam analog menunjukkan pukul {hour}:{minute}',
     'visual.numberLineComparisonLabel':
       'Garis bilangan dari {min} sampai {max}. Bandingkan {left} dan {right}.',
+    'visual.shapeLabel': 'Bentuk yang ditampilkan: {shape}',
     'answer.relationLessThan': 'Kurang dari',
     'answer.relationEqual': 'Sama dengan',
     'answer.relationGreaterThan': 'Lebih dari',
     'answer.fractionLabel': 'Pecahan {numerator} per {denominator}',
     'answer.timeLabel': 'Pukul {hour}:{minute}',
+    'answer.shapeLabel': 'Bentuk {shape}',
+    'shape.circle': 'Lingkaran',
+    'shape.triangle': 'Segitiga',
+    'shape.square': 'Persegi',
+    'shape.rectangle': 'Persegi panjang',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'action.finish': 'Selesaikan sesi',
@@ -142,6 +163,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'question.unitFraction':
       'ระบายสี 1 ส่วนจากทั้งหมด {denominator} ส่วนที่เท่ากัน เศษส่วนที่แสดงคืออะไร?',
     'question.readClock': 'นาฬิกาแสดงเวลากี่โมง?',
+    'question.identify2dShape': 'รูปทรงที่แสดงคือรูปอะไร?',
     'visual.numberRecognitionLabel': 'ตัวเลขที่แสดง: {target}',
     'visual.additionFirstGroupLabel': 'กลุ่มแรกมีสิ่งของ {count} ชิ้น',
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
@@ -149,11 +171,17 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.clockLabel': 'นาฬิกาเข็มแสดงเวลา {hour}:{minute}',
     'visual.numberLineComparisonLabel':
       'เส้นจำนวนจาก {min} ถึง {max} เปรียบเทียบ {left} และ {right}',
+    'visual.shapeLabel': 'รูปทรงที่แสดง: {shape}',
     'answer.relationLessThan': 'น้อยกว่า',
     'answer.relationEqual': 'เท่ากับ',
     'answer.relationGreaterThan': 'มากกว่า',
     'answer.fractionLabel': 'เศษส่วน {numerator} ส่วน {denominator}',
     'answer.timeLabel': 'เวลา {hour}:{minute}',
+    'answer.shapeLabel': 'รูปทรง {shape}',
+    'shape.circle': 'วงกลม',
+    'shape.triangle': 'สามเหลี่ยม',
+    'shape.square': 'สี่เหลี่ยมจัตุรัส',
+    'shape.rectangle': 'สี่เหลี่ยมผืนผ้า',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'action.finish': 'จบเซสชัน',
@@ -185,6 +213,19 @@ export function translate(
   });
 }
 
+export function translateShapeName(locale: Locale, shape: Shape2D): string {
+  switch (shape) {
+    case 'circle':
+      return translate(locale, 'shape.circle');
+    case 'triangle':
+      return translate(locale, 'shape.triangle');
+    case 'square':
+      return translate(locale, 'shape.square');
+    case 'rectangle':
+      return translate(locale, 'shape.rectangle');
+  }
+}
+
 export function renderQuestionPrompt(question: Question, locale: Locale): string {
   if (question.data.operation === 'number-recognition') {
     return translate(locale, question.promptKey);
@@ -204,6 +245,10 @@ export function renderQuestionPrompt(question: Question, locale: Locale): string
   }
 
   if (question.data.operation === 'read-clock') {
+    return translate(locale, question.promptKey);
+  }
+
+  if (question.data.operation === 'identify-2d-shape') {
     return translate(locale, question.promptKey);
   }
 

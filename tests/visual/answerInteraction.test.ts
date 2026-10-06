@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { generateAdditionWithin10 } from '../../src/core/question-engine/additionWithin10';
 import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
+import { generateIdentify2DShapes } from '../../src/core/question-engine/identify2dShapes';
 import { generateMultiplicationFacts2510 } from '../../src/core/question-engine/multiplicationFacts2510';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
@@ -163,6 +164,42 @@ test('time interaction consumes M3 semantic answerOptions exactly', () => {
   assert.equal(
     options.some((answer) => evaluateLearnerAnswer(question, answer)),
     true,
+  );
+});
+
+test('shape interaction consumes M3 semantic answerOptions and localizes names', () => {
+  const question = generateIdentify2DShapes({
+    grade: 1,
+    skillId: 'identify_2d_shapes',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const options = getPracticeAnswerOptions(question);
+
+  assert.ok(options);
+  assert.deepEqual(
+    options,
+    question.answerOptions.map((value) => ({
+      kind: 'shape',
+      value,
+    })),
+  );
+  assert.equal(
+    options.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
+    1,
+  );
+
+  const circle = { kind: 'shape' as const, value: 'circle' as const };
+  assert.equal(formatPracticeAnswerText(circle, 'en'), 'Circle');
+  assert.equal(formatPracticeAnswerText(circle, 'id'), 'Lingkaran');
+  assert.equal(formatPracticeAnswerText(circle, 'th'), 'วงกลม');
+  assert.equal(isSamePracticeAnswer(circle, circle), true);
+  assert.equal(
+    isSamePracticeAnswer(circle, {
+      kind: 'shape',
+      value: 'triangle',
+    }),
+    false,
   );
 });
 

@@ -219,6 +219,9 @@ export function evaluateLearnerAnswer(
         answer.value.hour === question.expectedAnswer.hour &&
         answer.value.minute === question.expectedAnswer.minute
       );
+
+    case 'shape-choice':
+      return answer.kind === 'shape' && answer.value === question.expectedAnswer;
   }
 }
 

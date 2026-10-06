@@ -7,6 +7,7 @@ import type {
   Grade,
   QuestionType,
   RepresentationType,
+  Shape2D,
   SkillId,
   TimeAnswer,
 } from '../types';
@@ -31,6 +32,7 @@ const QUESTION_TYPES = [
   'relation-choice',
   'fraction-choice',
   'time-choice',
+  'shape-choice',
 ] as const satisfies readonly QuestionType[];
 
 const REPRESENTATIONS = [
@@ -50,6 +52,13 @@ const RELATIONS = [
   'equal',
   'greater-than',
 ] as const satisfies readonly ComparisonRelation[];
+
+const SHAPES = [
+  'circle',
+  'triangle',
+  'square',
+  'rectangle',
+] as const satisfies readonly Shape2D[];
 
 const SESSION_STATUSES = [
   'active',
@@ -257,6 +266,12 @@ function parseLearnerAnswer(value: unknown, label: string): LearnerAnswer {
       return {
         kind: 'time',
         value: parseTimeAnswer(record.value, `${label}.value`),
+      };
+
+    case 'shape':
+      return {
+        kind: 'shape',
+        value: requireMember(record.value, SHAPES, `${label}.value`),
       };
 
     default:

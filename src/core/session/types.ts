@@ -5,6 +5,7 @@ import type {
   Grade,
   QuestionType,
   RepresentationType,
+  Shape2D,
   SkillId,
   TimeAnswer,
 } from '../types';
@@ -53,6 +54,10 @@ export type LearnerAnswer =
   | {
       kind: 'time';
       value: TimeAnswer;
+    }
+  | {
+      kind: 'shape';
+      value: Shape2D;
     };
 
 export interface AnswerRecord {

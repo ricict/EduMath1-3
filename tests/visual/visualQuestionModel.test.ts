@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { generateAdditionConcept } from '../../src/core/question-engine/additionConcept';
 import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
+import { generateIdentify2DShapes } from '../../src/core/question-engine/identify2dShapes';
 import { generateNumberRecognition10 } from '../../src/core/question-engine/numberRecognition10';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
@@ -11,7 +12,7 @@ import {
   buildVisualQuestionModel,
   getClockHandDegrees,
 } from '../../src/features/practice/visual/visualQuestionModel';
-import { translate } from '../../src/localization';
+import { translate, translateShapeName } from '../../src/localization';
 
 test('number-recognition visual model consumes the generated semantic target exactly', () => {
   const question = generateNumberRecognition10({
@@ -149,6 +150,21 @@ test('number-line comparison visual model consumes explicit scale semantics', ()
   assert.equal(buildVisualQuestionModel(symbolic), null);
 });
 
+test('2D-shape visual model preserves the generated semantic shape exactly', () => {
+  const question = generateIdentify2DShapes({
+    grade: 1,
+    skillId: 'identify_2d_shapes',
+    difficulty: 3,
+    seed: 20261006,
+  });
+
+  assert.deepEqual(buildVisualQuestionModel(question), {
+    kind: 'identify-2d-shape',
+    questionId: question.id,
+    shape: question.data.shape,
+  });
+});
+
 test('visual accessibility wording stays localized while semantic values stay unchanged', () => {
   assert.equal(
     translate('en', 'visual.numberRecognitionLabel', { target: 7 }),
@@ -178,5 +194,14 @@ test('visual accessibility wording stays localized while semantic values stay un
       right: 12,
     }),
     'Number line from 0 to 20. Compare 7 and 12.',
+  );
+  assert.equal(translateShapeName('en', 'rectangle'), 'Rectangle');
+  assert.equal(translateShapeName('id', 'rectangle'), 'Persegi panjang');
+  assert.equal(translateShapeName('th', 'rectangle'), 'สี่เหลี่ยมผืนผ้า');
+  assert.equal(
+    translate('id', 'visual.shapeLabel', {
+      shape: translateShapeName('id', 'circle'),
+    }),
+    'Bentuk yang ditampilkan: Lingkaran',
   );
 });

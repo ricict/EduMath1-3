@@ -46,6 +46,8 @@ function correctAnswerFor(question: Question): LearnerAnswer {
       return { kind: 'fraction', value: question.expectedAnswer };
     case 'time-choice':
       return { kind: 'time', value: question.expectedAnswer };
+    case 'shape-choice':
+      return { kind: 'shape', value: question.expectedAnswer };
   }
 }
 
@@ -179,6 +181,13 @@ test('semantic learner answers work across every M3 question type', () => {
       skillId: 'tell_time_hour_half_hour' as const,
       difficulty: 3 as const,
       sessionSeed: 15,
+    },
+    {
+      id: 'shape',
+      grade: 1 as const,
+      skillId: 'identify_2d_shapes' as const,
+      difficulty: 3 as const,
+      sessionSeed: 16,
     },
   ];
 

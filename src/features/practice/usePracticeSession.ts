@@ -19,6 +19,7 @@ import type {
   ComparisonRelation,
   FractionAnswer,
   Question,
+  Shape2D,
   TimeAnswer,
 } from '@/core/types';
 import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
@@ -57,6 +58,7 @@ export interface PracticeSessionController {
   submitRelationAnswer(value: ComparisonRelation): Promise<boolean>;
   submitFractionAnswer(value: FractionAnswer): Promise<boolean>;
   submitTimeAnswer(value: TimeAnswer): Promise<boolean>;
+  submitShapeAnswer(value: Shape2D): Promise<boolean>;
   nextQuestion(): Promise<void>;
   finishSession(): Promise<void>;
   startNewSession(): Promise<void>;
@@ -404,6 +406,32 @@ export function usePracticeSession(): PracticeSessionController {
     [persistCheckpoint, reportError],
   );
 
+  const submitShapeAnswer = useCallback(
+    async (value: Shape2D) => {
+      const current = sessionRef.current;
+      if (!current) {
+        throw new Error('Practice session is not ready.');
+      }
+
+      try {
+        const nowMs = Date.now();
+        const submitted = submitAnswer(
+          current,
+          { kind: 'shape', value },
+          nowMs,
+        );
+        setQuestion(submitted.question);
+        await persistCheckpoint(submitted.session, nowMs);
+        setError(null);
+        return submitted.correct;
+      } catch (cause) {
+        reportError(cause);
+        throw cause;
+      }
+    },
+    [persistCheckpoint, reportError],
+  );
+
   const nextQuestion = useCallback(async () => {
     const current = sessionRef.current;
     if (!current) {
@@ -473,6 +501,7 @@ export function usePracticeSession(): PracticeSessionController {
     submitRelationAnswer,
     submitFractionAnswer,
     submitTimeAnswer,
+    submitShapeAnswer,
     nextQuestion,
     finishSession,
     startNewSession,

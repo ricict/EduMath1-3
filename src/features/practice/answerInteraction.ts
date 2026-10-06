@@ -1,4 +1,5 @@
 import type { ComparisonRelation, Question } from '@/core/types';
+import { translateShapeName, type Locale } from '@/localization';
 
 import type { PracticeScreenAnswer } from './practiceCompatibility';
 
@@ -47,6 +48,12 @@ export function getPracticeAnswerOptions(
         value,
       }));
 
+    case 'shape-choice':
+      return question.answerOptions.map((value) => ({
+        kind: 'shape',
+        value,
+      }));
+
     default:
       return null;
   }
@@ -62,11 +69,14 @@ export function practiceAnswerKey(answer: PracticeScreenAnswer): string {
       return `fraction:${answer.value.numerator}/${answer.value.denominator}`;
     case 'time':
       return `time:${answer.value.hour}:${answer.value.minute}`;
+    case 'shape':
+      return `shape:${answer.value}`;
   }
 }
 
 export function formatPracticeAnswerText(
   answer: PracticeScreenAnswer,
+  locale: Locale = 'en',
 ): string {
   switch (answer.kind) {
     case 'numeric':
@@ -79,6 +89,8 @@ export function formatPracticeAnswerText(
       return `${answer.value.hour}:${answer.value.minute
         .toString()
         .padStart(2, '0')}`;
+    case 'shape':
+      return translateShapeName(locale, answer.value);
   }
 }
 
@@ -110,6 +122,10 @@ export function isSamePracticeAnswer(
       left.value.hour === right.value.hour &&
       left.value.minute === right.value.minute
     );
+  }
+
+  if (left.kind === 'shape' && right.kind === 'shape') {
+    return left.value === right.value;
   }
 
   return false;

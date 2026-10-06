@@ -1,7 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { Question } from '@/core/types';
-import { translate, type Locale } from '@/localization';
+import type { Question, Shape2D } from '@/core/types';
+import {
+  translate,
+  translateShapeName,
+  type Locale,
+} from '@/localization';
 
 import {
   buildVisualQuestionModel,
@@ -24,6 +28,19 @@ function getClockNumberPosition(value: number) {
     left: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.cos(radians) - 14,
     top: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.sin(radians) - 14,
   };
+}
+
+function ShapeFigure({ shape }: { shape: Shape2D }) {
+  switch (shape) {
+    case 'circle':
+      return <View accessible={false} style={styles.shapeCircle} />;
+    case 'triangle':
+      return <View accessible={false} style={styles.shapeTriangle} />;
+    case 'square':
+      return <View accessible={false} style={styles.shapeSquare} />;
+    case 'rectangle':
+      return <View accessible={false} style={styles.shapeRectangle} />;
+  }
 }
 
 interface CounterGroupProps {
@@ -147,6 +164,20 @@ export function VisualQuestion({ question, locale }: VisualQuestionProps) {
         </View>
 
         <View accessible={false} style={styles.clockCenter} />
+      </View>
+    );
+  }
+
+  if (model.kind === 'identify-2d-shape') {
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.shapeLabel', {
+          shape: translateShapeName(locale, model.shape),
+        })}
+        style={styles.shapeCard}
+      >
+        <ShapeFigure shape={model.shape} />
       </View>
     );
   }
@@ -335,6 +366,45 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     backgroundColor: '#172033',
+  },
+  shapeCard: {
+    width: '100%',
+    maxWidth: 360,
+    minHeight: 190,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#D7DFE8',
+    borderRadius: 24,
+    backgroundColor: '#F8FAFD',
+    padding: 24,
+  },
+  shapeCircle: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    backgroundColor: '#315EFB',
+  },
+  shapeTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 70,
+    borderRightWidth: 70,
+    borderBottomWidth: 120,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#315EFB',
+  },
+  shapeSquare: {
+    width: 132,
+    height: 132,
+    backgroundColor: '#315EFB',
+  },
+  shapeRectangle: {
+    width: 176,
+    height: 112,
+    backgroundColor: '#315EFB',
   },
   numberLineCard: {
     width: '100%',

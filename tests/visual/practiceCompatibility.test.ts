@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { startRecommendedPractice } from '../../src/core/adaptive/startRecommendedPractice';
+import { generateIdentify2DShapes } from '../../src/core/question-engine/identify2dShapes';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import type { Question } from '../../src/core/types';
 import { supportsPracticeScreenQuestion } from '../../src/features/practice/practiceCompatibility';
@@ -105,6 +106,17 @@ test('time-choice is supported after the clock interaction increment', () => {
   const question = generateTellTimeHourHalfHour({
     grade: 1,
     skillId: 'tell_time_hour_half_hour',
+    difficulty: 3,
+    seed: 20261006,
+  });
+
+  assert.equal(supportsPracticeScreenQuestion(question), true);
+});
+
+test('shape-choice is supported by the M6 geometry interaction boundary', () => {
+  const question = generateIdentify2DShapes({
+    grade: 1,
+    skillId: 'identify_2d_shapes',
     difficulty: 3,
     seed: 20261006,
   });

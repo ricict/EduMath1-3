@@ -13,6 +13,7 @@ import { additionConceptGenerator } from './additionConcept';
 import { additionWithin10Generator } from './additionWithin10';
 import { compareOrderNumbers20Generator } from './compareOrderNumbers20';
 import type { QuestionGenerator } from './generator';
+import { identify2DShapesGenerator } from './identify2dShapes';
 import { multiplicationFacts2510Generator } from './multiplicationFacts2510';
 import { numberRecognition10Generator } from './numberRecognition10';
 import {
@@ -29,6 +30,7 @@ export const registeredQuestionGenerators = [
   additionWithin10Generator,
   subtractionWithin10Generator,
   compareOrderNumbers20Generator,
+  identify2DShapesGenerator,
   multiplicationFacts2510Generator,
   unitFractionsGenerator,
   tellTimeHourHalfHourGenerator,

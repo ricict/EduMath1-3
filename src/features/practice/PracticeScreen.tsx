@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { renderQuestionPrompt, translate, type Locale } from '@/localization';
+import {
+  renderQuestionPrompt,
+  translate,
+  translateShapeName,
+  type Locale,
+} from '@/localization';
 
 import {
   formatPracticeAnswerText,
@@ -65,6 +70,12 @@ function renderAnswerAccessibilityLabel(
     });
   }
 
+  if (answer.kind === 'shape') {
+    return translate(locale, 'answer.shapeLabel', {
+      shape: translateShapeName(locale, answer.value),
+    });
+  }
+
   return translate(locale, 'answer.timeLabel', {
     hour: answer.value.hour,
     minute: answer.value.minute.toString().padStart(2, '0'),
@@ -105,6 +116,9 @@ export function PracticeScreen() {
         break;
       case 'time':
         correct = await practice.submitTimeAnswer(selectedAnswer.value);
+        break;
+      case 'shape':
+        correct = await practice.submitShapeAnswer(selectedAnswer.value);
         break;
     }
 
@@ -275,7 +289,7 @@ export function PracticeScreen() {
                   style={[styles.answerButton, selected && styles.answerButtonSelected]}
                 >
                   <Text style={styles.answerText}>
-                    {formatPracticeAnswerText(answer)}
+                    {formatPracticeAnswerText(answer, locale)}
                   </Text>
                 </Pressable>
               );

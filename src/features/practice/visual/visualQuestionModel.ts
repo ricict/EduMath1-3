@@ -1,4 +1,4 @@
-import type { Question } from '@/core/types';
+import type { Question, Shape2D } from '@/core/types';
 
 export interface NumberRecognitionVisualModel {
   kind: 'number-recognition';
@@ -48,6 +48,12 @@ export interface NumberLineComparisonVisualModel {
   scaleMax: number;
 }
 
+export interface Identify2DShapeVisualModel {
+  kind: 'identify-2d-shape';
+  questionId: string;
+  shape: Shape2D;
+}
+
 export function getClockHandDegrees(
   hour: number,
   minute: 0 | 30,
@@ -66,7 +72,8 @@ export type VisualQuestionModel =
   | AdditionCombineVisualModel
   | UnitFractionVisualModel
   | ReadClockVisualModel
-  | NumberLineComparisonVisualModel;
+  | NumberLineComparisonVisualModel
+  | Identify2DShapeVisualModel;
 
 export function buildVisualQuestionModel(
   question: Question,
@@ -132,6 +139,13 @@ export function buildVisualQuestionModel(
         right: question.data.right,
         scaleMin: question.data.scaleMin,
         scaleMax: question.data.scaleMax,
+      };
+
+    case 'identify-2d-shape':
+      return {
+        kind: 'identify-2d-shape',
+        questionId: question.id,
+        shape: question.data.shape,
       };
 
     default:

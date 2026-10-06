@@ -43,6 +43,8 @@ function correctAnswerFor(question: Question): LearnerAnswer {
       return { kind: 'fraction', value: question.expectedAnswer };
     case 'time-choice':
       return { kind: 'time', value: question.expectedAnswer };
+    case 'shape-choice':
+      return { kind: 'shape', value: question.expectedAnswer };
   }
 }
 
@@ -77,6 +79,31 @@ test('versioned serialization round-trip preserves resumable semantic session st
     restored.attempts[0].question.questionId,
     issued.question.id,
   );
+});
+
+test('schema-v1 persistence round-trip supports typed shape answers without a schema bump', () => {
+  const session = startPracticeSession({
+    id: 'shape-session-v1',
+    grade: 1,
+    skillId: 'identify_2d_shapes',
+    difficulty: 3,
+    sessionSeed: 20261006,
+    startedAtMs: 1_000,
+  });
+  const issued = issueNextQuestion(session);
+  const answered = submitAnswer(
+    issued.session,
+    correctAnswerFor(issued.question),
+    2_000,
+  );
+
+  const restored = deserializePracticeSession(
+    serializePracticeSession(answered.session),
+  );
+
+  assert.deepEqual(restored, answered.session);
+  assert.equal(restored.schemaVersion, 1);
+  assert.equal(restored.attempts[0].answers[0].answer.kind, 'shape');
 });
 
 test('local session store saves and discovers one resumable session', async () => {

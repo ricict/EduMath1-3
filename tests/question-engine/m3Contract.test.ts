@@ -29,13 +29,14 @@ test('M3 registry collectively covers Grades 1-3 and representative generation m
       'multiplication',
       'number-comparison',
       'number-identification',
+      'shape',
       'subtraction',
       'time',
     ],
   );
   assert.deepEqual(
     [...questionTypes].sort(),
-    ['fraction-choice', 'numeric-choice', 'relation-choice', 'time-choice'],
+    ['fraction-choice', 'numeric-choice', 'relation-choice', 'shape-choice', 'time-choice'],
   );
   assert.deepEqual(
     [...representations].sort(),
