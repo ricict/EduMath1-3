@@ -36,7 +36,7 @@ export function buildLearnerJourneyGradeSummary(
   model: LearnerModel,
 ): LearnerJourneyGradeSummary {
   const gradeSkillIds = canonicalSkillDefinitions
-    .filter((skill) => skill.grades.includes(grade))
+    .filter((skill) => skill.grades.some((skillGrade) => skillGrade === grade))
     .map((skill) => skill.id);
 
   let masteredSkillCount = 0;
