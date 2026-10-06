@@ -200,9 +200,39 @@ Tests      : 159 passed / 0 failed / 0 skipped
 Conclusion : success
 ```
 
-### M7.4 — App preferences and settings
+### M7.4 — App preferences and settings — COMPLETE / VERIFIED
 
-Persist locale and selected grade separately from M4 sessions. Restore those preferences on launch.
+M7 now has a dedicated versioned app-preference contract for:
+
+- locale: EN / ID / TH;
+- preferred Grade 1 / 2 / 3.
+
+The preference record is stored under the dedicated M7 namespace:
+
+```text
+edumath:m7:app-preferences:v1
+```
+
+It is separate from all M4 keys under `edumath:m4:...`; M4 practice-session schema version 1 remains unchanged.
+
+The root app shell restores preferences before rendering the learner routes. A shared `AppPreferencesProvider` then supplies the same locale and selected-grade state to Home, Practice, Progress, route headers, and the new Settings screen.
+
+Locale now changes presentation only. Practice question identity, deterministic seeds, learner answers, scoring, M5 evidence, mastery, curriculum eligibility, and recommendation semantics remain untouched.
+
+The selected grade is a shell preference: Home highlights it and updates it when the learner chooses a grade. It does not override M4's resumable-session authority; an unfinished local session is still restored before a new practice session is created.
+
+The Settings route lets the learner change locale and preferred grade. Persistence failures are surfaced as a local settings warning and do not block the current practice session.
+
+Pure persistence tests verify defaults, EN/ID/TH + Grade 1–3 round-trip behavior, dedicated M7 key isolation from M4, and explicit rejection of malformed or non-canonical persisted values.
+
+Verification:
+
+```text
+Run number : 70
+Head SHA   : 7b7501beea0312751e16dbe26cfd77fa6ee14cb5
+Tests      : 162 passed / 0 failed / 0 skipped
+Conclusion : success
+```
 
 ### M7.5 — Learner-facing polish and completion audit
 
@@ -230,12 +260,12 @@ M7 is complete only when:
 
 ## 9. Current checkpoint and next authorized increment
 
-M7.1, M7.2, and M7.3 are complete and verified.
+M7.1 through M7.4 are complete and verified.
 
 The next authorized increment is:
 
-**M7.4 — App preferences and settings**
+**M7.5 — Learner-facing polish and completion audit**
 
-M7.4 may add a device-local app-preference namespace for presentation preferences, including selected Grade 1–3 context and EN / ID / TH locale. Preferences must remain separate from M4 practice-session persistence and must not change question identity, seeds, scoring, mastery evidence, curriculum eligibility, or recommendation semantics.
+M7.5 must remain a completion/audit increment. It may remove development-only child-facing metadata, close remaining navigation/accessibility/localization gaps, verify explicit unsupported-content boundaries, reconcile README/documentation with the live repository, and run the full regression suite.
 
-M7.5 product polish remains out of scope until M7.4 is independently verified.
+M7.5 must not expand curriculum/generator scope, change M5 mastery policy, alter M4 schema version 1, introduce cloud/backend/telemetry/PII, or begin M8.
