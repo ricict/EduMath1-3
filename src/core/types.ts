@@ -52,25 +52,27 @@ export type RepresentationType =
   | 'pictogram'
   | 'bar-chart';
 
-export type QuestionPromptKey = 'question.addition';
+export type QuestionPromptKey = 'question.addition' | 'question.subtraction';
 
-export interface Question {
+export interface ArithmeticQuestion {
   id: string;
   grade: Grade;
   domain: MathDomain;
   topic: MathTopic;
   skillId: SkillId;
   difficulty: Difficulty;
-  questionType: QuestionType;
-  representation: RepresentationType;
+  questionType: 'numeric-choice';
+  representation: 'symbolic';
   promptKey: QuestionPromptKey;
   data: {
-    operation: 'addition';
+    operation: 'addition' | 'subtraction';
     a: number;
     b: number;
   };
   expectedAnswer: number;
 }
+
+export type Question = ArithmeticQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;

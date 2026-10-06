@@ -6,6 +6,7 @@ type MessageKey =
   | 'app.title'
   | 'app.subtitle'
   | 'question.addition'
+  | 'question.subtraction'
   | 'action.check'
   | 'action.next'
   | 'feedback.correct'
@@ -17,6 +18,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.title': '10 Minutes Math',
     'app.subtitle': 'Grade 1 · Addition within 10',
     'question.addition': 'What is {a} + {b}?',
+    'question.subtraction': 'What is {a} - {b}?',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'feedback.correct': 'Correct!',
@@ -27,6 +29,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.title': '10 Menit Matematika',
     'app.subtitle': 'Kelas 1 · Penjumlahan sampai 10',
     'question.addition': 'Berapakah {a} + {b}?',
+    'question.subtraction': 'Berapakah {a} - {b}?',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'feedback.correct': 'Benar!',
@@ -37,6 +40,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.title': 'คณิตศาสตร์ 10 นาที',
     'app.subtitle': 'ชั้นประถมศึกษาปีที่ 1 · การบวกไม่เกิน 10',
     'question.addition': '{a} + {b} เท่ากับเท่าไร?',
+    'question.subtraction': '{a} - {b} เท่ากับเท่าไร?',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'feedback.correct': 'ถูกต้อง!',

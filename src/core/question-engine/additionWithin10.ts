@@ -1,5 +1,5 @@
-import type { Difficulty, Question, QuestionGenerationContext } from '../types';
-import { validateQuestion } from '../validation/validateQuestion';
+import type { ArithmeticQuestion, Difficulty, QuestionGenerationContext } from '../types';
+import { validateAdditionWithin10 } from '../validation/additionWithin10';
 import type { QuestionGenerator } from './generator';
 import { createSeededRandom } from './seededRandom';
 
@@ -9,7 +9,9 @@ const MAX_SUM_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
   3: 10,
 };
 
-export function generateAdditionWithin10(context: QuestionGenerationContext): Question {
+export function generateAdditionWithin10(
+  context: QuestionGenerationContext,
+): ArithmeticQuestion {
   if (context.grade !== 1) {
     throw new Error('addition_within_10 is currently available only for Grade 1.');
   }
@@ -58,5 +60,5 @@ export const additionWithin10Generator: QuestionGenerator = {
   supportedRepresentations: ['symbolic'],
   requiredConstraints: ['resultRange'],
   generate: generateAdditionWithin10,
-  validate: validateQuestion,
+  validate: validateAdditionWithin10,
 };

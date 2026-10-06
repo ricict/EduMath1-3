@@ -11,7 +11,7 @@ import type {
   RepresentationType,
   SkillId,
 } from '../types';
-import type { QuestionValidationResult } from '../validation/validateQuestion';
+import type { QuestionValidationResult } from '../validation/types';
 
 export type CanonicalConstraintKey = keyof CanonicalSkillConstraints;
 

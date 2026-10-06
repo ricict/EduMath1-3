@@ -11,9 +11,11 @@ import type {
 } from '../types';
 import { additionWithin10Generator } from './additionWithin10';
 import type { QuestionGenerator } from './generator';
+import { subtractionWithin10Generator } from './subtractionWithin10';
 
 export const registeredQuestionGenerators = [
   additionWithin10Generator,
+  subtractionWithin10Generator,
 ] as const satisfies readonly QuestionGenerator[];
 
 function includesValue<T>(values: readonly T[], value: T): boolean {
