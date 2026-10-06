@@ -14,7 +14,7 @@ export type PracticeScreenAnswer = Extract<
 
 export function supportsPracticeScreenQuestion(
   question: Question,
-): question is PracticeScreenQuestion {
+): boolean {
   return (
     question.questionType === 'numeric-choice' ||
     question.questionType === 'relation-choice' ||
