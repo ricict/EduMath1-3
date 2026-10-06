@@ -64,6 +64,7 @@ const ATTEMPT_STATUSES = [
 
 const SESSION_KEY_PREFIX = 'edumath:m4:practice-session:v1:';
 const RESUMABLE_SESSION_KEY = 'edumath:m4:resumable-session-id:v1';
+const COMPLETED_SESSION_INDEX_KEY = 'edumath:m4:completed-session-ids:v1';
 
 export interface KeyValueStorage {
   getItem(key: string): Promise<string | null>;
@@ -75,6 +76,7 @@ export interface LocalSessionStore {
   save(session: PracticeSession): Promise<void>;
   load(sessionId: string): Promise<PracticeSession | null>;
   loadResumable(): Promise<PracticeSession | null>;
+  listCompleted(): Promise<readonly PracticeSession[]>;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -566,6 +568,28 @@ function sessionStorageKey(sessionId: string): string {
   return `${SESSION_KEY_PREFIX}${encodeURIComponent(normalizedId)}`;
 }
 
+function parseCompletedSessionIds(serialized: string | null): readonly string[] {
+  if (serialized === null) {
+    return [];
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(serialized) as unknown;
+  } catch {
+    throw new Error('Completed session index is not valid JSON.');
+  }
+
+  if (
+    !Array.isArray(parsed) ||
+    parsed.some((value) => typeof value !== 'string' || value.length === 0)
+  ) {
+    throw new Error('Completed session index must contain only session IDs.');
+  }
+
+  return [...new Set(parsed)];
+}
+
 export function createLocalSessionStore(
   storage: KeyValueStorage,
 ): LocalSessionStore {
@@ -582,6 +606,16 @@ export function createLocalSessionStore(
       await storage.setItem(sessionStorageKey(session.id), serialized);
 
       if (session.status === 'completed') {
+        const completedIds = parseCompletedSessionIds(
+          await storage.getItem(COMPLETED_SESSION_INDEX_KEY),
+        );
+        if (!completedIds.includes(session.id)) {
+          await storage.setItem(
+            COMPLETED_SESSION_INDEX_KEY,
+            JSON.stringify([...completedIds, session.id]),
+          );
+        }
+
         const resumableId = await storage.getItem(RESUMABLE_SESSION_KEY);
         if (resumableId === session.id) {
           await storage.removeItem(RESUMABLE_SESSION_KEY);
@@ -607,6 +641,26 @@ export function createLocalSessionStore(
       }
 
       return session;
+    },
+
+    async listCompleted() {
+      const sessionIds = parseCompletedSessionIds(
+        await storage.getItem(COMPLETED_SESSION_INDEX_KEY),
+      );
+      const sessions: PracticeSession[] = [];
+
+      for (const sessionId of sessionIds) {
+        const session = await load(sessionId);
+        if (session === null) {
+          throw new Error(`Completed session index references missing session ${sessionId}.`);
+        }
+        if (session.status !== 'completed') {
+          throw new Error(`Completed session index references non-completed session ${sessionId}.`);
+        }
+        sessions.push(session);
+      }
+
+      return sessions;
     },
   };
 }

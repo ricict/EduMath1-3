@@ -109,6 +109,10 @@ test('completed session remains loadable by ID but is no longer resumable', asyn
 
   assert.deepEqual(await store.load(completed.id), completed);
   assert.equal(await store.loadResumable(), null);
+  assert.deepEqual(await store.listCompleted(), [completed]);
+
+  await store.save(completed);
+  assert.deepEqual(await store.listCompleted(), [completed]);
 });
 
 test('invalid JSON and unsupported schema versions fail explicitly', () => {
@@ -194,5 +198,18 @@ test('completed attempt integrity requires the correct terminal answer timestamp
   assert.throws(
     () => deserializePracticeSession(JSON.stringify(parsed)),
     /correct terminal answer/,
+  );
+});
+
+
+test('completed session index rejects malformed persisted data', async () => {
+  const storage = new MemoryKeyValueStorage();
+  const store = createLocalSessionStore(storage);
+
+  storage.values.set('edumath:m4:completed-session-ids:v1', '{broken');
+
+  await assert.rejects(
+    () => store.listCompleted(),
+    /Completed session index is not valid JSON/,
   );
 });
