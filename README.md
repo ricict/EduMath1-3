@@ -13,7 +13,7 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
 - **M6 — Visual Mathematics & Pedagogy: IN PROGRESS**
 
-M1 through M5 were completed on 2026-10-06. M6 is now in progress. Representative child-facing visual rendering now covers large numerals, addition object groups, unit fractions, analog clocks, and an opt-in number-line representation for number comparison. The interaction layer supports all currently defined question types: `numeric-choice`, `relation-choice`, `fraction-choice`, and `time-choice`. Numeric, fraction, and time answer options are semantic deterministic M3 data rather than React-generated distractors. The practice controller starts fresh Grade 1 sessions through the locked M5 recommendation-to-M4 bridge. M6 is not complete yet because representative geometry and data-display families remain to be implemented.
+M1 through M5 were completed on 2026-10-06. M6 is now in progress. Representative child-facing visual rendering now covers large numerals, addition object groups, unit fractions, analog clocks, an opt-in number-line representation for number comparison, and common 2D shapes. The interaction layer supports all currently defined question types: `numeric-choice`, `relation-choice`, `fraction-choice`, `time-choice`, and `shape-choice`. Numeric, fraction, time, and shape answer options are semantic deterministic M3 data rather than React-generated distractors. The practice controller starts fresh Grade 1 sessions through the locked M5 recommendation-to-M4 bridge. M6 is not complete yet because representative data-display families remain to be implemented.
 
 ## Technical stack
 
@@ -181,7 +181,7 @@ The M3 completion lock originally contained six deterministic representative gen
 - `unit_fractions` — Grades 2–3, consumes canonical `allowedDenominators`;
 - `tell_time_hour_half_hour` — Grades 1–2, semantic clock representation.
 
-The current registered generator suite contains eight generators and exercises Grades 1, 2, and 3 with representative capabilities for number identification, addition, subtraction, number comparison, multiplication, fractions, and time.
+The current registered generator suite contains nine generators and exercises Grades 1, 2, and 3 with representative capabilities for number identification, addition, subtraction, number comparison, multiplication, fractions, time, and 2D-shape identification.
 
 The locked M1 reference remains:
 
@@ -373,6 +373,6 @@ Two intermediate CI failures were repaired narrowly: run 31 exposed connector es
 
 M5 does not claim that every Grade 1–3 canonical skill is already practiceable. M3 generator coverage remains intentionally incremental, and M5 represents unavailable curriculum/generator states explicitly.
 
-M6 — Visual Mathematics & Pedagogy remains in progress. Its implemented representative families now include large numerals, object groups, equal-part fractions, analog clocks, and number lines. Geometry/shapes and data displays remain inside the M6 completion scope. M6 continues to preserve M1–M5 mathematics, session, persistence, and adaptive-policy contracts.
+M6 — Visual Mathematics & Pedagogy remains in progress. Its implemented representative families now include large numerals, object groups, equal-part fractions, analog clocks, number lines, and common 2D shapes. Representative tables, pictograms, and bar charts remain inside the M6 completion scope. M6 continues to preserve M1–M5 mathematics, session, persistence, and adaptive-policy contracts.
 
 See docs/m2-curriculum-engine.md for M2, docs/m3-question-generation-engine.md for M3, docs/m4-learning-session-offline-storage.md for M4, and docs/m5-mastery-adaptive-learning.md for the M5 completion lock.

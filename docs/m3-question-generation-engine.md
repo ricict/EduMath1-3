@@ -286,9 +286,30 @@ M5 therefore justified two narrowly scoped additions using the existing M3 contr
 - number_recognition_10 — Grade 1, number-identification capability, visual semantic representation, canonical valueRange;
 - addition_concept — Grade 1, addition capability, visual combine-group semantics, canonical resultRange.
 
-The current registry therefore contains eight generators.
+At the M5 completion checkpoint, the registry therefore contained eight generators.
 
 This extension did not replace the shared PRNG, registry architecture, validation boundary, deterministic dispatch, semantic question model, or the locked M1 reference. It is an example of later milestones extending generator coverage only after a concrete downstream requirement is demonstrated.
+
+### 6.8 Post-M3 extension required by M6
+
+The M6 geometry scope exposed the next concrete representative-family requirement: `identify_2d_shapes` existed in the locked M2 ontology but had no M3 generator.
+
+M6 therefore added one narrowly scoped generator through the existing M3 registry contract:
+
+- `identify_2d_shapes` — Grades 1–2, `shape` capability, deterministic `shape-choice` questions, visual representation.
+
+The semantic shape domain is:
+
+```text
+circle
+triangle
+square
+rectangle
+```
+
+Difficulty controls which members of that domain are eligible and therefore which semantic answer options are exposed. The generated target shape is fixed before rendering; React does not classify, randomize, or generate mathematical distractors.
+
+The live registry now contains nine generators. The shared seeded PRNG implementation, registry architecture, validation boundary, and locked M1 reference remain unchanged. M4 persistence remains schema version 1; its additive typed `shape` learner-answer variant is a downstream compatibility extension rather than a new M3 persistence contract.
 
 ## 7. Generator-specific validation
 

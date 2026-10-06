@@ -525,7 +525,103 @@ Result : SUCCESS
 Tests  : 133 passed / 0 failed
 ```
 
-## 23. Current M6 state
+## 23. 2D-shape semantics, interaction, and rendering increment
+
+The next representative family uses the locked M2 canonical skill:
+
+```text
+identify_2d_shapes
+```
+
+Canonical M2 defines this skill for Grades 1–2 with `shape` generator
+capability and permits `visual` and `concrete` representations. This M6
+increment implements only the visual path; it does not invent a separate
+curriculum or claim that a screen-drawn shape is a concrete manipulative.
+
+The explicit semantic shape domain is:
+
+```text
+circle
+triangle
+square
+rectangle
+```
+
+Difficulty progressively expands the available domain:
+
+```text
+difficulty 1 -> circle, triangle
+difficulty 2 -> circle, triangle, square
+difficulty 3 -> circle, triangle, square, rectangle
+```
+
+M3 now emits deterministic `shape-choice` questions with operation:
+
+```text
+identify-2d-shape
+```
+
+and semantic data:
+
+```text
+shape
+answerOptions
+expectedAnswer
+```
+
+The answer options are deterministic M3 data. React does not infer the shape
+name, create distractors, or perform randomization.
+
+M4 received one additive typed learner-answer variant:
+
+```text
+{
+  kind: 'shape',
+  value: Shape2D
+}
+```
+
+The persistence schema remains **version 1**. A dedicated serialization and
+restore regression verifies that schema-v1 sessions containing shape answers
+round-trip correctly, while all previously persisted schema-v1 variants
+remain readable.
+
+The pure M6 visual model copies the generated semantic `shape` exactly.
+`VisualQuestion` renders circle, triangle, square, and rectangle with React
+Native primitives only. No SVG/canvas dependency and no visual PRNG were
+introduced.
+
+EN/ID/TH localization provides child-facing shape names and semantic
+accessibility labels. The practice interaction submits typed shape answers
+back to M4; correctness remains owned by M4 evaluation.
+
+Verification:
+
+```text
+2D-shape implementation
+Commit : d35637821c9c6c45ad8e968fa468587fabcfe496
+Run    : 56
+Result : SUCCESS
+Tests  : 143 passed / 0 failed
+
+Import-warning cleanup
+Commit : 4d9723c3923e47010468177a95334b0ace599fb3
+Run    : 57
+Result : SUCCESS
+Tests  : 143 passed / 0 failed
+```
+
+The M1 deterministic regression remains unchanged:
+
+```text
+grade 1
+addition_within_10
+difficulty 3
+seed 20261006
+-> 4 + 1 = 5
+```
+
+## 24. Current M6 state and next objective
 
 Implemented representative visual families now include:
 
@@ -535,20 +631,43 @@ object groups
 equal-part fraction strip
 analog clock
 number line
+common 2D shapes
 ```
 
-Implemented child-facing interaction types include all currently defined
-question types:
+Implemented child-facing interaction types now include:
 
 ```text
 numeric-choice
 relation-choice
 fraction-choice
 time-choice
+shape-choice
 ```
 
-The next M6 objective is a representative geometry family beginning with
-`identify_2d_shapes`. That increment must add typed shape semantics,
-shape-choice interaction, persistence-safe learner answers, localized shape
-names/accessibility, and React Native shape rendering before moving to data
-representations.
+M6 remains **IN PROGRESS**. The remaining representative data-display scope is:
+
+```text
+tables
+pictograms
+bar charts
+```
+
+The next coherent objective is **M6 Increment 6 — Simple Tally/Table Data
+Semantics & Visual Rendering**, beginning with the live M2 canonical skill:
+
+```text
+tally_and_simple_tables
+```
+
+Its locked M2 contract is:
+
+- Grades 1–2;
+- prerequisites: `sort_classify_objects`, `count_objects_20`;
+- generator capability: `data-table`;
+- permitted representations: `table`, `visual`.
+
+The exact question semantics and child-facing answer type must be designed
+from that canonical contract and the current architecture before code is
+added. After table coverage, M6 still needs representative
+`pictograms_simple` and `bar_charts_unit_scale` coverage before a terminal
+scope audit can consider M6 complete.
