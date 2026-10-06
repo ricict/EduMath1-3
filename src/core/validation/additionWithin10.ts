@@ -3,7 +3,6 @@ import type { QuestionValidationResult } from './types';
 
 export function validateAdditionWithin10(question: Question): QuestionValidationResult {
   const errors: string[] = [];
-  const { a, b, operation } = question.data;
 
   if (question.grade !== 1) {
     errors.push('addition_within_10 must remain in Grade 1 for the M1 vertical slice.');
@@ -11,9 +10,12 @@ export function validateAdditionWithin10(question: Question): QuestionValidation
   if (question.skillId !== 'addition_within_10') {
     errors.push('Question skill must be addition_within_10.');
   }
-  if (operation !== 'addition') {
+  if (question.data.operation !== 'addition') {
     errors.push('Question operation must be addition.');
+    return { valid: false, errors };
   }
+
+  const { a, b } = question.data;
   if (!Number.isInteger(a) || !Number.isInteger(b)) {
     errors.push('Operands must be integers.');
   }

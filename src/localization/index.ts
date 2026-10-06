@@ -7,6 +7,7 @@ type MessageKey =
   | 'app.subtitle'
   | 'question.addition'
   | 'question.subtraction'
+  | 'question.numberComparison'
   | 'action.check'
   | 'action.next'
   | 'feedback.correct'
@@ -19,6 +20,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'Grade 1 · Addition within 10',
     'question.addition': 'What is {a} + {b}?',
     'question.subtraction': 'What is {a} - {b}?',
+    'question.numberComparison': 'Compare {left} and {right}. Choose <, =, or >.',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'feedback.correct': 'Correct!',
@@ -30,6 +32,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'Kelas 1 · Penjumlahan sampai 10',
     'question.addition': 'Berapakah {a} + {b}?',
     'question.subtraction': 'Berapakah {a} - {b}?',
+    'question.numberComparison': 'Bandingkan {left} dan {right}. Pilih <, =, atau >.',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'feedback.correct': 'Benar!',
@@ -41,6 +44,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'app.subtitle': 'ชั้นประถมศึกษาปีที่ 1 · การบวกไม่เกิน 10',
     'question.addition': '{a} + {b} เท่ากับเท่าไร?',
     'question.subtraction': '{a} - {b} เท่ากับเท่าไร?',
+    'question.numberComparison': 'เปรียบเทียบ {left} และ {right} เลือก <, = หรือ >',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'feedback.correct': 'ถูกต้อง!',
@@ -61,6 +65,13 @@ export function translate(
 }
 
 export function renderQuestionPrompt(question: Question, locale: Locale): string {
+  if (question.data.operation === 'number-comparison') {
+    return translate(locale, question.promptKey, {
+      left: question.data.left,
+      right: question.data.right,
+    });
+  }
+
   return translate(locale, question.promptKey, {
     a: question.data.a,
     b: question.data.b,

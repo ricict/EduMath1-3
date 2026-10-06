@@ -39,7 +39,7 @@ export type MathTopic =
 
 export type Difficulty = 1 | 2 | 3;
 
-export type QuestionType = 'numeric-choice';
+export type QuestionType = 'numeric-choice' | 'relation-choice';
 
 export type RepresentationType =
   | 'symbolic'
@@ -52,18 +52,27 @@ export type RepresentationType =
   | 'pictogram'
   | 'bar-chart';
 
-export type QuestionPromptKey = 'question.addition' | 'question.subtraction';
+export type QuestionPromptKey =
+  | 'question.addition'
+  | 'question.subtraction'
+  | 'question.numberComparison';
 
-export interface ArithmeticQuestion {
+export interface QuestionBase {
   id: string;
   grade: Grade;
   domain: MathDomain;
   topic: MathTopic;
   skillId: SkillId;
   difficulty: Difficulty;
+  questionType: QuestionType;
+  representation: RepresentationType;
+  promptKey: QuestionPromptKey;
+}
+
+export interface ArithmeticQuestion extends QuestionBase {
   questionType: 'numeric-choice';
   representation: 'symbolic';
-  promptKey: QuestionPromptKey;
+  promptKey: 'question.addition' | 'question.subtraction';
   data: {
     operation: 'addition' | 'subtraction';
     a: number;
@@ -72,7 +81,21 @@ export interface ArithmeticQuestion {
   expectedAnswer: number;
 }
 
-export type Question = ArithmeticQuestion;
+export type ComparisonRelation = 'less-than' | 'equal' | 'greater-than';
+
+export interface NumberComparisonQuestion extends QuestionBase {
+  questionType: 'relation-choice';
+  representation: 'symbolic';
+  promptKey: 'question.numberComparison';
+  data: {
+    operation: 'number-comparison';
+    left: number;
+    right: number;
+  };
+  expectedAnswer: ComparisonRelation;
+}
+
+export type Question = ArithmeticQuestion | NumberComparisonQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;
