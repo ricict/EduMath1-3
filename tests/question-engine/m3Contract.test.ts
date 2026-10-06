@@ -37,7 +37,10 @@ test('M3 registry collectively covers Grades 1-3 and representative generation m
     [...questionTypes].sort(),
     ['fraction-choice', 'numeric-choice', 'relation-choice', 'time-choice'],
   );
-  assert.deepEqual([...representations].sort(), ['clock', 'symbolic', 'visual']);
+  assert.deepEqual(
+    [...representations].sort(),
+    ['clock', 'number-line', 'symbolic', 'visual'],
+  );
 });
 
 test('every registered generator passes a deterministic grade-difficulty-seed matrix through dispatch and validation', () => {
