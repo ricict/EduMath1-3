@@ -1,8 +1,8 @@
 # M5 — Mastery & Adaptive Learning Engine
 
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
-Started: **2026-10-06**
+Completion date: **2026-10-06**
 
 ## 1. Purpose
 
@@ -10,43 +10,54 @@ M5 answers:
 
 **Given validated historical learner outcomes and the canonical curriculum DAG, what is the learner's current skill state and what eligible practice should be recommended next?**
 
-M5 consumes:
+M5 consumes M2 curriculum structure, M3 generator capability, and M4 validated completed-session history.
 
-- M2 canonical skills, grades, prerequisites, and deterministic topological progression;
-- M3 generator availability and generator context metadata;
-- M4 validated completed-session history.
+It does not redefine the canonical mathematics catalog, generator mathematics, session timing, or storage semantics.
 
-M5 does not redefine curriculum, question mathematics, validation, session timing, or persistence semantics.
+## 2. Final architecture
 
-## 2. First implementation increment
-
-The first implementation increment adds:
+The M5 domain lives under:
 
     src/core/adaptive/
       types.ts
       mastery.ts
-      recommendation.ts
       history.ts
+      recommendation.ts
+      startRecommendedPractice.ts
 
-and deterministic tests under:
+The final dependency direction is:
 
-    tests/adaptive/
+    M4 completed history
+        ↓
+    M5 evidence extraction
+        ↓
+    M5 mastery state
+        ↓
+    M2 prerequisite eligibility
+        ↓
+    M3 generator availability
+        ↓
+    M5 deterministic recommendation
+        ↓
+    M4 session creation
+        ↓
+    M3 first question generation
 
-The React practice UI is not connected to M5 yet.
+The React screen is not part of this M5 completion boundary.
 
-## 3. Evidence boundary
+## 3. Historical evidence boundary
 
-Historical evidence comes from:
+Historical evidence comes only from:
 
     LocalSessionStore.listCompleted()
 
-Only completed M4 sessions are accepted by the mastery builder.
+Active or paused sessions are rejected as historical mastery evidence.
 
-Active or paused sessions are not treated as historical mastery evidence.
+M5 consumes semantic question attempts rather than translated prompts.
 
-M5 does not read translated prompts. It uses semantic question-attempt records.
+Completed M4 records are not mutated.
 
-## 4. Unit of mastery state
+## 4. Unit of learner state
 
 The primary evidence unit is:
 
@@ -54,39 +65,37 @@ The primary evidence unit is:
 
 Each completed question contributes exactly one evidence unit.
 
-The evidence record retains:
+Evidence retains:
 
-- canonical SkillId;
+- SkillId;
 - grade;
 - difficulty;
 - local session ID;
 - question ordinal;
-- question completion timestamp;
-- whether the first submission was correct;
-- number of incorrect submissions before the terminal correct answer.
+- completion timestamp;
+- first-submission correctness;
+- incorrect submission count before the terminal correct answer.
 
-Evidence is aggregated across completed sessions.
+Evidence aggregates across completed sessions.
 
-The stable canonical SkillId is the learning identity. Grade is retained as evidence metadata rather than splitting the same canonical skill into unrelated grade-specific mastery records.
+Grade remains evidence metadata. The stable SkillId is the learning identity.
 
 ## 5. Retry semantics
 
-A completed M4 question always ends with a correct answer.
+M4 completed attempts always terminate with a correct answer, so terminal correctness alone is not a useful mastery signal.
 
-Therefore terminal correctness alone cannot distinguish independent success from success after retry.
+M5 therefore uses first-submission correctness:
 
-M5 uses the first submission as the independent-success signal:
+- first answer correct → first-try success;
+- first answer incorrect → retry-required evidence.
 
-- first submission correct = first-try success;
-- first submission incorrect = retry-required evidence.
+A question still contributes only one evidence unit regardless of the number of retries.
 
-Additional retries do not create additional positive evidence units.
+Retries therefore cannot inflate mastery by creating extra positive observations.
 
-This prevents repeated attempts on one question from inflating mastery.
+## 6. Engineering mastery policy
 
-## 6. Current engineering mastery policy
-
-The current policy constants are:
+The frozen M5 policy is:
 
     recentEvidenceWindow = 5
     minimumEvidencePerDifficulty = 5
@@ -94,193 +103,249 @@ The current policy constants are:
 
 For each SkillId and difficulty:
 
-- fewer than five completed questions = insufficient-evidence;
-- five or more questions, with fewer than four first-try successes among the most recent five = developing;
-- five or more questions, with at least four first-try successes among the most recent five = mastered.
+- fewer than five evidence units → insufficient-evidence;
+- at least five evidence units and fewer than four first-try successes in the most recent five → developing;
+- at least five evidence units and at least four first-try successes in the most recent five → mastered.
 
-This corresponds to an 80 percent first-try threshold over the current five-question recency window.
+This is an engineering policy.
 
-These values are **engineering policy**, not externally validated pedagogical thresholds.
+It is not presented as a scientifically validated pedagogical cutoff.
 
-They must not be described as scientifically established mastery cutoffs.
+Any future threshold change must be deliberate, documented, and regression-tested.
 
 ## 7. Recency semantics
 
-Recency is explicit rather than implicit.
+Evidence is ordered deterministically by:
 
-Evidence is deterministically ordered by:
+1. completion timestamp;
+2. session ID when timestamps tie;
+3. question ordinal when both previous values tie.
 
-1. question completion timestamp;
-2. local session ID when timestamps tie;
-3. question ordinal when session IDs also tie.
+The most recent five evidence units at a difficulty determine current status once minimum evidence exists.
 
-Only the most recent five evidence units at a difficulty determine the current mastery classification once minimum evidence is available.
-
-Older evidence remains counted in total evidence but does not dominate current status.
+Older evidence remains part of the historical count but does not dominate current classification.
 
 ## 8. Skill-level mastery
 
-A canonical skill is mastered only when all three current M3 difficulty levels are mastered:
+A canonical skill is mastered only when all three current difficulty levels are mastered:
 
     difficulty 1
     difficulty 2
     difficulty 3
 
-If at least one difficulty has an established developing/mastered state but all three are not mastered, the skill is developing.
+The next recommended difficulty is the lowest difficulty not yet mastered.
 
-If no difficulty has enough evidence to establish developing/mastered status, the skill remains insufficient-evidence.
+A skill with some established progress but incomplete difficulty mastery remains developing.
 
-The recommended difficulty is the lowest difficulty not yet mastered.
-
-This is conservative and deterministic.
+A skill without sufficient evidence remains insufficient-evidence.
 
 ## 9. Curriculum eligibility
 
-M5 does not invent mathematics or bypass M2 progression.
+M5 never decides what mathematics exists.
+
+M2 remains authoritative.
 
 For a candidate skill:
 
 - the skill must be applicable to the requested grade;
-- the full transitive prerequisite closure is obtained from the M2 DAG;
-- every prerequisite in that closure must currently be mastered.
+- M5 obtains the complete transitive prerequisite closure from the M2 DAG;
+- every prerequisite must be mastered.
 
-A prerequisite with insufficient evidence is not treated as mastered.
+Insufficient evidence is not silently treated as prerequisite mastery.
 
-A prerequisite override or grade-entry assumption would require a separate explicit design decision and tests.
+M5 includes no prerequisite override.
 
 ## 10. Generator availability
 
-Curriculum eligibility and actual practiceability are different states.
+Curriculum eligibility and practiceability are separate.
 
-After a skill is curriculum-eligible, M5 checks whether M3 has a generator for the skill and whether that generator supports the requested grade and selected difficulty.
+A curriculum-eligible skill is practiceable only when M3 has a generator that supports the required skill, grade, and difficulty.
 
-If not, the skill remains curriculum-eligible but is not currently practiceable.
+If that requirement is not satisfied, M5 returns an explicit unavailable state or continues with another legitimately eligible/practiceable skill according to policy.
 
-M5 does not silently fall back to an unrelated generated skill.
+It never silently substitutes an unrelated skill.
 
 ## 11. Recommendation policy
 
-Among curriculum-eligible, generator-supported, unmastered skills:
+For curriculum-eligible, generator-supported, unmastered candidates:
 
-1. an eligible skill that already has learner evidence is preferred over an unseen eligible skill;
-2. remaining ties are resolved by the deterministic M2 topological order.
+1. eligible in-progress skills are preferred over unseen skills;
+2. remaining ties follow M2 deterministic topological order.
 
-The recommendation includes:
+A practice recommendation contains:
 
 - grade;
-- canonical SkillId;
-- selected difficulty;
-- a structured reason code;
+- SkillId;
+- difficulty;
+- structured reason;
 - prerequisite SkillIds;
-- current evidence count for the selected skill.
+- evidence count.
 
-Current practice reason codes are:
+Practice reason codes are:
 
     START_ELIGIBLE_SKILL
     CONTINUE_SKILL
     ADVANCE_DIFFICULTY
 
-When no practice can safely be recommended, M5 returns a structured unavailable result rather than choosing a fallback.
+Unavailable conditions remain structured and explicit.
 
-## 12. Current generator-entry blocker
+## 12. Grade 1 entry-path resolution
 
-The current M3 registry contains six representative generators:
+The first M5 implementation exposed a real blocker: the original six M3 generators all sat behind prerequisites, while no Grade 1 root skill was generator-supported.
 
-- addition_within_10;
-- subtraction_within_10;
-- compare_order_numbers_20;
-- multiplication_facts_2_5_10;
-- unit_fractions;
-- tell_time_hour_half_hour.
+M5 did not solve this by assuming mastery or bypassing the DAG.
 
-Every one of these skills has one or more canonical prerequisites.
+Instead, the concrete blocker justified two M3 extensions:
 
-At the same time, the currently curriculum-eligible root skills for a new Grade 1 learner do not have M3 generators.
+    number_recognition_10
+    addition_concept
 
-Therefore, with strict prerequisite enforcement, a new learner currently has curriculum-eligible skills but no curriculum-eligible practiceable skill.
+The resulting tested Grade 1 entry path is:
 
-M5 now returns:
+    number_recognition_10
+            ↓
+    addition_concept
+            ↓
+    addition_within_10
 
-    NO_PRACTICABLE_CURRICULUM_ELIGIBLE_SKILL
+number_recognition_10 uses visual semantic number-recognition data.
 
-for that situation.
+addition_concept models combining two non-negative groups and remains semantically distinct from symbolic addition_within_10.
 
-This is an explicit architecture result, not an error to hide.
+Both use the existing M3 registry, validation, deterministic PRNG, canonical constraint metadata, and semantic/localization separation.
 
-It establishes a concrete blocking requirement for a later decision about entry-path generator coverage or an explicitly designed placement/bootstrap policy.
+## 13. Recommendation-to-session bridge
 
-M5 does not make that policy decision in this increment.
+M5 adds:
 
-## 13. Persistence decision
+    startRecommendedPractice(...)
 
-No new mastery persistence schema is introduced in the first increment.
+The function:
 
-The learner model is derived deterministically from validated completed M4 sessions.
+1. loads validated completed history;
+2. builds the learner model;
+3. obtains the deterministic M5 recommendation;
+4. returns the unavailable recommendation unchanged when no safe practice exists;
+5. otherwise creates the matching M4 PracticeSession;
+6. issues the first question through M4, which delegates generation to the M3 registry.
+
+The bridge does not bypass M4 persistence or M3 validation.
+
+It does not automatically save the new session; persistence remains owned by the session/application boundary.
+
+## 14. Persistence decision
+
+M5 introduces no new persisted mastery schema.
+
+The learner model is derived from validated completed M4 history.
 
 Reasons:
 
-- M4 already stores the necessary semantic history;
-- derived state can be reproduced exactly;
-- avoiding a second persisted mastery cache prevents drift;
-- no migration of PRACTICE_SESSION_SCHEMA_VERSION = 1 is required.
+- M4 already stores sufficient semantic evidence;
+- derived state is deterministic;
+- a second mastery cache could drift from authoritative history;
+- current history volume does not justify a separate optimization layer;
+- PRACTICE_SESSION_SCHEMA_VERSION remains 1.
 
-A persisted derived summary may be introduced later only if actual performance or query requirements justify it.
+A future cache or migration requires an actual performance/query requirement.
 
-## 14. Privacy
+## 15. Privacy
 
-M5 adds no:
+M5 adds no requirement for:
 
-- child name;
+- child full name;
 - email;
 - phone;
 - location;
-- advertising identifier;
+- advertising ID;
 - social login;
 - cloud identity;
-- tracking identifier.
+- tracking ID.
 
-The current learner model remains derived from local semantic practice history.
+Learner state remains derived from local semantic practice history.
 
-## 15. Testing
+## 16. Testing and CI
 
-The first M5 increment verifies:
+M5 tests cover:
 
-- one completed question produces one evidence unit;
-- retries do not inflate positive mastery evidence;
-- insufficient evidence is distinct from developing/mastered state;
-- four first-try successes in the recent five master one difficulty;
-- three first-try successes in five do not;
-- all three difficulty levels are required for skill mastery;
-- the most recent evidence window controls current status;
-- identical history produces identical learner state regardless of input session order;
-- non-completed sessions are rejected as historical evidence;
-- LocalSessionStore.listCompleted is the historical source boundary;
-- historical sessions are not mutated;
-- transitive prerequisites are enforced;
+- same history → same mastery state;
+- same history → same recommendation;
+- retry attempts cannot inflate mastery;
+- insufficient evidence remains distinct from developing/mastered state;
+- mastery thresholds operate per difficulty;
+- recency uses the deterministic recent-five window;
+- all three difficulties are required for skill mastery;
+- completed-history order does not change the derived model;
+- non-completed sessions are rejected as history;
+- LocalSessionStore.listCompleted is the evidence boundary;
+- transitive prerequisites block dependent skills;
 - generator availability remains separate from curriculum eligibility;
-- a new learner receives an explicit unavailable result rather than a prerequisite bypass;
-- deterministic topological tie-breaking is preserved;
-- eligible in-progress practice is preferred over unseen practice.
+- recommendation ties are deterministic;
+- Grade 1 zero-history begins at number_recognition_10;
+- difficulty progression remains on the same in-progress skill;
+- mastered number recognition unlocks addition_concept;
+- mastered addition_concept unlocks addition_within_10;
+- the recommendation-to-session bridge creates the exact M4 plan selected by M5;
+- the first issued question matches the recommendation;
+- fixed history and fixed session inputs reproduce the same adaptive start;
+- unavailable Grade 3 state remains explicit rather than manufacturing practice;
+- M1 locked deterministic addition remains unchanged;
+- all prior M1–M4 tests remain green.
 
-Implementation checkpoint:
+Final implementation checkpoint before documentation lock:
 
-    Commit     : 972e81db4ce7e8660be1eb9c4911691927841314
-    Run number : 29
-    Run ID     : 37470514354
+    Commit     : e9dde1483ee2a8bd495b87eef182b08e488b1566
+    Run number : 34
+    Run ID     : 37473526373
     Status     : completed
     Conclusion : success
-    Tests      : 92 passed / 0 failed
+    Tests      : 105 passed / 0 failed
 
-## 16. Current boundary
+Intermediate implementation history:
 
-M5 is not complete yet.
+- run 31 failed because connector escaping damaged localization/test regular expressions and because a legacy registry test still expected six generators;
+- commit 94ce85a5cbe1c86006d9a175716d52e2efc9fbae repaired the escaping;
+- run 32 then failed only on the stale 6→8 generator-count expectation;
+- commit 927f019ef481998f031a9ee652ddc5761910145c updated that regression expectation;
+- run 33 passed 101/101 tests for the completed entry path;
+- run 34 passed 105/105 tests after adding the recommendation-to-session bridge.
 
-Still unresolved:
+## 17. Known limitations
 
-- the entry-path blocker created by strict prerequisites plus limited M3 generator coverage;
-- whether generator coverage should be expanded for root/prerequisite skills or a separate placement/bootstrap contract should be designed;
-- connection of the stable M5 recommendation API to session creation;
-- persistence/performance review after realistic history volume exists;
-- final M5 completion audit and documentation lock.
+M5 completion does not mean all 60 canonical skills have generators.
 
-Do not connect React UI to M5 until the entry-path policy is explicitly resolved.
+Some Grade 2–3 or later progression states may correctly return unavailable until M3 coverage expands.
+
+The new number-recognition and addition-concept questions carry visual semantic data, but M5 intentionally does not implement their final visual components.
+
+No official Cambridge, Indonesian, Thai, or Montessori curriculum alignment is claimed.
+
+The mastery thresholds are engineering policy rather than externally validated pedagogical thresholds.
+
+## 18. M5 completion boundary
+
+M5 is complete because it now provides a deterministic, explainable, offline-first learner model and adaptive policy constrained by the M2 curriculum, backed by M4 historical evidence, aware of M3 generator availability, and able to create the selected M4 session without bypassing prerequisites.
+
+M5 does not include:
+
+- full visual mathematics rendering;
+- concrete/visual manipulatives;
+- final fraction, clock, geometry, chart, or object-group components;
+- formal provider curriculum mapping;
+- parent dashboards;
+- cloud accounts or sync;
+- ML knowledge tracing;
+- reinforcement learning;
+- LLM-based recommendations.
+
+Those exclusions are deliberate rather than missing M5 requirements.
+
+## 19. Next milestone
+
+The next milestone is:
+
+**M6 — Visual Mathematics & Pedagogy**
+
+M6 should consume the semantic question and adaptive/session foundations now locked through M5 and implement child-facing mathematical representations, including concrete → visual → abstract progression where appropriate.
+
+M6 must not casually change M5 mastery thresholds, prerequisite semantics, M4 timing/persistence, or M3 deterministic generation contracts.

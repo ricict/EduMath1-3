@@ -275,6 +275,21 @@ Difficulty rules:
 
 The semantic question stores hour/minute data and a structured time answer. M3 does not implement the final clock drawing component.
 
+### 6.7 Post-M3 extension required by M5
+
+M3 originally completed with the six representative generators documented above.
+
+During M5, strict prerequisite enforcement exposed a concrete Grade 1 entry-path blocker: every original registered generator depended on prerequisite skills, while the curriculum-eligible root skills had no generator.
+
+M5 therefore justified two narrowly scoped additions using the existing M3 contracts:
+
+- number_recognition_10 — Grade 1, number-identification capability, visual semantic representation, canonical valueRange;
+- addition_concept — Grade 1, addition capability, visual combine-group semantics, canonical resultRange.
+
+The current registry therefore contains eight generators.
+
+This extension did not replace the shared PRNG, registry architecture, validation boundary, deterministic dispatch, semantic question model, or the locked M1 reference. It is an example of later milestones extending generator coverage only after a concrete downstream requirement is demonstrated.
+
 ## 7. Generator-specific validation
 
 Generation and validation remain separate.

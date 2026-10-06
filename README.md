@@ -10,9 +10,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 - **M2 — Curriculum & Canonical Skill Engine: COMPLETE**
 - **M3 — Question Generation Engine: COMPLETE**
 - **M4 — Learning Session & Offline Storage: COMPLETE**
-- **M5 — Mastery & Adaptive Learning Engine: IN PROGRESS**
+- **M5 — Mastery & Adaptive Learning Engine: COMPLETE**
 
-M1 through M4 were completed on 2026-10-06. M5 is now in progress. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 now derives explainable mastery state and curriculum-constrained practice recommendations from validated completed-session history while preserving the original M1 Grade 1 addition regression contract.
+M1 through M5 were completed on 2026-10-06. M2 defines the canonical mathematics skill model; M3 consumes that model through a typed, deterministic question-generation registry; M4 adds deterministic learner sessions and versioned device-local persistence; M5 derives explainable mastery state, applies strict curriculum prerequisites, recommends eligible practice, and can start the recommended M4 session while preserving the original M1 Grade 1 addition regression contract.
 
 ## Technical stack
 
@@ -169,8 +169,10 @@ The current React Native practice screen remains deliberately narrow: it demonst
 
 ## M3 representative generators
 
-The completed M3 architecture includes six deterministic representative generators:
+The M3 completion lock originally contained six deterministic representative generators. M5 later added two narrowly scoped Grade 1 entry-path generators without changing the M3 architecture:
 
+- `number_recognition_10` — Grade 1, M5 entry-path root;
+- `addition_concept` — Grade 1, M5 prerequisite bridge using visual combine-group semantics;
 - `addition_within_10` — Grade 1, preserved M1 regression generator;
 - `subtraction_within_10` — Grade 1;
 - `compare_order_numbers_20` — Grade 1;
@@ -178,7 +180,7 @@ The completed M3 architecture includes six deterministic representative generato
 - `unit_fractions` — Grades 2–3, consumes canonical `allowedDenominators`;
 - `tell_time_hour_half_hour` — Grades 1–2, semantic clock representation.
 
-The registered generator suite therefore exercises Grades 1, 2, and 3 and representative capabilities for addition, subtraction, number comparison, multiplication, fractions, and time.
+The current registered generator suite contains eight generators and exercises Grades 1, 2, and 3 with representative capabilities for number identification, addition, subtraction, number comparison, multiplication, fractions, and time.
 
 The locked M1 reference remains:
 
@@ -324,43 +326,52 @@ M4 is complete because:
 - no accounts, child PII, tracking, remote storage, mastery scoring, or adaptive sequencing were introduced;
 - all M1–M3 regression contracts remain green.
 
-## M5 current increment
+## M5 completion criteria
 
-M5 is **IN PROGRESS**.
+M5 is complete because:
 
-The first M5 increment establishes a deterministic, explainable mastery/adaptation domain under `src/core/adaptive/`.
-
-Current engineering policy:
-
-- mastery evidence comes only from validated completed M4 sessions;
+- mastery evidence is derived only from validated completed M4 sessions;
 - one completed question contributes one evidence unit;
-- first-submission correctness is the independent-success signal;
-- retries remain visible as struggle evidence but cannot create extra success units;
-- mastery is tracked per canonical skill and difficulty;
-- each difficulty needs at least five evidence units;
-- a difficulty is mastered when at least four of its most recent five questions were correct on the first submission;
-- a canonical skill is mastered only after difficulties 1, 2, and 3 are all mastered;
-- all thresholds are engineering policy, not externally validated pedagogical cutoffs;
-- prerequisite eligibility uses the full M2 transitive prerequisite closure;
-- generator availability is checked separately from curriculum eligibility;
-- eligible in-progress practice is preferred over unseen practice;
-- remaining ties follow M2 deterministic topological order.
+- first-submission correctness is the independent-success signal, so retries cannot inflate mastery;
+- learner state is deterministic at canonical SkillId × difficulty;
+- insufficient evidence remains distinct from developing and mastered state;
+- the current engineering policy requires at least five evidence units per difficulty and at least four first-try successes among the most recent five for difficulty mastery;
+- those thresholds are explicitly engineering policy rather than externally validated pedagogical cutoffs;
+- a skill is mastered only when difficulties 1, 2, and 3 are all mastered;
+- recency ordering is deterministic;
+- the full M2 transitive prerequisite closure constrains eligibility;
+- generator availability is handled separately from curriculum eligibility;
+- unsupported or blocked practice returns an explicit unavailable result rather than a silent fallback;
+- eligible in-progress practice is preferred, with M2 topological order as deterministic tie-breaking;
+- the Grade 1 entry path is real rather than assumed:
 
-No derived mastery cache is persisted yet. M5 rebuilds the learner model from `LocalSessionStore.listCompleted()`, keeping M4 schema version 1 unchanged.
+    number_recognition_10
+            ↓
+    addition_concept
+            ↓
+    addition_within_10
 
-A real integration blocker is now explicit: the six representative M3 generators are attached to skills with prerequisites, while currently eligible Grade 1 root skills have no generators. A new learner therefore receives an explicit no-practicable-skill result rather than a silent prerequisite bypass or unrelated fallback.
+- number_recognition_10 and addition_concept received narrowly scoped M3 generators because M5 demonstrated a concrete entry-path blocker;
+- zero-history Grade 1 progression through those prerequisites is covered end-to-end;
+- startRecommendedPractice(...) converts a recommendation into an M4 PracticeSession and issues its first question through the M3 registry;
+- no derived mastery cache or new persistence schema was introduced; M4 schema version 1 remains authoritative;
+- no account, child PII, tracking, cloud identity, or remote learner-history requirement was added;
+- React UI remains outside the M5 completion boundary because final visual mathematics and pedagogy belong to M6;
+- all prior regression contracts remain green.
 
-M5 implementation checkpoint:
+M5 final implementation checkpoint:
 
-```text
-Commit     : 972e81db4ce7e8660be1eb9c4911691927841314
-Run number : 29
-Run ID     : 37470514354
-Status     : completed
-Conclusion : success
-Tests      : 92 passed / 0 failed
-```
+    Commit     : e9dde1483ee2a8bd495b87eef182b08e488b1566
+    Run number : 34
+    Run ID     : 37473526373
+    Status     : completed
+    Conclusion : success
+    Tests      : 105 passed / 0 failed
 
-Practice UI integration remains intentionally deferred until the mastery/adaptation contract and the generator/prerequisite entry-path blocker are resolved.
+Two intermediate CI failures were repaired narrowly: run 31 exposed connector escaping damage in localization/test regular expressions plus a stale registry-count assertion, and run 32 confirmed only the stale 6→8 registry-count expectation remained. Run 33 then passed the 101-test entry-path state before the recommendation-to-session bridge was added.
 
-See `docs/m2-curriculum-engine.md` for M2, `docs/m3-question-generation-engine.md` for M3, `docs/m4-learning-session-offline-storage.md` for the M4 completion lock, and `docs/m5-mastery-adaptive-learning.md` for the current M5 design.
+M5 does not claim that every Grade 1–3 canonical skill is already practiceable. M3 generator coverage remains intentionally incremental, and M5 represents unavailable curriculum/generator states explicitly.
+
+The next milestone is M6 — Visual Mathematics & Pedagogy. It should render semantic mathematical representations and develop concrete → visual → abstract learning experiences without changing the locked M5 mastery policy casually.
+
+See docs/m2-curriculum-engine.md for M2, docs/m3-question-generation-engine.md for M3, docs/m4-learning-session-offline-storage.md for M4, and docs/m5-mastery-adaptive-learning.md for the M5 completion lock.
