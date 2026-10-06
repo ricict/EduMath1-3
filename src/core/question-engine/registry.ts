@@ -13,6 +13,10 @@ import { additionWithin10Generator } from './additionWithin10';
 import { compareOrderNumbers20Generator } from './compareOrderNumbers20';
 import type { QuestionGenerator } from './generator';
 import { multiplicationFacts2510Generator } from './multiplicationFacts2510';
+import {
+  assertQuestionGeneratorRegistryValid,
+  validateQuestionGeneratorRegistry,
+} from './registryValidation';
 import { subtractionWithin10Generator } from './subtractionWithin10';
 
 export const registeredQuestionGenerators = [
@@ -21,6 +25,11 @@ export const registeredQuestionGenerators = [
   compareOrderNumbers20Generator,
   multiplicationFacts2510Generator,
 ] as const satisfies readonly QuestionGenerator[];
+
+export const registeredQuestionGeneratorValidation =
+  validateQuestionGeneratorRegistry(registeredQuestionGenerators);
+
+assertQuestionGeneratorRegistryValid(registeredQuestionGenerators);
 
 function includesValue<T>(values: readonly T[], value: T): boolean {
   return values.includes(value);
