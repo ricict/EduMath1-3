@@ -77,4 +77,6 @@ export interface QuestionGenerationContext {
   skillId: SkillId;
   difficulty: Difficulty;
   seed: number;
+  questionType?: QuestionType;
+  representation?: RepresentationType;
 }

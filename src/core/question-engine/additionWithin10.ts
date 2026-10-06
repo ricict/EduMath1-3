@@ -1,4 +1,6 @@
 import type { Difficulty, Question, QuestionGenerationContext } from '../types';
+import { validateQuestion } from '../validation/validateQuestion';
+import type { QuestionGenerator } from './generator';
 import { createSeededRandom } from './seededRandom';
 
 const MAX_SUM_BY_DIFFICULTY: Readonly<Record<Difficulty, number>> = {
@@ -13,6 +15,12 @@ export function generateAdditionWithin10(context: QuestionGenerationContext): Qu
   }
   if (context.skillId !== 'addition_within_10') {
     throw new Error('Generator context must request the addition_within_10 skill.');
+  }
+  if (context.questionType && context.questionType !== 'numeric-choice') {
+    throw new Error('addition_within_10 supports only numeric-choice questions.');
+  }
+  if (context.representation && context.representation !== 'symbolic') {
+    throw new Error('addition_within_10 currently generates only symbolic questions.');
   }
 
   const random = createSeededRandom(context.seed);
@@ -39,3 +47,16 @@ export function generateAdditionWithin10(context: QuestionGenerationContext): Qu
     expectedAnswer: sum,
   };
 }
+
+export const additionWithin10Generator: QuestionGenerator = {
+  id: 'addition-within-10',
+  supportedSkills: ['addition_within_10'],
+  capability: 'addition',
+  supportedGrades: [1],
+  supportedDifficulties: [1, 2, 3],
+  supportedQuestionTypes: ['numeric-choice'],
+  supportedRepresentations: ['symbolic'],
+  requiredConstraints: ['resultRange'],
+  generate: generateAdditionWithin10,
+  validate: validateQuestion,
+};
