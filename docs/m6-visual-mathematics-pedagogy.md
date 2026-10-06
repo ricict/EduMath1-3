@@ -160,3 +160,128 @@ The first M6 vertical slice now reaches the real adaptive Grade 1 entry path for
 The current child-facing answer interaction does not yet support `relation-choice`, `fraction-choice`, or `time-choice`.
 
 Fractions, clocks, number lines, shapes, pictograms, tables, and charts remain future M6 work and must extend the contract only when their concrete requirements are implemented.
+
+
+## 14. Unit-fraction visual and interaction increment
+
+The second M6 visual family extends the rendering contract to `unit_fractions`.
+
+M6 exposed a concrete downstream defect in the earlier M3 semantic contract: `fraction-choice` questions contained the correct fraction but did not carry explicit answer choices. M6 did not hide this gap by generating distractors in React.
+
+The M3 `UnitFractionQuestion` contract was therefore extended narrowly with deterministic `answerOptions`.
+
+The unit-fraction generator remains authoritative for:
+
+- canonical allowed denominators;
+- difficulty-specific denominator eligibility;
+- deterministic correct-answer generation;
+- deterministic answer-option generation;
+- mathematical validation.
+
+The M6 visual model consumes only:
+
+```text
+numerator
+denominator
+shadedParts
+totalParts
+```
+
+The current child-facing representation is a rectangular whole partitioned into `totalParts` equal sections, with exactly `shadedParts` sections shaded.
+
+The renderer does not derive a new fraction, alter the denominator, or inspect answer options to determine the drawing.
+
+## 15. Fraction-choice interaction
+
+The practice screen now supports:
+
+```text
+numeric-choice
+fraction-choice
+```
+
+Numeric-choice retains the existing 0–10 answer surface.
+
+Fraction-choice consumes the exact deterministic `answerOptions` produced by M3. React does not create fraction distractors.
+
+A selected fraction is submitted to M4 as:
+
+```text
+{
+  kind: 'fraction',
+  value: {
+    numerator,
+    denominator
+  }
+}
+```
+
+M4 remains authoritative for correctness evaluation, retries, timing, and persistence.
+
+Fraction answer text and accessibility labels remain localized separately from the semantic mathematics.
+
+## 16. Verification checkpoints
+
+Semantic fraction-choice extension:
+
+```text
+Commit : 75a338209f0d642a8a80e1b1426784fe1bf9c94c
+Run    : 39
+Result : FAILURE — TypeScript narrowing only
+```
+
+The failure occurred because the unit-fraction validator had checked the nested semantic operation but TypeScript did not narrow the outer `Question` union sufficiently for direct `answerOptions` access.
+
+The validator was narrowed explicitly without changing the mathematics:
+
+```text
+Commit : d413544e1dcda4d87b9d4d0f725983e52a391da2
+Run    : 40
+Result : SUCCESS
+Tests  : 114 passed / 0 failed
+```
+
+Unit-fraction visual rendering:
+
+```text
+Commit : efbac210819872cd55a0d1d66a166676f0ae2dbf
+Run    : 41
+Result : SUCCESS
+```
+
+Fraction-choice child-facing interaction:
+
+```text
+Commit : f2756acda4b9d63765fb3d5472e5f078a726b87a
+Run    : 42
+Result : SUCCESS
+Tests  : 119 passed / 0 failed
+```
+
+## 17. Current M6 boundary
+
+Implemented child-facing semantic visual families:
+
+```text
+number-recognition
+addition-combine
+unit-fraction
+```
+
+Implemented answer interactions:
+
+```text
+numeric-choice
+fraction-choice
+```
+
+Still intentionally unsupported in the child-facing practice interaction:
+
+```text
+relation-choice
+time-choice
+```
+
+Clock rendering is also not yet implemented.
+
+The next coherent M6 visual family is therefore `tell_time_hour_half_hour`, which will require both semantic clock rendering and `time-choice` interaction without changing the locked M4 session model.
