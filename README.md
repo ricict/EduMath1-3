@@ -8,9 +8,9 @@ This repository is intentionally scoped to mathematics for Grades 1–3. It is n
 
 - **M1 — Foundation Bootstrap: COMPLETE**
 - **M2 — Curriculum & Canonical Skill Engine: COMPLETE**
-- **M3 — Question Generation Engine: NOT STARTED**
+- **M3 — Question Generation Engine: IN PROGRESS**
 
-M1 was closed on 2026-10-06. M2 extends the M1 proof into an auditable curriculum-independent mathematics skill graph while preserving the deterministic Grade 1 addition vertical slice.
+M1 was closed on 2026-10-06. M2 extends the M1 proof into an auditable curriculum-independent mathematics skill graph while preserving the deterministic Grade 1 addition vertical slice. M3 is now establishing the typed deterministic generator registry, generator-specific validation, and representative generator families.
 
 ## Technical stack
 
@@ -164,7 +164,7 @@ This runs:
 2. `expo lint`
 3. deterministic/unit tests via `tsx --test`
 
-At M2 implementation verification, the suite contains 17 tests: 12 curriculum/skill-graph tests plus the 5 existing M1 regression tests.
+The M2 completion baseline contained 17 tests. At the current M3 implementation checkpoint, GitHub Actions run 12 completed successfully with 30 tests passing, 0 failing, and 0 skipped.
 
 ## Curriculum and pedagogy claims
 
