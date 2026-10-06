@@ -13,6 +13,19 @@ interface VisualQuestionProps {
   locale: Locale;
 }
 
+const CLOCK_SIZE = 240;
+const CLOCK_CENTER = CLOCK_SIZE / 2;
+const CLOCK_NUMBER_RADIUS = 92;
+
+function getClockNumberPosition(value: number) {
+  const radians = ((value * 30 - 90) * Math.PI) / 180;
+
+  return {
+    left: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.cos(radians) - 14,
+    top: CLOCK_CENTER + CLOCK_NUMBER_RADIUS * Math.sin(radians) - 14,
+  };
+}
+
 interface CounterGroupProps {
   group: AdditionCombineVisualModel['groups'][number];
   locale: Locale;
@@ -85,6 +98,55 @@ export function VisualQuestion({ question, locale }: VisualQuestionProps) {
             ]}
           />
         ))}
+      </View>
+    );
+  }
+
+  if (model.kind === 'read-clock') {
+    const minuteText = model.minute.toString().padStart(2, '0');
+
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.clockLabel', {
+          hour: model.hour,
+          minute: minuteText,
+        })}
+        style={styles.clockFace}
+      >
+        {Array.from({ length: 12 }, (_, index) =>
+          index === 0 ? 12 : index,
+        ).map((value) => (
+          <Text
+            accessible={false}
+            key={value}
+            style={[styles.clockNumber, getClockNumberPosition(value)]}
+          >
+            {value}
+          </Text>
+        ))}
+
+        <View
+          accessible={false}
+          style={[
+            styles.clockHandLayer,
+            { transform: [{ rotate: `${model.hourHandDegrees}deg` }] },
+          ]}
+        >
+          <View style={styles.hourHand} />
+        </View>
+
+        <View
+          accessible={false}
+          style={[
+            styles.clockHandLayer,
+            { transform: [{ rotate: `${model.minuteHandDegrees}deg` }] },
+          ]}
+        >
+          <View style={styles.minuteHand} />
+        </View>
+
+        <View accessible={false} style={styles.clockCenter} />
       </View>
     );
   }
@@ -174,5 +236,59 @@ const styles = StyleSheet.create({
   fractionPartDivider: {
     borderRightWidth: 2,
     borderRightColor: '#526071',
+  },
+  clockFace: {
+    width: CLOCK_SIZE,
+    height: CLOCK_SIZE,
+    alignSelf: 'center',
+    borderWidth: 4,
+    borderColor: '#526071',
+    borderRadius: CLOCK_SIZE / 2,
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+  },
+  clockNumber: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    color: '#172033',
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  clockHandLayer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: CLOCK_SIZE,
+    height: CLOCK_SIZE,
+  },
+  hourHand: {
+    position: 'absolute',
+    left: CLOCK_CENTER - 3,
+    top: CLOCK_CENTER - 58,
+    width: 6,
+    height: 58,
+    borderRadius: 3,
+    backgroundColor: '#172033',
+  },
+  minuteHand: {
+    position: 'absolute',
+    left: CLOCK_CENTER - 2,
+    top: CLOCK_CENTER - 84,
+    width: 4,
+    height: 84,
+    borderRadius: 2,
+    backgroundColor: '#315EFB',
+  },
+  clockCenter: {
+    position: 'absolute',
+    left: CLOCK_CENTER - 7,
+    top: CLOCK_CENTER - 7,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#172033',
   },
 });

@@ -17,6 +17,7 @@ type MessageKey =
   | 'visual.additionFirstGroupLabel'
   | 'visual.additionSecondGroupLabel'
   | 'visual.unitFractionLabel'
+  | 'visual.clockLabel'
   | 'answer.fractionLabel'
   | 'action.check'
   | 'action.next'
@@ -54,6 +55,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionFirstGroupLabel': 'First group: {count} objects',
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
     'visual.unitFractionLabel': '{shaded} of {total} equal parts is shaded',
+    'visual.clockLabel': 'Analog clock showing {hour}:{minute}',
     'answer.fractionLabel': 'Fraction {numerator} over {denominator}',
     'action.check': 'Check answer',
     'action.next': 'Next question',
@@ -90,6 +92,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionFirstGroupLabel': 'Kelompok pertama: {count} benda',
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
     'visual.unitFractionLabel': '{shaded} dari {total} bagian yang sama diarsir',
+    'visual.clockLabel': 'Jam analog menunjukkan pukul {hour}:{minute}',
     'answer.fractionLabel': 'Pecahan {numerator} per {denominator}',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
@@ -126,6 +129,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionFirstGroupLabel': 'กลุ่มแรกมีสิ่งของ {count} ชิ้น',
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
     'visual.unitFractionLabel': 'ระบายสี {shaded} จาก {total} ส่วนที่เท่ากัน',
+    'visual.clockLabel': 'นาฬิกาเข็มแสดงเวลา {hour}:{minute}',
     'answer.fractionLabel': 'เศษส่วน {numerator} ส่วน {denominator}',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',

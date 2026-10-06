@@ -30,10 +30,33 @@ export interface UnitFractionVisualModel {
   totalParts: number;
 }
 
+export interface ReadClockVisualModel {
+  kind: 'read-clock';
+  questionId: string;
+  hour: number;
+  minute: 0 | 30;
+  hourHandDegrees: number;
+  minuteHandDegrees: number;
+}
+
+export function getClockHandDegrees(
+  hour: number,
+  minute: 0 | 30,
+): Readonly<{
+  hourHandDegrees: number;
+  minuteHandDegrees: number;
+}> {
+  return {
+    hourHandDegrees: (hour % 12) * 30 + minute * 0.5,
+    minuteHandDegrees: minute * 6,
+  };
+}
+
 export type VisualQuestionModel =
   | NumberRecognitionVisualModel
   | AdditionCombineVisualModel
-  | UnitFractionVisualModel;
+  | UnitFractionVisualModel
+  | ReadClockVisualModel;
 
 export function buildVisualQuestionModel(
   question: Question,
@@ -71,6 +94,21 @@ export function buildVisualQuestionModel(
         shadedParts: question.data.shadedParts,
         totalParts: question.data.totalParts,
       };
+
+    case 'read-clock': {
+      const handDegrees = getClockHandDegrees(
+        question.data.hour,
+        question.data.minute,
+      );
+
+      return {
+        kind: 'read-clock',
+        questionId: question.id,
+        hour: question.data.hour,
+        minute: question.data.minute,
+        ...handDegrees,
+      };
+    }
 
     default:
       return null;

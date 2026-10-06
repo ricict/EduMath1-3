@@ -6,7 +6,10 @@ import { generateNumberRecognition10 } from '../../src/core/question-engine/numb
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import type { Question } from '../../src/core/types';
-import { buildVisualQuestionModel } from '../../src/features/practice/visual/visualQuestionModel';
+import {
+  buildVisualQuestionModel,
+  getClockHandDegrees,
+} from '../../src/features/practice/visual/visualQuestionModel';
 import { translate } from '../../src/localization';
 
 test('number-recognition visual model consumes the generated semantic target exactly', () => {
@@ -85,7 +88,7 @@ test('unit-fraction visual model preserves equal-part semantics exactly', () => 
   });
 });
 
-test('clock rendering remains outside the current M6 visual-model slice', () => {
+test('clock visual model preserves generated time semantics and derives only display geometry', () => {
   const question = generateTellTimeHourHalfHour({
     grade: 1,
     skillId: 'tell_time_hour_half_hour',
@@ -93,7 +96,28 @@ test('clock rendering remains outside the current M6 visual-model slice', () => 
     seed: 20261006,
   });
 
-  assert.equal(buildVisualQuestionModel(question), null);
+  assert.deepEqual(buildVisualQuestionModel(question), {
+    kind: 'read-clock',
+    questionId: question.id,
+    hour: question.data.hour,
+    minute: question.data.minute,
+    ...getClockHandDegrees(question.data.hour, question.data.minute),
+  });
+});
+
+test('clock hand geometry places hour hand between numerals at the half-hour', () => {
+  assert.deepEqual(getClockHandDegrees(3, 0), {
+    hourHandDegrees: 90,
+    minuteHandDegrees: 0,
+  });
+  assert.deepEqual(getClockHandDegrees(3, 30), {
+    hourHandDegrees: 105,
+    minuteHandDegrees: 180,
+  });
+  assert.deepEqual(getClockHandDegrees(12, 0), {
+    hourHandDegrees: 0,
+    minuteHandDegrees: 0,
+  });
 });
 
 test('visual accessibility wording stays localized while semantic values stay unchanged', () => {
@@ -112,5 +136,9 @@ test('visual accessibility wording stays localized while semantic values stay un
   assert.equal(
     translate('en', 'visual.unitFractionLabel', { shaded: 1, total: 4 }),
     '1 of 4 equal parts is shaded',
+  );
+  assert.equal(
+    translate('id', 'visual.clockLabel', { hour: 3, minute: '30' }),
+    'Jam analog menunjukkan pukul 3:30',
   );
 });
