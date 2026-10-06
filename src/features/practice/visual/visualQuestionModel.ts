@@ -21,9 +21,19 @@ export interface AdditionCombineVisualModel {
   ];
 }
 
+export interface UnitFractionVisualModel {
+  kind: 'unit-fraction';
+  questionId: string;
+  numerator: 1;
+  denominator: number;
+  shadedParts: 1;
+  totalParts: number;
+}
+
 export type VisualQuestionModel =
   | NumberRecognitionVisualModel
-  | AdditionCombineVisualModel;
+  | AdditionCombineVisualModel
+  | UnitFractionVisualModel;
 
 export function buildVisualQuestionModel(
   question: Question,
@@ -50,6 +60,16 @@ export function buildVisualQuestionModel(
             count: question.data.b,
           },
         ],
+      };
+
+    case 'unit-fraction':
+      return {
+        kind: 'unit-fraction',
+        questionId: question.id,
+        numerator: question.data.numerator,
+        denominator: question.data.denominator,
+        shadedParts: question.data.shadedParts,
+        totalParts: question.data.totalParts,
       };
 
     default:

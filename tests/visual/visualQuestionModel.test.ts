@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import { generateAdditionConcept } from '../../src/core/question-engine/additionConcept';
 import { generateNumberRecognition10 } from '../../src/core/question-engine/numberRecognition10';
+import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
+import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import type { Question } from '../../src/core/types';
 import { buildVisualQuestionModel } from '../../src/features/practice/visual/visualQuestionModel';
 import { translate } from '../../src/localization';
@@ -65,33 +67,31 @@ test('symbolic questions remain outside the first M6 visual slice', () => {
   assert.equal(buildVisualQuestionModel(question), null);
 });
 
-test('future visual families are not silently treated as supported', () => {
-  const question: Question = {
-    id: 'unit-fraction-visual',
+test('unit-fraction visual model preserves equal-part semantics exactly', () => {
+  const question = generateUnitFraction({
     grade: 2,
-    domain: 'number',
-    topic: 'fractions',
     skillId: 'unit_fractions',
-    difficulty: 1,
-    questionType: 'fraction-choice',
-    representation: 'visual',
-    promptKey: 'question.unitFraction',
-    data: {
-      operation: 'unit-fraction',
-      shadedParts: 1,
-      totalParts: 2,
-      numerator: 1,
-      denominator: 2,
-    },
-    answerOptions: [
-      { numerator: 1, denominator: 2 },
-      { numerator: 1, denominator: 4 },
-    ],
-    expectedAnswer: {
-      numerator: 1,
-      denominator: 2,
-    },
-  };
+    difficulty: 3,
+    seed: 20261006,
+  });
+
+  assert.deepEqual(buildVisualQuestionModel(question), {
+    kind: 'unit-fraction',
+    questionId: question.id,
+    numerator: question.data.numerator,
+    denominator: question.data.denominator,
+    shadedParts: question.data.shadedParts,
+    totalParts: question.data.totalParts,
+  });
+});
+
+test('clock rendering remains outside the current M6 visual-model slice', () => {
+  const question = generateTellTimeHourHalfHour({
+    grade: 1,
+    skillId: 'tell_time_hour_half_hour',
+    difficulty: 3,
+    seed: 20261006,
+  });
 
   assert.equal(buildVisualQuestionModel(question), null);
 });
@@ -108,5 +108,9 @@ test('visual accessibility wording stays localized while semantic values stay un
   assert.equal(
     translate('th', 'visual.additionSecondGroupLabel', { count: 4 }),
     'กลุ่มที่สองมีสิ่งของ 4 ชิ้น',
+  );
+  assert.equal(
+    translate('en', 'visual.unitFractionLabel', { shaded: 1, total: 4 }),
+    '1 of 4 equal parts is shaded',
   );
 });

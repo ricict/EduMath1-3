@@ -64,6 +64,31 @@ export function VisualQuestion({ question, locale }: VisualQuestionProps) {
     );
   }
 
+  if (model.kind === 'unit-fraction') {
+    return (
+      <View
+        accessible
+        accessibilityLabel={translate(locale, 'visual.unitFractionLabel', {
+          shaded: model.shadedParts,
+          total: model.totalParts,
+        })}
+        style={styles.fractionStrip}
+      >
+        {Array.from({ length: model.totalParts }, (_, index) => (
+          <View
+            accessible={false}
+            key={index}
+            style={[
+              styles.fractionPart,
+              index < model.shadedParts && styles.fractionPartShaded,
+              index < model.totalParts - 1 && styles.fractionPartDivider,
+            ]}
+          />
+        ))}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.groupRow}>
       {model.groups.map((group) => (
@@ -126,5 +151,28 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     backgroundColor: '#315EFB',
+  },
+  fractionStrip: {
+    width: '100%',
+    maxWidth: 360,
+    height: 96,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    borderWidth: 2,
+    borderColor: '#526071',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  fractionPart: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  fractionPartShaded: {
+    backgroundColor: '#315EFB',
+  },
+  fractionPartDivider: {
+    borderRightWidth: 2,
+    borderRightColor: '#526071',
   },
 });

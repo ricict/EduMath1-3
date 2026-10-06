@@ -16,6 +16,7 @@ type MessageKey =
   | 'visual.numberRecognitionLabel'
   | 'visual.additionFirstGroupLabel'
   | 'visual.additionSecondGroupLabel'
+  | 'visual.unitFractionLabel'
   | 'action.check'
   | 'action.next'
   | 'action.finish'
@@ -51,6 +52,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberRecognitionLabel': 'Shown number: {target}',
     'visual.additionFirstGroupLabel': 'First group: {count} objects',
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
+    'visual.unitFractionLabel': '{shaded} of {total} equal parts is shaded',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'action.finish': 'Finish session',
@@ -85,6 +87,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberRecognitionLabel': 'Angka yang ditampilkan: {target}',
     'visual.additionFirstGroupLabel': 'Kelompok pertama: {count} benda',
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
+    'visual.unitFractionLabel': '{shaded} dari {total} bagian yang sama diarsir',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'action.finish': 'Selesaikan sesi',
@@ -119,6 +122,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.numberRecognitionLabel': 'ตัวเลขที่แสดง: {target}',
     'visual.additionFirstGroupLabel': 'กลุ่มแรกมีสิ่งของ {count} ชิ้น',
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
+    'visual.unitFractionLabel': 'ระบายสี {shaded} จาก {total} ส่วนที่เท่ากัน',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'action.finish': 'จบเซสชัน',
