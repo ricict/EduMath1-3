@@ -18,6 +18,9 @@ type MessageKey =
   | 'visual.additionSecondGroupLabel'
   | 'visual.unitFractionLabel'
   | 'visual.clockLabel'
+  | 'answer.relationLessThan'
+  | 'answer.relationEqual'
+  | 'answer.relationGreaterThan'
   | 'answer.fractionLabel'
   | 'answer.timeLabel'
   | 'action.check'
@@ -57,6 +60,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'Second group: {count} objects',
     'visual.unitFractionLabel': '{shaded} of {total} equal parts is shaded',
     'visual.clockLabel': 'Analog clock showing {hour}:{minute}',
+    'answer.relationLessThan': 'Less than',
+    'answer.relationEqual': 'Equal to',
+    'answer.relationGreaterThan': 'Greater than',
     'answer.fractionLabel': 'Fraction {numerator} over {denominator}',
     'answer.timeLabel': 'Time {hour}:{minute}',
     'action.check': 'Check answer',
@@ -95,6 +101,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'Kelompok kedua: {count} benda',
     'visual.unitFractionLabel': '{shaded} dari {total} bagian yang sama diarsir',
     'visual.clockLabel': 'Jam analog menunjukkan pukul {hour}:{minute}',
+    'answer.relationLessThan': 'Kurang dari',
+    'answer.relationEqual': 'Sama dengan',
+    'answer.relationGreaterThan': 'Lebih dari',
     'answer.fractionLabel': 'Pecahan {numerator} per {denominator}',
     'answer.timeLabel': 'Pukul {hour}:{minute}',
     'action.check': 'Periksa jawaban',
@@ -133,6 +142,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.additionSecondGroupLabel': 'กลุ่มที่สองมีสิ่งของ {count} ชิ้น',
     'visual.unitFractionLabel': 'ระบายสี {shaded} จาก {total} ส่วนที่เท่ากัน',
     'visual.clockLabel': 'นาฬิกาเข็มแสดงเวลา {hour}:{minute}',
+    'answer.relationLessThan': 'น้อยกว่า',
+    'answer.relationEqual': 'เท่ากับ',
+    'answer.relationGreaterThan': 'มากกว่า',
     'answer.fractionLabel': 'เศษส่วน {numerator} ส่วน {denominator}',
     'answer.timeLabel': 'เวลา {hour}:{minute}',
     'action.check': 'ตรวจคำตอบ',

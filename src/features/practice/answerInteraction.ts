@@ -1,8 +1,24 @@
-import type { Question } from '@/core/types';
+import type { ComparisonRelation, Question } from '@/core/types';
 
 import type { PracticeScreenAnswer } from './practiceCompatibility';
 
 const NUMERIC_ANSWERS = Array.from({ length: 11 }, (_, value) => value);
+const RELATION_ANSWERS: readonly ComparisonRelation[] = [
+  'less-than',
+  'equal',
+  'greater-than',
+];
+
+function relationSymbol(value: ComparisonRelation): '<' | '=' | '>' {
+  switch (value) {
+    case 'less-than':
+      return '<';
+    case 'equal':
+      return '=';
+    case 'greater-than':
+      return '>';
+  }
+}
 
 export function getPracticeAnswerOptions(
   question: Question,
@@ -11,6 +27,12 @@ export function getPracticeAnswerOptions(
     case 'numeric-choice':
       return NUMERIC_ANSWERS.map((value) => ({
         kind: 'numeric',
+        value,
+      }));
+
+    case 'relation-choice':
+      return RELATION_ANSWERS.map((value) => ({
+        kind: 'relation',
         value,
       }));
 
@@ -35,6 +57,8 @@ export function practiceAnswerKey(answer: PracticeScreenAnswer): string {
   switch (answer.kind) {
     case 'numeric':
       return `numeric:${answer.value}`;
+    case 'relation':
+      return `relation:${answer.value}`;
     case 'fraction':
       return `fraction:${answer.value.numerator}/${answer.value.denominator}`;
     case 'time':
@@ -48,6 +72,8 @@ export function formatPracticeAnswerText(
   switch (answer.kind) {
     case 'numeric':
       return String(answer.value);
+    case 'relation':
+      return relationSymbol(answer.value);
     case 'fraction':
       return `${answer.value.numerator}/${answer.value.denominator}`;
     case 'time':
@@ -66,6 +92,10 @@ export function isSamePracticeAnswer(
   }
 
   if (left.kind === 'numeric' && right.kind === 'numeric') {
+    return left.value === right.value;
+  }
+
+  if (left.kind === 'relation' && right.kind === 'relation') {
     return left.value === right.value;
   }
 

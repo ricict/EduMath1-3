@@ -47,6 +47,17 @@ function renderAnswerAccessibilityLabel(
     return String(answer.value);
   }
 
+  if (answer.kind === 'relation') {
+    const key =
+      answer.value === 'less-than'
+        ? 'answer.relationLessThan'
+        : answer.value === 'equal'
+          ? 'answer.relationEqual'
+          : 'answer.relationGreaterThan';
+
+    return translate(locale, key);
+  }
+
   if (answer.kind === 'fraction') {
     return translate(locale, 'answer.fractionLabel', {
       numerator: answer.value.numerator,
@@ -85,6 +96,9 @@ export function PracticeScreen() {
     switch (selectedAnswer.kind) {
       case 'numeric':
         correct = await practice.submitNumericAnswer(selectedAnswer.value);
+        break;
+      case 'relation':
+        correct = await practice.submitRelationAnswer(selectedAnswer.value);
         break;
       case 'fraction':
         correct = await practice.submitFractionAnswer(selectedAnswer.value);

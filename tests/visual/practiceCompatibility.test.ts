@@ -110,7 +110,7 @@ test('time-choice is supported after the clock interaction increment', () => {
   assert.equal(supportsPracticeScreenQuestion(question), true);
 });
 
-test('relation-choice remains explicitly unsupported by the current M6 practice screen', () => {
+test('relation-choice is supported by the completed M6 interaction boundary', () => {
   const relationQuestion: Question = {
     id: 'comparison',
     grade: 1,
@@ -129,5 +129,5 @@ test('relation-choice remains explicitly unsupported by the current M6 practice 
     expectedAnswer: 'less-than',
   };
 
-  assert.equal(supportsPracticeScreenQuestion(relationQuestion), false);
+  assert.equal(supportsPracticeScreenQuestion(relationQuestion), true);
 });

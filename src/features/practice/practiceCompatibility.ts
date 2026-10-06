@@ -3,12 +3,13 @@ import type { Question } from '@/core/types';
 
 export type PracticeScreenQuestion =
   | Extract<Question, { questionType: 'numeric-choice' }>
+  | Extract<Question, { questionType: 'relation-choice' }>
   | Extract<Question, { questionType: 'fraction-choice' }>
   | Extract<Question, { questionType: 'time-choice' }>;
 
 export type PracticeScreenAnswer = Extract<
   LearnerAnswer,
-  { kind: 'numeric' | 'fraction' | 'time' }
+  { kind: 'numeric' | 'relation' | 'fraction' | 'time' }
 >;
 
 export function supportsPracticeScreenQuestion(
@@ -16,6 +17,7 @@ export function supportsPracticeScreenQuestion(
 ): question is PracticeScreenQuestion {
   return (
     question.questionType === 'numeric-choice' ||
+    question.questionType === 'relation-choice' ||
     question.questionType === 'fraction-choice' ||
     question.questionType === 'time-choice'
   );

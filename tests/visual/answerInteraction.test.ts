@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { generateAdditionWithin10 } from '../../src/core/question-engine/additionWithin10';
+import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import { evaluateLearnerAnswer } from '../../src/core/session/session';
@@ -24,6 +25,38 @@ test('numeric interaction preserves the existing 0 through 10 answer surface', (
   assert.equal(options.length, 11);
   assert.deepEqual(options[0], { kind: 'numeric', value: 0 });
   assert.deepEqual(options[10], { kind: 'numeric', value: 10 });
+});
+
+test('relation interaction exposes the complete typed comparison domain', () => {
+  const question = generateCompareOrderNumbers20({
+    grade: 1,
+    skillId: 'compare_order_numbers_20',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const options = getPracticeAnswerOptions(question);
+
+  assert.deepEqual(options, [
+    { kind: 'relation', value: 'less-than' },
+    { kind: 'relation', value: 'equal' },
+    { kind: 'relation', value: 'greater-than' },
+  ]);
+  assert.equal(
+    options?.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
+    1,
+  );
+});
+
+test('relation answer display maps semantic relations to mathematical symbols', () => {
+  const less = { kind: 'relation' as const, value: 'less-than' as const };
+  const equal = { kind: 'relation' as const, value: 'equal' as const };
+  const greater = { kind: 'relation' as const, value: 'greater-than' as const };
+
+  assert.equal(formatPracticeAnswerText(less), '<');
+  assert.equal(formatPracticeAnswerText(equal), '=');
+  assert.equal(formatPracticeAnswerText(greater), '>');
+  assert.equal(isSamePracticeAnswer(less, less), true);
+  assert.equal(isSamePracticeAnswer(less, greater), false);
 });
 
 test('fraction interaction consumes M3 semantic answerOptions exactly', () => {
