@@ -20,27 +20,41 @@ export function getPracticeAnswerOptions(
         value,
       }));
 
+    case 'time-choice':
+      return question.answerOptions.map((value) => ({
+        kind: 'time',
+        value,
+      }));
+
     default:
       return null;
   }
 }
 
 export function practiceAnswerKey(answer: PracticeScreenAnswer): string {
-  if (answer.kind === 'numeric') {
-    return `numeric:${answer.value}`;
+  switch (answer.kind) {
+    case 'numeric':
+      return `numeric:${answer.value}`;
+    case 'fraction':
+      return `fraction:${answer.value.numerator}/${answer.value.denominator}`;
+    case 'time':
+      return `time:${answer.value.hour}:${answer.value.minute}`;
   }
-
-  return `fraction:${answer.value.numerator}/${answer.value.denominator}`;
 }
 
 export function formatPracticeAnswerText(
   answer: PracticeScreenAnswer,
 ): string {
-  if (answer.kind === 'numeric') {
-    return String(answer.value);
+  switch (answer.kind) {
+    case 'numeric':
+      return String(answer.value);
+    case 'fraction':
+      return `${answer.value.numerator}/${answer.value.denominator}`;
+    case 'time':
+      return `${answer.value.hour}:${answer.value.minute
+        .toString()
+        .padStart(2, '0')}`;
   }
-
-  return `${answer.value.numerator}/${answer.value.denominator}`;
 }
 
 export function isSamePracticeAnswer(
@@ -59,6 +73,13 @@ export function isSamePracticeAnswer(
     return (
       left.value.numerator === right.value.numerator &&
       left.value.denominator === right.value.denominator
+    );
+  }
+
+  if (left.kind === 'time' && right.kind === 'time') {
+    return (
+      left.value.hour === right.value.hour &&
+      left.value.minute === right.value.minute
     );
   }
 

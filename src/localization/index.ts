@@ -19,6 +19,7 @@ type MessageKey =
   | 'visual.unitFractionLabel'
   | 'visual.clockLabel'
   | 'answer.fractionLabel'
+  | 'answer.timeLabel'
   | 'action.check'
   | 'action.next'
   | 'action.finish'
@@ -57,6 +58,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.unitFractionLabel': '{shaded} of {total} equal parts is shaded',
     'visual.clockLabel': 'Analog clock showing {hour}:{minute}',
     'answer.fractionLabel': 'Fraction {numerator} over {denominator}',
+    'answer.timeLabel': 'Time {hour}:{minute}',
     'action.check': 'Check answer',
     'action.next': 'Next question',
     'action.finish': 'Finish session',
@@ -94,6 +96,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.unitFractionLabel': '{shaded} dari {total} bagian yang sama diarsir',
     'visual.clockLabel': 'Jam analog menunjukkan pukul {hour}:{minute}',
     'answer.fractionLabel': 'Pecahan {numerator} per {denominator}',
+    'answer.timeLabel': 'Pukul {hour}:{minute}',
     'action.check': 'Periksa jawaban',
     'action.next': 'Soal berikutnya',
     'action.finish': 'Selesaikan sesi',
@@ -131,6 +134,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'visual.unitFractionLabel': 'ระบายสี {shaded} จาก {total} ส่วนที่เท่ากัน',
     'visual.clockLabel': 'นาฬิกาเข็มแสดงเวลา {hour}:{minute}',
     'answer.fractionLabel': 'เศษส่วน {numerator} ส่วน {denominator}',
+    'answer.timeLabel': 'เวลา {hour}:{minute}',
     'action.check': 'ตรวจคำตอบ',
     'action.next': 'ข้อต่อไป',
     'action.finish': 'จบเซสชัน',

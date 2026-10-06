@@ -47,9 +47,16 @@ function renderAnswerAccessibilityLabel(
     return String(answer.value);
   }
 
-  return translate(locale, 'answer.fractionLabel', {
-    numerator: answer.value.numerator,
-    denominator: answer.value.denominator,
+  if (answer.kind === 'fraction') {
+    return translate(locale, 'answer.fractionLabel', {
+      numerator: answer.value.numerator,
+      denominator: answer.value.denominator,
+    });
+  }
+
+  return translate(locale, 'answer.timeLabel', {
+    hour: answer.value.hour,
+    minute: answer.value.minute.toString().padStart(2, '0'),
   });
 }
 
@@ -73,10 +80,20 @@ export function PracticeScreen() {
       return;
     }
 
-    const correct =
-      selectedAnswer.kind === 'numeric'
-        ? await practice.submitNumericAnswer(selectedAnswer.value)
-        : await practice.submitFractionAnswer(selectedAnswer.value);
+    let correct: boolean;
+
+    switch (selectedAnswer.kind) {
+      case 'numeric':
+        correct = await practice.submitNumericAnswer(selectedAnswer.value);
+        break;
+      case 'fraction':
+        correct = await practice.submitFractionAnswer(selectedAnswer.value);
+        break;
+      case 'time':
+        correct = await practice.submitTimeAnswer(selectedAnswer.value);
+        break;
+    }
+
     setChecked(true);
     setLastResult(correct);
   };

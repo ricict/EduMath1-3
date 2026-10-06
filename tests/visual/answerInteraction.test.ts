@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { generateAdditionWithin10 } from '../../src/core/question-engine/additionWithin10';
+import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import { evaluateLearnerAnswer } from '../../src/core/session/session';
 import {
@@ -63,4 +64,44 @@ test('fraction answer comparison and display preserve numerator and denominator'
     }),
     false,
   );
+});
+
+
+test('time interaction consumes M3 semantic answerOptions exactly', () => {
+  const question = generateTellTimeHourHalfHour({
+    grade: 1,
+    skillId: 'tell_time_hour_half_hour',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const options = getPracticeAnswerOptions(question);
+
+  assert.ok(options);
+  assert.deepEqual(
+    options,
+    question.answerOptions.map((value) => ({
+      kind: 'time',
+      value,
+    })),
+  );
+  assert.equal(
+    options.some((answer) => evaluateLearnerAnswer(question, answer)),
+    true,
+  );
+});
+
+test('time answer comparison and display preserve hour and minute semantics', () => {
+  const halfHour = {
+    kind: 'time' as const,
+    value: { hour: 3, minute: 30 as const },
+  };
+  const wholeHour = {
+    kind: 'time' as const,
+    value: { hour: 3, minute: 0 as const },
+  };
+
+  assert.equal(formatPracticeAnswerText(halfHour), '3:30');
+  assert.equal(formatPracticeAnswerText(wholeHour), '3:00');
+  assert.equal(isSamePracticeAnswer(halfHour, halfHour), true);
+  assert.equal(isSamePracticeAnswer(halfHour, wholeHour), false);
 });

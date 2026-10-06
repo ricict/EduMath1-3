@@ -15,7 +15,7 @@ import {
   submitAnswer,
 } from '@/core/session/session';
 import type { PracticeSession } from '@/core/session/types';
-import type { FractionAnswer, Question } from '@/core/types';
+import type { FractionAnswer, Question, TimeAnswer } from '@/core/types';
 import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
 
 import { supportsPracticeScreenQuestion } from './practiceCompatibility';
@@ -50,6 +50,7 @@ export interface PracticeSessionController {
   unavailable: PracticeUnavailableReason | null;
   submitNumericAnswer(value: number): Promise<boolean>;
   submitFractionAnswer(value: FractionAnswer): Promise<boolean>;
+  submitTimeAnswer(value: TimeAnswer): Promise<boolean>;
   nextQuestion(): Promise<void>;
   finishSession(): Promise<void>;
   startNewSession(): Promise<void>;
@@ -345,6 +346,32 @@ export function usePracticeSession(): PracticeSessionController {
     [persistCheckpoint, reportError],
   );
 
+  const submitTimeAnswer = useCallback(
+    async (value: TimeAnswer) => {
+      const current = sessionRef.current;
+      if (!current) {
+        throw new Error('Practice session is not ready.');
+      }
+
+      try {
+        const nowMs = Date.now();
+        const submitted = submitAnswer(
+          current,
+          { kind: 'time', value },
+          nowMs,
+        );
+        setQuestion(submitted.question);
+        await persistCheckpoint(submitted.session, nowMs);
+        setError(null);
+        return submitted.correct;
+      } catch (cause) {
+        reportError(cause);
+        throw cause;
+      }
+    },
+    [persistCheckpoint, reportError],
+  );
+
   const nextQuestion = useCallback(async () => {
     const current = sessionRef.current;
     if (!current) {
@@ -412,6 +439,7 @@ export function usePracticeSession(): PracticeSessionController {
     unavailable,
     submitNumericAnswer,
     submitFractionAnswer,
+    submitTimeAnswer,
     nextQuestion,
     finishSession,
     startNewSession,

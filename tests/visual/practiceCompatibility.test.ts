@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { startRecommendedPractice } from '../../src/core/adaptive/startRecommendedPractice';
+import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import type { Question } from '../../src/core/types';
 import { supportsPracticeScreenQuestion } from '../../src/features/practice/practiceCompatibility';
 
@@ -96,6 +97,17 @@ test('fraction-choice is supported after the second M6 interaction increment', (
   };
 
   assert.equal(supportsPracticeScreenQuestion(fractionQuestion), true);
+});
+
+test('time-choice is supported after the clock interaction increment', () => {
+  const question = generateTellTimeHourHalfHour({
+    grade: 1,
+    skillId: 'tell_time_hour_half_hour',
+    difficulty: 3,
+    seed: 20261006,
+  });
+
+  assert.equal(supportsPracticeScreenQuestion(question), true);
 });
 
 test('relation-choice remains explicitly unsupported by the current M6 practice screen', () => {
