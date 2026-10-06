@@ -39,7 +39,10 @@ export type MathTopic =
 
 export type Difficulty = 1 | 2 | 3;
 
-export type QuestionType = 'numeric-choice' | 'relation-choice';
+export type QuestionType =
+  | 'numeric-choice'
+  | 'relation-choice'
+  | 'fraction-choice';
 
 export type RepresentationType =
   | 'symbolic'
@@ -56,7 +59,8 @@ export type QuestionPromptKey =
   | 'question.addition'
   | 'question.subtraction'
   | 'question.multiplication'
-  | 'question.numberComparison';
+  | 'question.numberComparison'
+  | 'question.unitFraction';
 
 export interface QuestionBase {
   id: string;
@@ -113,7 +117,29 @@ export interface NumberComparisonQuestion extends QuestionBase {
   expectedAnswer: ComparisonRelation;
 }
 
-export type Question = ArithmeticQuestion | NumberComparisonQuestion;
+export interface FractionAnswer {
+  numerator: number;
+  denominator: number;
+}
+
+export interface UnitFractionQuestion extends QuestionBase {
+  questionType: 'fraction-choice';
+  representation: 'visual';
+  promptKey: 'question.unitFraction';
+  data: {
+    operation: 'unit-fraction';
+    shadedParts: 1;
+    totalParts: number;
+    numerator: 1;
+    denominator: number;
+  };
+  expectedAnswer: FractionAnswer;
+}
+
+export type Question =
+  | ArithmeticQuestion
+  | NumberComparisonQuestion
+  | UnitFractionQuestion;
 
 export interface QuestionGenerationContext {
   grade: Grade;

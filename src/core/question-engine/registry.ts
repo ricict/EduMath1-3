@@ -18,12 +18,14 @@ import {
   validateQuestionGeneratorRegistry,
 } from './registryValidation';
 import { subtractionWithin10Generator } from './subtractionWithin10';
+import { unitFractionsGenerator } from './unitFractions';
 
 export const registeredQuestionGenerators = [
   additionWithin10Generator,
   subtractionWithin10Generator,
   compareOrderNumbers20Generator,
   multiplicationFacts2510Generator,
+  unitFractionsGenerator,
 ] as const satisfies readonly QuestionGenerator[];
 
 export const registeredQuestionGeneratorValidation =
