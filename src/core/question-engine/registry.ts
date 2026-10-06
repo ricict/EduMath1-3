@@ -9,10 +9,12 @@ import type {
   RepresentationType,
   SkillId,
 } from '../types';
+import { additionConceptGenerator } from './additionConcept';
 import { additionWithin10Generator } from './additionWithin10';
 import { compareOrderNumbers20Generator } from './compareOrderNumbers20';
 import type { QuestionGenerator } from './generator';
 import { multiplicationFacts2510Generator } from './multiplicationFacts2510';
+import { numberRecognition10Generator } from './numberRecognition10';
 import {
   assertQuestionGeneratorRegistryValid,
   validateQuestionGeneratorRegistry,
@@ -22,6 +24,8 @@ import { tellTimeHourHalfHourGenerator } from './tellTimeHourHalfHour';
 import { unitFractionsGenerator } from './unitFractions';
 
 export const registeredQuestionGenerators = [
+  numberRecognition10Generator,
+  additionConceptGenerator,
   additionWithin10Generator,
   subtractionWithin10Generator,
   compareOrderNumbers20Generator,

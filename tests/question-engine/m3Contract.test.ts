@@ -23,7 +23,15 @@ test('M3 registry collectively covers Grades 1-3 and representative generation m
   assert.deepEqual([...grades].sort(), [1, 2, 3]);
   assert.deepEqual(
     [...capabilities].sort(),
-    ['addition', 'fraction', 'multiplication', 'number-comparison', 'subtraction', 'time'],
+    [
+      'addition',
+      'fraction',
+      'multiplication',
+      'number-comparison',
+      'number-identification',
+      'subtraction',
+      'time',
+    ],
   );
   assert.deepEqual(
     [...questionTypes].sort(),

@@ -57,6 +57,8 @@ export type RepresentationType =
   | 'bar-chart';
 
 export type QuestionPromptKey =
+  | 'question.numberRecognition'
+  | 'question.additionConcept'
   | 'question.addition'
   | 'question.subtraction'
   | 'question.multiplication'
@@ -74,6 +76,29 @@ export interface QuestionBase {
   questionType: QuestionType;
   representation: RepresentationType;
   promptKey: QuestionPromptKey;
+}
+
+export interface NumberRecognitionQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'visual';
+  promptKey: 'question.numberRecognition';
+  data: {
+    operation: 'number-recognition';
+    target: number;
+  };
+  expectedAnswer: number;
+}
+
+export interface AdditionConceptQuestion extends QuestionBase {
+  questionType: 'numeric-choice';
+  representation: 'visual';
+  promptKey: 'question.additionConcept';
+  data: {
+    operation: 'addition-combine';
+    a: number;
+    b: number;
+  };
+  expectedAnswer: number;
 }
 
 export interface AddSubtractQuestion extends QuestionBase {
@@ -103,7 +128,10 @@ export interface MultiplicationQuestion extends QuestionBase {
   expectedAnswer: number;
 }
 
-export type ArithmeticQuestion = AddSubtractQuestion | MultiplicationQuestion;
+export type ArithmeticQuestion =
+  | AdditionConceptQuestion
+  | AddSubtractQuestion
+  | MultiplicationQuestion;
 
 export type ComparisonRelation = 'less-than' | 'equal' | 'greater-than';
 
@@ -156,6 +184,7 @@ export interface ReadClockQuestion extends QuestionBase {
 }
 
 export type Question =
+  | NumberRecognitionQuestion
   | ArithmeticQuestion
   | NumberComparisonQuestion
   | UnitFractionQuestion

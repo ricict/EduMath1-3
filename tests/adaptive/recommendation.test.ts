@@ -93,29 +93,18 @@ function mastered(skillId: SkillId): SkillMasteryState {
   return skillState(skillId, 'mastered', 3);
 }
 
-test('a new Grade 1 learner gets an explicit unavailable result instead of a prerequisite bypass', () => {
+test('a new Grade 1 learner starts at the first curriculum-eligible practiceable root skill', () => {
   const recommendation = recommendPractice(1, buildLearnerModel([]));
 
-  assert.equal(recommendation.kind, 'unavailable');
-  if (recommendation.kind !== 'unavailable') {
-    throw new Error('Expected unavailable recommendation.');
+  assert.equal(recommendation.kind, 'practice');
+  if (recommendation.kind !== 'practice') {
+    throw new Error('Expected a practice recommendation.');
   }
 
-  assert.equal(
-    recommendation.reason.code,
-    'NO_PRACTICABLE_CURRICULUM_ELIGIBLE_SKILL',
-  );
-  assert.ok(
-    recommendation.reason.generatorUnavailableSkillIds.includes(
-      'number_recognition_10',
-    ),
-  );
-  assert.equal(
-    recommendation.reason.generatorUnavailableSkillIds.includes(
-      'addition_within_10',
-    ),
-    false,
-  );
+  assert.equal(recommendation.skillId, 'number_recognition_10');
+  assert.equal(recommendation.difficulty, 1);
+  assert.equal(recommendation.reason.code, 'START_ELIGIBLE_SKILL');
+  assert.deepEqual(recommendation.reason.prerequisiteSkillIds, []);
 });
 
 test('transitive prerequisites must all be mastered before a dependent skill is eligible', () => {
