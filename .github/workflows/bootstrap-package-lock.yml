@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/bootstrap-package-lock.yml'
 
+# One-time M8 bootstrap, retried after aligning React DOM with Expo SDK 57.
 jobs:
   generate-lock:
     runs-on: ubuntu-latest
