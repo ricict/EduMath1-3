@@ -6,7 +6,10 @@ on:
     paths:
       - '.github/workflows/bootstrap-package-lock.yml'
 
-# One-time M8 bootstrap, retried after aligning React DOM with Expo SDK 57.
+permissions:
+  contents: write
+
+# One-time M8 bootstrap used only to materialize the validated npm lockfile.
 jobs:
   generate-lock:
     runs-on: ubuntu-latest
@@ -33,3 +36,16 @@ jobs:
           name: package-lock-bootstrap
           path: package-lock.json
           if-no-files-found: error
+
+      - name: Commit validated package lock
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "package-lock.json is already current."
+            exit 0
+          fi
+          git commit -m "build: lock npm dependency graph"
+          git push origin HEAD:main
