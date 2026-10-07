@@ -6,6 +6,10 @@
     "orientation": "portrait",
     "scheme": "edumath",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router"]
+    "plugins": ["expo-router"],
+    "android": {
+      "package": "com.ricict.edumath",
+      "versionCode": 1
+    }
   }
 }
