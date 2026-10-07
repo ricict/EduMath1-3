@@ -7,13 +7,18 @@ import { canonicalSkills } from '../../src/core/curriculum/canonicalSkills';
 import { getQuestionGenerator } from '../../src/core/question-engine/registry';
 import { selectProvisionalPracticePlan } from '../../src/features/practice/provisionalPractice';
 
-for (const grade of [2, 3] as const) {
-  test(`Grade ${grade} has a provisional curriculum practice when prerequisites are incomplete`, () => {
-    const model = buildLearnerModel([]);
-    const standard = recommendPractice(grade, model);
-    const provisional = selectProvisionalPracticePlan(grade, model);
+test('Grade 2 keeps the standard M5 recommendation authoritative when available', () => {
+  const recommendation = recommendPractice(2, buildLearnerModel([]));
+  assert.equal(recommendation.kind, 'practice');
+});
 
-    assert.equal(standard.kind, 'unavailable');
+for (const grade of [2, 3] as const) {
+  test(`Grade ${grade} has a grade-appropriate provisional curriculum practice`, () => {
+    const provisional = selectProvisionalPracticePlan(
+      grade,
+      buildLearnerModel([]),
+    );
+
     assert.ok(provisional);
     assert.ok(canonicalSkills[provisional.skillId].grades.includes(grade));
 

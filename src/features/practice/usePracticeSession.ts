@@ -577,14 +577,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
       reportError(cause);
       throw cause;
     }
-  }, [
-    applySession,
-    persistCheckpoint,
-    queueSave,
-    reportError,
-    grade,
-    startFresh,
-  ]);
+  }, [applySession, persistCheckpoint, queueSave, reportError, grade]);
 
   const continueAfterLevel = useCallback(async () => {
     try {
