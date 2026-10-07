@@ -72,7 +72,7 @@ const ATTEMPT_STATUSES = [
 ] as const satisfies readonly QuestionAttemptStatus[];
 
 const SESSION_KEY_PREFIX = 'edumath:m4:practice-session:v1:';
-const RESUMABLE_SESSION_KEY = 'edumath:m4:resumable-session-id:v1';
+const LEGACY_RESUMABLE_SESSION_KEY = 'edumath:m4:resumable-session-id:v1';
 const COMPLETED_SESSION_INDEX_KEY = 'edumath:m4:completed-session-ids:v1';
 
 export interface KeyValueStorage {
@@ -84,7 +84,7 @@ export interface KeyValueStorage {
 export interface LocalSessionStore {
   save(session: PracticeSession): Promise<void>;
   load(sessionId: string): Promise<PracticeSession | null>;
-  loadResumable(): Promise<PracticeSession | null>;
+  loadResumable(grade: Grade): Promise<PracticeSession | null>;
   listCompleted(): Promise<readonly PracticeSession[]>;
 }
 
@@ -577,6 +577,10 @@ export function serializePracticeSession(session: PracticeSession): string {
   return JSON.stringify(session);
 }
 
+function resumableSessionKey(grade: Grade): string {
+  return `${LEGACY_RESUMABLE_SESSION_KEY}:grade:${grade}`;
+}
+
 function sessionStorageKey(sessionId: string): string {
   const normalizedId = sessionId.trim();
 
@@ -635,27 +639,74 @@ export function createLocalSessionStore(
           );
         }
 
-        const resumableId = await storage.getItem(RESUMABLE_SESSION_KEY);
+        const gradeResumableKey = resumableSessionKey(session.plan.grade);
+        const resumableId = await storage.getItem(gradeResumableKey);
         if (resumableId === session.id) {
-          await storage.removeItem(RESUMABLE_SESSION_KEY);
+          await storage.removeItem(gradeResumableKey);
+        }
+
+        const legacyResumableId = await storage.getItem(
+          LEGACY_RESUMABLE_SESSION_KEY,
+        );
+        if (legacyResumableId === session.id) {
+          await storage.removeItem(LEGACY_RESUMABLE_SESSION_KEY);
         }
         return;
       }
 
-      await storage.setItem(RESUMABLE_SESSION_KEY, session.id);
+      await storage.setItem(
+        resumableSessionKey(session.plan.grade),
+        session.id,
+      );
     },
 
     load,
 
-    async loadResumable() {
-      const sessionId = await storage.getItem(RESUMABLE_SESSION_KEY);
+    async loadResumable(grade) {
+      const gradeKey = resumableSessionKey(grade);
+      let sessionId = await storage.getItem(gradeKey);
+
       if (sessionId === null) {
-        return null;
+        const legacySessionId = await storage.getItem(
+          LEGACY_RESUMABLE_SESSION_KEY,
+        );
+
+        if (legacySessionId !== null) {
+          const legacySession = await load(legacySessionId);
+
+          if (legacySession === null || legacySession.status === 'completed') {
+            await storage.removeItem(LEGACY_RESUMABLE_SESSION_KEY);
+          } else {
+            await storage.setItem(
+              resumableSessionKey(legacySession.plan.grade),
+              legacySession.id,
+            );
+            await storage.removeItem(LEGACY_RESUMABLE_SESSION_KEY);
+
+            if (legacySession.plan.grade === grade) {
+              return legacySession;
+            }
+          }
+        }
+
+        sessionId = await storage.getItem(gradeKey);
+        if (sessionId === null) {
+          return null;
+        }
       }
 
       const session = await load(sessionId);
       if (session === null || session.status === 'completed') {
-        await storage.removeItem(RESUMABLE_SESSION_KEY);
+        await storage.removeItem(gradeKey);
+        return null;
+      }
+
+      if (session.plan.grade !== grade) {
+        await storage.removeItem(gradeKey);
+        await storage.setItem(
+          resumableSessionKey(session.plan.grade),
+          session.id,
+        );
         return null;
       }
 

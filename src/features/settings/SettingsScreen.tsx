@@ -1,6 +1,15 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import type { Grade } from '@/core/types';
+import { evaluateGradeSwitch } from '@/features/journey/gradeSwitchPolicy';
+import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
 import { translateAppShell } from '@/localization/appShell';
 
 import { useAppPreferences } from './AppPreferencesContext';
@@ -16,6 +25,29 @@ export function SettingsScreen() {
     storageError,
   } = useAppPreferences();
   const { locale, selectedGrade } = preferences;
+
+  const chooseGrade = async (grade: Grade) => {
+    const decision = await evaluateGradeSwitch(
+      localPracticeSessionStore,
+      selectedGrade,
+      grade,
+    );
+
+    if (!decision.allowed) {
+      Alert.alert(
+        translateAppShell(locale, 'gradeSwitch.blockedTitle'),
+        translateAppShell(locale, 'gradeSwitch.blockedMessage', {
+          grade: decision.currentGrade,
+          completed: decision.masteredLevelCount,
+          minimum: decision.minimumMasteredLevelCount,
+        }),
+        [{ text: translateAppShell(locale, 'gradeSwitch.ok') }],
+      );
+      return;
+    }
+
+    await setSelectedGrade(grade);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -75,7 +107,7 @@ export function SettingsScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
                   key={grade}
-                  onPress={() => void setSelectedGrade(grade)}
+                  onPress={() => void chooseGrade(grade)}
                   style={[styles.optionButton, selected && styles.optionSelected]}
                 >
                   <Text style={styles.optionText}>

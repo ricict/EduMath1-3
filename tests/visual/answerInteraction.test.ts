@@ -5,6 +5,7 @@ import { generateAdditionWithin10 } from '../../src/core/question-engine/additio
 import { generateCompareOrderNumbers20 } from '../../src/core/question-engine/compareOrderNumbers20';
 import { generateIdentify2DShapes } from '../../src/core/question-engine/identify2dShapes';
 import { generateMultiplicationFacts2510 } from '../../src/core/question-engine/multiplicationFacts2510';
+import { generateNumberRecognition10 } from '../../src/core/question-engine/numberRecognition10';
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import { evaluateLearnerAnswer } from '../../src/core/session/session';
@@ -33,6 +34,48 @@ test('numeric interaction consumes M3 semantic answerOptions exactly', () => {
   );
   assert.equal(
     options.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
+    1,
+  );
+});
+
+test('number-recognition options render as localized number words without changing numeric semantics', () => {
+  const question = generateNumberRecognition10({
+    grade: 1,
+    skillId: 'number_recognition_10',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const options = getPracticeAnswerOptions(question);
+  assert.ok(options);
+
+  const expectedEnglish = new Map([
+    [0, 'ZERO'],
+    [1, 'ONE'],
+    [2, 'TWO'],
+    [3, 'THREE'],
+    [4, 'FOUR'],
+    [5, 'FIVE'],
+    [6, 'SIX'],
+    [7, 'SEVEN'],
+    [8, 'EIGHT'],
+    [9, 'NINE'],
+    [10, 'TEN'],
+  ]);
+
+  for (const option of options) {
+    assert.equal(option.kind, 'numeric');
+    if (option.kind !== 'numeric') {
+      throw new Error('Expected numeric number-recognition option.');
+    }
+
+    assert.equal(
+      formatPracticeAnswerText(option, 'en', question),
+      expectedEnglish.get(option.value),
+    );
+  }
+
+  assert.equal(
+    options.filter((option) => evaluateLearnerAnswer(question, option)).length,
     1,
   );
 });
@@ -68,6 +111,10 @@ test('numeric interaction supports multiplication answers above ten without UI r
   assert.equal(
     options.filter((answer) => evaluateLearnerAnswer(question, answer)).length,
     1,
+  );
+  assert.equal(
+    formatPracticeAnswerText(options[0], 'en', question),
+    options[0].kind === 'numeric' ? String(options[0].value) : '',
   );
 });
 

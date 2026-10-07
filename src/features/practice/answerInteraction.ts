@@ -1,5 +1,9 @@
 import type { ComparisonRelation, Question } from '@/core/types';
-import { translateShapeName, type Locale } from '@/localization';
+import {
+  translateNumberWord,
+  translateShapeName,
+  type Locale,
+} from '@/localization';
 
 import type { PracticeScreenAnswer } from './practiceCompatibility';
 
@@ -77,10 +81,13 @@ export function practiceAnswerKey(answer: PracticeScreenAnswer): string {
 export function formatPracticeAnswerText(
   answer: PracticeScreenAnswer,
   locale: Locale = 'en',
+  question?: Question,
 ): string {
   switch (answer.kind) {
     case 'numeric':
-      return String(answer.value);
+      return question?.data.operation === 'number-recognition'
+        ? translateNumberWord(locale, answer.value)
+        : String(answer.value);
     case 'relation':
       return relationSymbol(answer.value);
     case 'fraction':

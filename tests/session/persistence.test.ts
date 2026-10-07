@@ -163,7 +163,52 @@ test('local session store saves and discovers one resumable session', async () =
   await store.save(paused);
 
   assert.deepEqual(await store.load(paused.id), paused);
-  assert.deepEqual(await store.loadResumable(), paused);
+  assert.deepEqual(await store.loadResumable(1), paused);
+});
+
+test('resumable sessions are scoped independently by grade', async () => {
+  const storage = new MemoryKeyValueStorage();
+  const store = createLocalSessionStore(storage);
+  const grade1 = pausePracticeSession(
+    issueNextQuestion(createSession()).session,
+    3_000,
+  );
+  const grade2Base = startPracticeSession({
+    id: 'offline-grade-2',
+    grade: 2,
+    skillId: 'multiplication_facts_2_5_10',
+    difficulty: 1,
+    sessionSeed: 123,
+    startedAtMs: 4_000,
+  });
+  const grade2 = pausePracticeSession(
+    issueNextQuestion(grade2Base).session,
+    5_000,
+  );
+
+  await store.save(grade1);
+  await store.save(grade2);
+
+  assert.equal((await store.loadResumable(1))?.id, grade1.id);
+  assert.equal((await store.loadResumable(2))?.id, grade2.id);
+  assert.equal(await store.loadResumable(3), null);
+});
+
+test('legacy global resumable pointer migrates without leaking across grades', async () => {
+  const storage = new MemoryKeyValueStorage();
+  const store = createLocalSessionStore(storage);
+  const grade1 = pausePracticeSession(
+    issueNextQuestion(createSession()).session,
+    3_000,
+  );
+
+  await store.save(grade1);
+  storage.values.delete('edumath:m4:resumable-session-id:v1:grade:1');
+  storage.values.set('edumath:m4:resumable-session-id:v1', grade1.id);
+
+  assert.equal(await store.loadResumable(2), null);
+  assert.equal(storage.values.has('edumath:m4:resumable-session-id:v1'), false);
+  assert.equal((await store.loadResumable(1))?.id, grade1.id);
 });
 
 test('completed session remains loadable by ID but is no longer resumable', async () => {
@@ -178,12 +223,12 @@ test('completed session remains loadable by ID but is no longer resumable', asyn
   const completed = completePracticeSession(answered.session, 3_000);
 
   await store.save(answered.session);
-  assert.equal((await store.loadResumable())?.id, completed.id);
+  assert.equal((await store.loadResumable(1))?.id, completed.id);
 
   await store.save(completed);
 
   assert.deepEqual(await store.load(completed.id), completed);
-  assert.equal(await store.loadResumable(), null);
+  assert.equal(await store.loadResumable(1), null);
   assert.deepEqual(await store.listCompleted(), [completed]);
 
   await store.save(completed);

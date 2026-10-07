@@ -5,6 +5,8 @@ import {
   shouldRefreshPracticeRecommendation,
   startRecommendedPractice,
 } from '@/core/adaptive/startRecommendedPractice';
+import { loadLearnerModel } from '@/core/adaptive/history';
+import { recommendPractice } from '@/core/adaptive/recommendation';
 import type { RecommendationUnavailableCode } from '@/core/adaptive/types';
 import {
   checkpointPracticeSession,
@@ -50,6 +52,11 @@ async function createFreshSession(nowMs: number, grade: Grade) {
   });
 }
 
+export interface PracticeLevelTransition {
+  completedSessionId: string;
+  kind: 'advanced' | 'repeat';
+}
+
 export interface PracticeSessionController {
   loading: boolean;
   error: string | null;
@@ -57,12 +64,14 @@ export interface PracticeSessionController {
   question: Question | null;
   activeDurationMs: number;
   unavailable: PracticeUnavailableReason | null;
+  levelTransition: PracticeLevelTransition | null;
   submitNumericAnswer(value: number): Promise<boolean>;
   submitRelationAnswer(value: ComparisonRelation): Promise<boolean>;
   submitFractionAnswer(value: FractionAnswer): Promise<boolean>;
   submitTimeAnswer(value: TimeAnswer): Promise<boolean>;
   submitShapeAnswer(value: Shape2D): Promise<boolean>;
   nextQuestion(): Promise<void>;
+  continueAfterLevel(): Promise<void>;
   finishSession(): Promise<void>;
   startNewSession(): Promise<void>;
 }
@@ -76,6 +85,8 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
   const [unavailable, setUnavailable] = useState<PracticeUnavailableReason | null>(
     null,
   );
+  const [levelTransition, setLevelTransition] =
+    useState<PracticeLevelTransition | null>(null);
 
   const sessionRef = useRef<PracticeSession | null>(null);
   const saveChainRef = useRef<Promise<void>>(Promise.resolve());
@@ -138,6 +149,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     }
 
     setUnavailable(null);
+    setLevelTransition(null);
     setQuestion(fresh.question);
     setClockNowMs(nowMs);
     await persistCheckpoint(fresh.session, nowMs);
@@ -149,7 +161,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     const restore = async () => {
       try {
         const nowMs = Date.now();
-        let restored = await localPracticeSessionStore.loadResumable();
+        let restored = await localPracticeSessionStore.loadResumable(grade);
 
         if (restored?.status === 'active') {
           restored = recoverInterruptedPracticeSession(restored);
@@ -305,6 +317,42 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     return () => clearInterval(interval);
   }, [session?.status]);
 
+  const persistSubmittedSession = useCallback(
+    async (
+      submitted: ReturnType<typeof submitAnswer>,
+      nowMs: number,
+    ): Promise<boolean> => {
+      setQuestion(submitted.question);
+
+      if (
+        submitted.correct &&
+        shouldRefreshPracticeRecommendation(submitted.session)
+      ) {
+        const completed = completePracticeSession(submitted.session, nowMs);
+        applySession(completed);
+        await queueSave(completed);
+
+        const learnerModel = await loadLearnerModel(localPracticeSessionStore);
+        const recommendation = recommendPractice(grade, learnerModel);
+        const advanced =
+          recommendation.kind === 'unavailable' ||
+          recommendation.skillId !== completed.plan.skillId ||
+          recommendation.difficulty !== completed.plan.difficulty;
+
+        setLevelTransition({
+          completedSessionId: completed.id,
+          kind: advanced ? 'advanced' : 'repeat',
+        });
+      } else {
+        await persistCheckpoint(submitted.session, nowMs);
+      }
+
+      setError(null);
+      return submitted.correct;
+    },
+    [applySession, grade, persistCheckpoint, queueSave],
+  );
+
   const submitNumericAnswer = useCallback(
     async (value: number) => {
       const current = sessionRef.current;
@@ -319,16 +367,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
           { kind: 'numeric', value },
           nowMs,
         );
-        setQuestion(submitted.question);
-        await persistCheckpoint(submitted.session, nowMs);
-        setError(null);
-        return submitted.correct;
+        return await persistSubmittedSession(submitted, nowMs);
       } catch (cause) {
         reportError(cause);
         throw cause;
       }
     },
-    [persistCheckpoint, reportError],
+    [persistSubmittedSession, reportError],
   );
 
   const submitRelationAnswer = useCallback(
@@ -345,16 +390,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
           { kind: 'relation', value },
           nowMs,
         );
-        setQuestion(submitted.question);
-        await persistCheckpoint(submitted.session, nowMs);
-        setError(null);
-        return submitted.correct;
+        return await persistSubmittedSession(submitted, nowMs);
       } catch (cause) {
         reportError(cause);
         throw cause;
       }
     },
-    [persistCheckpoint, reportError],
+    [persistSubmittedSession, reportError],
   );
 
   const submitFractionAnswer = useCallback(
@@ -371,16 +413,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
           { kind: 'fraction', value },
           nowMs,
         );
-        setQuestion(submitted.question);
-        await persistCheckpoint(submitted.session, nowMs);
-        setError(null);
-        return submitted.correct;
+        return await persistSubmittedSession(submitted, nowMs);
       } catch (cause) {
         reportError(cause);
         throw cause;
       }
     },
-    [persistCheckpoint, reportError],
+    [persistSubmittedSession, reportError],
   );
 
   const submitTimeAnswer = useCallback(
@@ -397,16 +436,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
           { kind: 'time', value },
           nowMs,
         );
-        setQuestion(submitted.question);
-        await persistCheckpoint(submitted.session, nowMs);
-        setError(null);
-        return submitted.correct;
+        return await persistSubmittedSession(submitted, nowMs);
       } catch (cause) {
         reportError(cause);
         throw cause;
       }
     },
-    [persistCheckpoint, reportError],
+    [persistSubmittedSession, reportError],
   );
 
   const submitShapeAnswer = useCallback(
@@ -423,16 +459,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
           { kind: 'shape', value },
           nowMs,
         );
-        setQuestion(submitted.question);
-        await persistCheckpoint(submitted.session, nowMs);
-        setError(null);
-        return submitted.correct;
+        return await persistSubmittedSession(submitted, nowMs);
       } catch (cause) {
         reportError(cause);
         throw cause;
       }
     },
-    [persistCheckpoint, reportError],
+    [persistSubmittedSession, reportError],
   );
 
   const nextQuestion = useCallback(async () => {
@@ -448,7 +481,18 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
         const completed = completePracticeSession(current, nowMs);
         applySession(completed);
         await queueSave(completed);
-        await startFresh();
+
+        const learnerModel = await loadLearnerModel(localPracticeSessionStore);
+        const recommendation = recommendPractice(grade, learnerModel);
+        const advanced =
+          recommendation.kind === 'unavailable' ||
+          recommendation.skillId !== completed.plan.skillId ||
+          recommendation.difficulty !== completed.plan.difficulty;
+
+        setLevelTransition({
+          completedSessionId: completed.id,
+          kind: advanced ? 'advanced' : 'repeat',
+        });
         setError(null);
         return;
       }
@@ -466,8 +510,23 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     persistCheckpoint,
     queueSave,
     reportError,
+    grade,
     startFresh,
   ]);
+
+  const continueAfterLevel = useCallback(async () => {
+    try {
+      setLoading(true);
+      setLevelTransition(null);
+      await startFresh();
+      setError(null);
+    } catch (cause) {
+      reportError(cause);
+      throw cause;
+    } finally {
+      setLoading(false);
+    }
+  }, [reportError, startFresh]);
 
   const finishSession = useCallback(async () => {
     const current = sessionRef.current;
@@ -516,12 +575,14 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     question,
     activeDurationMs,
     unavailable,
+    levelTransition,
     submitNumericAnswer,
     submitRelationAnswer,
     submitFractionAnswer,
     submitTimeAnswer,
     submitShapeAnswer,
     nextQuestion,
+    continueAfterLevel,
     finishSession,
     startNewSession,
   };

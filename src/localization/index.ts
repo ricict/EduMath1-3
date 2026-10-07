@@ -48,6 +48,11 @@ type MessageKey =
   | 'feedback.correct'
   | 'feedback.incorrect'
   | 'feedback.sessionComplete'
+  | 'feedback.levelCompleteTitle'
+  | 'feedback.levelCompleteMessage'
+  | 'feedback.levelRetryTitle'
+  | 'feedback.levelRetryMessage'
+  | 'action.continue'
   | 'status.loading'
   | 'status.persistenceError'
   | 'status.allGradeSkillsMastered'
@@ -111,6 +116,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.correct': 'Correct!',
     'feedback.incorrect': 'Try again.',
     'feedback.sessionComplete': 'Practice session complete!',
+    'feedback.levelCompleteTitle': 'Level complete!',
+    'feedback.levelCompleteMessage':
+      'Great work. Continue to the next recommended level.',
+    'feedback.levelRetryTitle': 'Keep practicing this level',
+    'feedback.levelRetryMessage':
+      'You finished this practice set. Continue to strengthen this level before moving on.',
+    'action.continue': 'Continue',
     'status.loading': 'Restoring your practice session…',
     'status.persistenceError': 'Local practice storage is unavailable.',
     'status.allGradeSkillsMastered': 'You completed the current grade practice path.',
@@ -173,6 +185,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.correct': 'Benar!',
     'feedback.incorrect': 'Coba lagi.',
     'feedback.sessionComplete': 'Sesi latihan selesai!',
+    'feedback.levelCompleteTitle': 'Level selesai!',
+    'feedback.levelCompleteMessage':
+      'Bagus! Lanjutkan ke level berikutnya yang direkomendasikan.',
+    'feedback.levelRetryTitle': 'Lanjutkan latihan level ini',
+    'feedback.levelRetryMessage':
+      'Set latihan ini selesai. Lanjutkan untuk memperkuat level ini sebelum naik.',
+    'action.continue': 'Lanjutkan',
     'status.loading': 'Memulihkan sesi latihan…',
     'status.persistenceError': 'Penyimpanan latihan lokal tidak tersedia.',
     'status.allGradeSkillsMastered': 'Kamu telah menyelesaikan jalur latihan untuk kelas ini.',
@@ -235,6 +254,13 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.correct': 'ถูกต้อง!',
     'feedback.incorrect': 'ลองอีกครั้ง',
     'feedback.sessionComplete': 'เซสชันฝึกเสร็จแล้ว!',
+    'feedback.levelCompleteTitle': 'ผ่านระดับแล้ว!',
+    'feedback.levelCompleteMessage':
+      'เยี่ยมมาก ไปต่อยังระดับที่แนะนำถัดไป',
+    'feedback.levelRetryTitle': 'ฝึกระดับนี้ต่อ',
+    'feedback.levelRetryMessage':
+      'ทำชุดฝึกนี้เสร็จแล้ว ฝึกระดับนี้ต่อเพื่อให้เชี่ยวชาญก่อนเลื่อนไประดับถัดไป',
+    'action.continue': 'ดำเนินการต่อ',
     'status.loading': 'กำลังกู้คืนเซสชันฝึก…',
     'status.persistenceError': 'ไม่สามารถใช้พื้นที่จัดเก็บการฝึกในเครื่องได้',
     'status.allGradeSkillsMastered': 'คุณเรียนจบเส้นทางฝึกของระดับชั้นนี้แล้ว',
@@ -257,6 +283,20 @@ export function translate(
     const value = params[parameterName];
     return value === undefined ? placeholder : String(value);
   });
+}
+
+const NUMBER_WORDS: Readonly<Record<Locale, readonly string[]>> = {
+  en: ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN'],
+  id: ['NOL', 'SATU', 'DUA', 'TIGA', 'EMPAT', 'LIMA', 'ENAM', 'TUJUH', 'DELAPAN', 'SEMBILAN', 'SEPULUH'],
+  th: ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า', 'สิบ'],
+};
+
+export function translateNumberWord(locale: Locale, value: number): string {
+  if (!Number.isInteger(value) || value < 0 || value > 10) {
+    throw new Error('Number-word display supports only integers from 0 to 10.');
+  }
+
+  return NUMBER_WORDS[locale][value];
 }
 
 export function translateShapeName(locale: Locale, shape: Shape2D): string {

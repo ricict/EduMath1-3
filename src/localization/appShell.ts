@@ -15,6 +15,9 @@ export type AppShellMessageKey =
   | 'home.practice'
   | 'home.selected'
   | 'home.resumeNote'
+  | 'gradeSwitch.blockedTitle'
+  | 'gradeSwitch.blockedMessage'
+  | 'gradeSwitch.ok'
   | 'progress.eyebrow'
   | 'progress.title'
   | 'progress.subtitle'
@@ -61,7 +64,11 @@ const messages: Readonly<
     'home.practice': 'Practice',
     'home.selected': 'Preferred grade',
     'home.resumeNote':
-      'If you have unfinished practice, EduMath will continue it first.',
+      'Each grade keeps its own unfinished practice on this device.',
+    'gradeSwitch.blockedTitle': 'Finish your current grade first',
+    'gradeSwitch.blockedMessage':
+      'Complete at least {minimum} mastered levels in Grade {grade} before switching grades. Current progress: {completed}/{minimum}.',
+    'gradeSwitch.ok': 'Continue current grade',
     'progress.eyebrow': 'Your learning journey',
     'progress.title': 'Progress',
     'progress.subtitle':
@@ -109,7 +116,11 @@ const messages: Readonly<
     'home.practice': 'Latihan',
     'home.selected': 'Kelas pilihan',
     'home.resumeNote':
-      'Jika masih ada latihan yang belum selesai, EduMath akan melanjutkannya terlebih dahulu.',
+      'Setiap kelas menyimpan latihan yang belum selesai secara terpisah di perangkat ini.',
+    'gradeSwitch.blockedTitle': 'Selesaikan kelas saat ini terlebih dahulu',
+    'gradeSwitch.blockedMessage':
+      'Selesaikan minimal {minimum} level yang dikuasai di Kelas {grade} sebelum berpindah kelas. Kemajuan saat ini: {completed}/{minimum}.',
+    'gradeSwitch.ok': 'Lanjutkan kelas saat ini',
     'progress.eyebrow': 'Perjalanan belajarmu',
     'progress.title': 'Kemajuan',
     'progress.subtitle':
@@ -157,7 +168,11 @@ const messages: Readonly<
     'home.practice': 'ฝึก',
     'home.selected': 'ชั้นที่เลือก',
     'home.resumeNote':
-      'หากมีแบบฝึกหัดที่ยังไม่เสร็จ EduMath จะทำต่อจากเดิมก่อน',
+      'แต่ละระดับชั้นจะเก็บแบบฝึกหัดที่ยังไม่เสร็จแยกกันในอุปกรณ์นี้',
+    'gradeSwitch.blockedTitle': 'ทำระดับชั้นปัจจุบันให้เสร็จก่อน',
+    'gradeSwitch.blockedMessage':
+      'ทำให้เชี่ยวชาญอย่างน้อย {minimum} ระดับในชั้น {grade} ก่อนเปลี่ยนชั้น ความก้าวหน้าปัจจุบัน: {completed}/{minimum}',
+    'gradeSwitch.ok': 'เรียนชั้นปัจจุบันต่อ',
     'progress.eyebrow': 'เส้นทางการเรียนรู้ของคุณ',
     'progress.title': 'ความก้าวหน้า',
     'progress.subtitle':

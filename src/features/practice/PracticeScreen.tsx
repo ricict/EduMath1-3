@@ -1,11 +1,19 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import type { Grade } from '@/core/types';
 import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
 import {
   renderQuestionPrompt,
   translate,
+  translateNumberWord,
   translateShapeName,
   type Locale,
 } from '@/localization';
@@ -50,9 +58,12 @@ function renderUnavailableMessage(
 function renderAnswerAccessibilityLabel(
   locale: Locale,
   answer: PracticeScreenAnswer,
+  question: Parameters<typeof renderQuestionPrompt>[0],
 ): string {
   if (answer.kind === 'numeric') {
-    return String(answer.value);
+    return question.data.operation === 'number-recognition'
+      ? translateNumberWord(locale, answer.value)
+      : String(answer.value);
   }
 
   if (answer.kind === 'relation') {
@@ -94,6 +105,47 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
   const [lastResult, setLastResult] = useState<boolean | null>(null);
 
   const practice = usePracticeSession(grade);
+  const shownTransitionRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const transition = practice.levelTransition;
+    if (
+      transition === null ||
+      shownTransitionRef.current === transition.completedSessionId
+    ) {
+      return;
+    }
+
+    shownTransitionRef.current = transition.completedSessionId;
+    const advanced = transition.kind === 'advanced';
+
+    Alert.alert(
+      translate(
+        locale,
+        advanced
+          ? 'feedback.levelCompleteTitle'
+          : 'feedback.levelRetryTitle',
+      ),
+      translate(
+        locale,
+        advanced
+          ? 'feedback.levelCompleteMessage'
+          : 'feedback.levelRetryMessage',
+      ),
+      [
+        {
+          text: translate(locale, 'action.continue'),
+          onPress: () => {
+            setSelectedAnswer(null);
+            setChecked(false);
+            setLastResult(null);
+            void practice.continueAfterLevel();
+          },
+        },
+      ],
+      { cancelable: false },
+    );
+  }, [locale, practice]);
 
   const resetAnswerUi = () => {
     setSelectedAnswer(null);
@@ -270,7 +322,11 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
 
               return (
                 <Pressable
-                  accessibilityLabel={renderAnswerAccessibilityLabel(locale, answer)}
+                  accessibilityLabel={renderAnswerAccessibilityLabel(
+                    locale,
+                    answer,
+                    practice.question,
+                  )}
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
                   key={practiceAnswerKey(answer)}
@@ -282,7 +338,11 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
                   style={[styles.answerButton, selected && styles.answerButtonSelected]}
                 >
                   <Text style={styles.answerText}>
-                    {formatPracticeAnswerText(answer, locale)}
+                    {formatPracticeAnswerText(
+                      answer,
+                      locale,
+                      practice.question,
+                    )}
                   </Text>
                 </Pressable>
               );

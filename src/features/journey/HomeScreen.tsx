@@ -1,10 +1,20 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import type { Grade } from '@/core/types';
+import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
 import { useAppPreferences } from '@/features/settings/AppPreferencesContext';
 import { translate } from '@/localization';
 import { translateAppShell } from '@/localization/appShell';
+
+import { evaluateGradeSwitch } from './gradeSwitchPolicy';
 
 const GRADES = [1, 2, 3] as const satisfies readonly Grade[];
 
@@ -13,6 +23,25 @@ export function HomeScreen() {
   const { locale, selectedGrade } = preferences;
 
   const openPractice = async (grade: Grade) => {
+    const decision = await evaluateGradeSwitch(
+      localPracticeSessionStore,
+      selectedGrade,
+      grade,
+    );
+
+    if (!decision.allowed) {
+      Alert.alert(
+        translateAppShell(locale, 'gradeSwitch.blockedTitle'),
+        translateAppShell(locale, 'gradeSwitch.blockedMessage', {
+          grade: decision.currentGrade,
+          completed: decision.masteredLevelCount,
+          minimum: decision.minimumMasteredLevelCount,
+        }),
+        [{ text: translateAppShell(locale, 'gradeSwitch.ok') }],
+      );
+      return;
+    }
+
     await setSelectedGrade(grade);
     router.push({
       pathname: '/practice',
