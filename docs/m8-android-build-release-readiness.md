@@ -338,3 +338,90 @@ This document authorizes M8 but does **not** itself claim any Android binary has
 After this definition commit passes GitHub Actions, M8.1 — Android Build Baseline may begin.
 
 No M9 work is authorized.
+
+
+## 12. M8.1 — Android Build Baseline checkpoint
+
+Status: **PASS_AND_CHECKPOINT**
+
+Verified: **2026-10-07**
+
+M8.1 produced the first real installable Android APK through the frozen cloud-first path.
+
+### Repository/build checkpoint
+
+```text
+Source commit : b2249e4b070b945d2e76348850faaf2aac6afe73
+Source tree   : ef6acae9e0487fd248b6df28d95d3f71e09e3b1e
+Quality run   : GitHub Actions Run 86
+Quality       : SUCCESS
+Tests         : 165 passed / 0 failed / 0 skipped
+```
+
+The EAS project linkage is canonical in `app.json`:
+
+```text
+owner      : herisonsurbakti
+projectId  : dbadd718-7c7e-46b7-acd4-36eb0a8365e5
+slug       : edumath-grade-1-3
+```
+
+Android identity remains:
+
+```text
+package      : com.ricict.edumath
+version      : 0.1.0
+versionCode  : 1
+```
+
+### EAS preview build evidence
+
+```text
+GitHub workflow : EAS Android Preview APK
+GitHub run      : 37602523789
+Conclusion      : SUCCESS
+EAS build ID    : 50356906-1518-4211-a989-df90fefcb271
+EAS status      : FINISHED
+Platform        : ANDROID
+Distribution    : INTERNAL
+Profile         : preview
+SDK             : 57.0.0
+App identifier  : com.ricict.edumath
+App version     : 0.1.0
+Build version   : 1
+Fingerprint ID  : 01a115bf-e40e-7d35-9810-f9f172c74fa0
+Fingerprint     : e70b6466480e4e449521257c70968dddbbce3d2e
+```
+
+EAS remote Android credentials were used and the first Android keystore was created on the Expo server. No signing secret or private key was committed to Git.
+
+The resulting installable artifact is:
+
+```text
+https://expo.dev/artifacts/eas/AjGPH2nOip1RBh7-juV3DVbEoWKV6bYYxQ4KelC2U-c.apk
+```
+
+The EAS build record is:
+
+```text
+https://expo.dev/accounts/herisonsurbakti/projects/edumath-grade-1-3/builds/50356906-1518-4211-a989-df90fefcb271
+```
+
+### M8.1 decision
+
+M8.1 is **PASS_AND_CHECKPOINT** because:
+
+- an actual cloud-built APK exists;
+- the build finished successfully;
+- the APK uses the explicit canonical Android package identifier;
+- remote signing credentials were created and used without committing secrets;
+- the build is traceable to the exact Git commit;
+- the preview profile is internal-distribution APK;
+- the production profile remains app-bundle oriented;
+- dependency resolution is lockfile-based;
+- GitHub CI remains green with 165/165 tests;
+- no M1–M7 authority contract was reopened.
+
+This checkpoint authorizes **M8.2 — Physical Device Validation**.
+
+M8 itself remains **IN PROGRESS**. M8.2 physical-device evidence is still required before advancing to production Android configuration.
