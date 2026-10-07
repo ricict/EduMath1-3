@@ -101,6 +101,23 @@ export function formatPracticeAnswerText(
   }
 }
 
+export function getCorrectPracticeAnswer(
+  question: Question,
+): PracticeScreenAnswer {
+  switch (question.questionType) {
+    case 'numeric-choice':
+      return { kind: 'numeric', value: question.expectedAnswer };
+    case 'relation-choice':
+      return { kind: 'relation', value: question.expectedAnswer };
+    case 'fraction-choice':
+      return { kind: 'fraction', value: question.expectedAnswer };
+    case 'time-choice':
+      return { kind: 'time', value: question.expectedAnswer };
+    case 'shape-choice':
+      return { kind: 'shape', value: question.expectedAnswer };
+  }
+}
+
 export function isSamePracticeAnswer(
   left: PracticeScreenAnswer | null,
   right: PracticeScreenAnswer,

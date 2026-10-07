@@ -67,6 +67,35 @@ function mixQuestionSeed(seed: number): number {
   return value >>> 0;
 }
 
+const QUESTION_NOVELTY_PROBE_LIMIT = 128;
+const QUESTION_NOVELTY_PROBE_SALT = 0x7f4a7c15;
+
+function semanticQuestionKey(question: Question): string {
+  return JSON.stringify({
+    skillId: question.skillId,
+    difficulty: question.difficulty,
+    questionType: question.questionType,
+    representation: question.representation,
+    promptKey: question.promptKey,
+    data: question.data,
+    expectedAnswer: question.expectedAnswer,
+  });
+}
+
+function deriveProbeSeed(
+  sessionSeed: number,
+  ordinal: number,
+  probe: number,
+): number {
+  const baseSeed = deriveQuestionSeed(sessionSeed, ordinal);
+  if (probe === 0) {
+    return baseSeed;
+  }
+
+  const probeSalt = Math.imul(probe, QUESTION_NOVELTY_PROBE_SALT) >>> 0;
+  return mixQuestionSeed((baseSeed + probeSalt) >>> 0);
+}
+
 function getActiveAttemptIndex(session: PracticeSession): number {
   let activeIndex = -1;
 
@@ -172,20 +201,65 @@ export function issueNextQuestion(session: PracticeSession): IssuedQuestion {
   }
 
   const ordinal = session.attempts.length;
-  const generationContext = {
-    grade: session.plan.grade,
-    skillId: session.plan.skillId,
-    difficulty: session.plan.difficulty,
-    seed: deriveQuestionSeed(session.sessionSeed, ordinal),
-  } as const;
-  const question = generateQuestion(generationContext);
+  const previousQuestions = session.attempts.map((attempt) =>
+    reconstructQuestion(attempt.question),
+  );
+  const seenKeys = new Set(previousQuestions.map(semanticQuestionKey));
+  const previousKey =
+    previousQuestions.length === 0
+      ? null
+      : semanticQuestionKey(previousQuestions[previousQuestions.length - 1]);
+
+  type QuestionCandidate = {
+    generationContext: {
+      grade: Grade;
+      skillId: SkillId;
+      difficulty: Difficulty;
+      seed: number;
+    };
+    question: Question;
+  };
+
+  let firstCandidate: QuestionCandidate | null = null;
+  let nonConsecutiveCandidate: QuestionCandidate | null = null;
+  let selectedCandidate: QuestionCandidate | null = null;
+
+  for (let probe = 0; probe < QUESTION_NOVELTY_PROBE_LIMIT; probe += 1) {
+    const generationContext = {
+      grade: session.plan.grade,
+      skillId: session.plan.skillId,
+      difficulty: session.plan.difficulty,
+      seed: deriveProbeSeed(session.sessionSeed, ordinal, probe),
+    } as const;
+    const question = generateQuestion(generationContext);
+    const candidate: QuestionCandidate = { generationContext, question };
+    const key = semanticQuestionKey(question);
+
+    if (firstCandidate === null) {
+      firstCandidate = candidate;
+    }
+    if (key !== previousKey && nonConsecutiveCandidate === null) {
+      nonConsecutiveCandidate = candidate;
+    }
+    if (!seenKeys.has(key)) {
+      selectedCandidate = candidate;
+      break;
+    }
+  }
+
+  const chosen =
+    selectedCandidate ?? nonConsecutiveCandidate ?? firstCandidate;
+  if (chosen === null) {
+    throw new Error('Unable to generate a practice question.');
+  }
+
   const attempt: QuestionAttempt = {
     question: {
       ordinal,
-      generationContext,
-      questionId: question.id,
-      questionType: question.questionType,
-      representation: question.representation,
+      generationContext: chosen.generationContext,
+      questionId: chosen.question.id,
+      questionType: chosen.question.questionType,
+      representation: chosen.question.representation,
     },
     status: 'active',
     answers: [],
@@ -197,7 +271,7 @@ export function issueNextQuestion(session: PracticeSession): IssuedQuestion {
       ...session,
       attempts: [...session.attempts, attempt],
     },
-    question,
+    question: chosen.question,
   };
 }
 

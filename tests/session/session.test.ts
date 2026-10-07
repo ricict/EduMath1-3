@@ -170,6 +170,40 @@ test('Grade 1 number recognition visibly varies across correct progression', () 
   assert.equal(new Set(targets).size, 5);
 });
 
+test('five-question number-recognition windows avoid repeated visible questions', () => {
+  for (let sessionSeed = 0; sessionSeed < 24; sessionSeed += 1) {
+    let session = startPracticeSession({
+      id: `number-recognition-unique-${sessionSeed}`,
+      grade: 1,
+      skillId: 'number_recognition_10',
+      difficulty: 1,
+      sessionSeed,
+      startedAtMs: 1_000,
+    });
+    const targets: number[] = [];
+
+    for (let index = 0; index < 5; index += 1) {
+      const issued = issueNextQuestion(session);
+      if (issued.question.data.operation !== 'number-recognition') {
+        throw new Error('Expected number-recognition semantics.');
+      }
+
+      targets.push(issued.question.data.target);
+      session = submitAnswer(
+        issued.session,
+        correctAnswerFor(issued.question),
+        2_000 + index,
+      ).session;
+    }
+
+    assert.equal(
+      new Set(targets).size,
+      targets.length,
+      `session seed ${sessionSeed} repeated a visible number-recognition question`,
+    );
+  }
+});
+
 test('the same session seed and progression reconstruct the same question sequence', () => {
   function firstTwoQuestionIds(): readonly string[] {
     const first = issueNextQuestion(createAdditionSession());

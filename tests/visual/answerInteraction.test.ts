@@ -9,8 +9,10 @@ import { generateNumberRecognition10 } from '../../src/core/question-engine/numb
 import { generateTellTimeHourHalfHour } from '../../src/core/question-engine/tellTimeHourHalfHour';
 import { generateUnitFraction } from '../../src/core/question-engine/unitFractions';
 import { evaluateLearnerAnswer } from '../../src/core/session/session';
+import { translateNumberWord } from '../../src/localization';
 import {
   formatPracticeAnswerText,
+  getCorrectPracticeAnswer,
   getPracticeAnswerOptions,
   isSamePracticeAnswer,
 } from '../../src/features/practice/answerInteraction';
@@ -264,4 +266,22 @@ test('time answer comparison and display preserve hour and minute semantics', ()
   assert.equal(formatPracticeAnswerText(wholeHour), '3:00');
   assert.equal(isSamePracticeAnswer(halfHour, halfHour), true);
   assert.equal(isSamePracticeAnswer(halfHour, wholeHour), false);
+});
+
+
+test('correct-answer reveal preserves typed semantics and localized display', () => {
+  const question = generateNumberRecognition10({
+    grade: 1,
+    skillId: 'number_recognition_10',
+    difficulty: 3,
+    seed: 20261006,
+  });
+  const correct = getCorrectPracticeAnswer(question);
+
+  assert.equal(correct.kind, 'numeric');
+  assert.equal(
+    formatPracticeAnswerText(correct, 'id', question),
+    translateNumberWord('id', question.expectedAnswer),
+  );
+  assert.equal(evaluateLearnerAnswer(question, correct), true);
 });

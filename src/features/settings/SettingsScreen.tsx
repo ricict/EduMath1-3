@@ -1,5 +1,4 @@
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -8,8 +7,6 @@ import {
 } from 'react-native';
 
 import type { Grade } from '@/core/types';
-import { evaluateGradeSwitch } from '@/features/journey/gradeSwitchPolicy';
-import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
 import { translateAppShell } from '@/localization/appShell';
 
 import { useAppPreferences } from './AppPreferencesContext';
@@ -27,25 +24,6 @@ export function SettingsScreen() {
   const { locale, selectedGrade } = preferences;
 
   const chooseGrade = async (grade: Grade) => {
-    const decision = await evaluateGradeSwitch(
-      localPracticeSessionStore,
-      selectedGrade,
-      grade,
-    );
-
-    if (!decision.allowed) {
-      Alert.alert(
-        translateAppShell(locale, 'gradeSwitch.blockedTitle'),
-        translateAppShell(locale, 'gradeSwitch.blockedMessage', {
-          grade: decision.currentGrade,
-          completed: decision.masteredLevelCount,
-          minimum: decision.minimumMasteredLevelCount,
-        }),
-        [{ text: translateAppShell(locale, 'gradeSwitch.ok') }],
-      );
-      return;
-    }
-
     await setSelectedGrade(grade);
   };
 

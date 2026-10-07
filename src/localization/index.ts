@@ -47,11 +47,14 @@ type MessageKey =
   | 'action.startNew'
   | 'feedback.correct'
   | 'feedback.incorrect'
+  | 'feedback.correctAnswer'
   | 'feedback.sessionComplete'
   | 'feedback.levelCompleteTitle'
   | 'feedback.levelCompleteMessage'
   | 'feedback.levelRetryTitle'
   | 'feedback.levelRetryMessage'
+  | 'advisory.previousGradeTitle'
+  | 'advisory.previousGradeMessage'
   | 'action.continue'
   | 'status.loading'
   | 'status.persistenceError'
@@ -115,6 +118,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'action.startNew': 'Start new session',
     'feedback.correct': 'Correct!',
     'feedback.incorrect': 'Try again.',
+    'feedback.correctAnswer': 'Correct answer: {answer}',
     'feedback.sessionComplete': 'Practice session complete!',
     'feedback.levelCompleteTitle': 'Level complete!',
     'feedback.levelCompleteMessage':
@@ -122,6 +126,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.levelRetryTitle': 'Keep practicing this level',
     'feedback.levelRetryMessage':
       'You finished this practice set. Continue to strengthen this level before moving on.',
+    'advisory.previousGradeTitle': 'Grade {grade} is not fully complete',
+    'advisory.previousGradeMessage':
+      'You can still practice Grade {targetGrade}. Completing Grade {grade} first is recommended so EduMath can estimate the most appropriate question level from your curriculum progress.',
     'action.continue': 'Continue',
     'status.loading': 'Restoring your practice session…',
     'status.persistenceError': 'Local practice storage is unavailable.',
@@ -184,6 +191,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'action.startNew': 'Mulai sesi baru',
     'feedback.correct': 'Benar!',
     'feedback.incorrect': 'Coba lagi.',
+    'feedback.correctAnswer': 'Jawaban yang benar: {answer}',
     'feedback.sessionComplete': 'Sesi latihan selesai!',
     'feedback.levelCompleteTitle': 'Level selesai!',
     'feedback.levelCompleteMessage':
@@ -191,6 +199,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.levelRetryTitle': 'Lanjutkan latihan level ini',
     'feedback.levelRetryMessage':
       'Set latihan ini selesai. Lanjutkan untuk memperkuat level ini sebelum naik.',
+    'advisory.previousGradeTitle': 'Kelas {grade} belum sepenuhnya selesai',
+    'advisory.previousGradeMessage':
+      'Kamu tetap dapat berlatih di Kelas {targetGrade}. Sebaiknya selesaikan Kelas {grade} terlebih dahulu agar EduMath dapat mengukur level soal yang paling sesuai berdasarkan progres kurikulum.',
     'action.continue': 'Lanjutkan',
     'status.loading': 'Memulihkan sesi latihan…',
     'status.persistenceError': 'Penyimpanan latihan lokal tidak tersedia.',
@@ -253,6 +264,7 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'action.startNew': 'เริ่มเซสชันใหม่',
     'feedback.correct': 'ถูกต้อง!',
     'feedback.incorrect': 'ลองอีกครั้ง',
+    'feedback.correctAnswer': 'คำตอบที่ถูกต้อง: {answer}',
     'feedback.sessionComplete': 'เซสชันฝึกเสร็จแล้ว!',
     'feedback.levelCompleteTitle': 'ผ่านระดับแล้ว!',
     'feedback.levelCompleteMessage':
@@ -260,6 +272,9 @@ const messages: Readonly<Record<Locale, Readonly<Record<MessageKey, string>>>> =
     'feedback.levelRetryTitle': 'ฝึกระดับนี้ต่อ',
     'feedback.levelRetryMessage':
       'ทำชุดฝึกนี้เสร็จแล้ว ฝึกระดับนี้ต่อเพื่อให้เชี่ยวชาญก่อนเลื่อนไประดับถัดไป',
+    'advisory.previousGradeTitle': 'ชั้น {grade} ยังเรียนไม่ครบ',
+    'advisory.previousGradeMessage':
+      'คุณยังสามารถฝึกชั้น {targetGrade} ได้ แต่แนะนำให้เรียนชั้น {grade} ให้ครบก่อน เพื่อให้ EduMath ประเมินระดับคำถามที่เหมาะสมจากความก้าวหน้าตามหลักสูตรได้แม่นยำยิ่งขึ้น',
     'action.continue': 'ดำเนินการต่อ',
     'status.loading': 'กำลังกู้คืนเซสชันฝึก…',
     'status.persistenceError': 'ไม่สามารถใช้พื้นที่จัดเก็บการฝึกในเครื่องได้',

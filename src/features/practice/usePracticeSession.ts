@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import {
-  shouldRefreshPracticeRecommendation,
-  startRecommendedPractice,
-} from '@/core/adaptive/startRecommendedPractice';
+import { shouldRefreshPracticeRecommendation } from '@/core/adaptive/startRecommendedPractice';
 import { loadLearnerModel } from '@/core/adaptive/history';
 import { recommendPractice } from '@/core/adaptive/recommendation';
 import type { RecommendationUnavailableCode } from '@/core/adaptive/types';
@@ -17,20 +14,28 @@ import {
   recoverInterruptedPracticeSession,
   restoreActiveQuestion,
   resumePracticeSession,
+  startPracticeSession,
   submitAnswer,
 } from '@/core/session/session';
 import type { PracticeSession } from '@/core/session/types';
 import type {
   ComparisonRelation,
+  Difficulty,
   FractionAnswer,
   Grade,
   Question,
   Shape2D,
+  SkillId,
   TimeAnswer,
 } from '@/core/types';
 import { localPracticeSessionStore } from '@/infrastructure/storage/expoSqlitePracticeSessionStore';
+import {
+  evaluateGradeReadiness,
+  type GradeReadiness,
+} from '@/features/journey/gradeSwitchPolicy';
 
 import { supportsPracticeScreenQuestion } from './practiceCompatibility';
+import { selectProvisionalPracticePlan } from './provisionalPractice';
 
 
 export type PracticeUnavailableReason =
@@ -43,13 +48,71 @@ export type PracticeUnavailableReason =
       questionType: Question['questionType'];
     };
 
+type ResolvedPracticePlan =
+  | {
+      kind: 'practice';
+      skillId: SkillId;
+      difficulty: Difficulty;
+    }
+  | {
+      kind: 'unavailable';
+      code: RecommendationUnavailableCode;
+    };
+
+async function resolvePracticePlan(grade: Grade): Promise<ResolvedPracticePlan> {
+  const learnerModel = await loadLearnerModel(localPracticeSessionStore);
+  const recommendation = recommendPractice(grade, learnerModel);
+
+  if (recommendation.kind === 'practice') {
+    return {
+      kind: 'practice',
+      skillId: recommendation.skillId,
+      difficulty: recommendation.difficulty,
+    };
+  }
+
+  if (
+    grade > 1 &&
+    recommendation.reason.code !== 'ALL_GRADE_SKILLS_MASTERED'
+  ) {
+    const provisional = selectProvisionalPracticePlan(grade, learnerModel);
+    if (provisional) {
+      return {
+        kind: 'practice',
+        skillId: provisional.skillId,
+        difficulty: provisional.difficulty,
+      };
+    }
+  }
+
+  return {
+    kind: 'unavailable',
+    code: recommendation.reason.code,
+  };
+}
+
 async function createFreshSession(nowMs: number, grade: Grade) {
-  return startRecommendedPractice(localPracticeSessionStore, {
+  const plan = await resolvePracticePlan(grade);
+
+  if (plan.kind === 'unavailable') {
+    return plan;
+  }
+
+  const session = startPracticeSession({
     id: `local-${nowMs.toString(36)}`,
     grade,
+    skillId: plan.skillId,
+    difficulty: plan.difficulty,
     sessionSeed: nowMs >>> 0,
     startedAtMs: nowMs,
   });
+  const issued = issueNextQuestion(session);
+
+  return {
+    kind: 'started' as const,
+    session: issued.session,
+    question: issued.question,
+  };
 }
 
 export interface PracticeLevelTransition {
@@ -64,6 +127,7 @@ export interface PracticeSessionController {
   question: Question | null;
   activeDurationMs: number;
   unavailable: PracticeUnavailableReason | null;
+  gradeReadiness: GradeReadiness | null;
   levelTransition: PracticeLevelTransition | null;
   submitNumericAnswer(value: number): Promise<boolean>;
   submitRelationAnswer(value: ComparisonRelation): Promise<boolean>;
@@ -85,6 +149,8 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
   const [unavailable, setUnavailable] = useState<PracticeUnavailableReason | null>(
     null,
   );
+  const [gradeReadiness, setGradeReadiness] =
+    useState<GradeReadiness | null>(null);
   const [levelTransition, setLevelTransition] =
     useState<PracticeLevelTransition | null>(null);
 
@@ -133,7 +199,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     if (fresh.kind === 'unavailable') {
       applyUnavailable({
         kind: 'adaptive',
-        code: fresh.recommendation.reason.code,
+        code: fresh.code,
       });
       setClockNowMs(nowMs);
       return;
@@ -161,7 +227,15 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     const restore = async () => {
       try {
         const nowMs = Date.now();
+        const readiness = await evaluateGradeReadiness(
+          localPracticeSessionStore,
+          grade,
+        );
         let restored = await localPracticeSessionStore.loadResumable(grade);
+
+        if (!cancelled) {
+          setGradeReadiness(readiness);
+        }
 
         if (restored?.status === 'active') {
           restored = recoverInterruptedPracticeSession(restored);
@@ -178,7 +252,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
             if (!cancelled) {
               applyUnavailable({
                 kind: 'adaptive',
-                code: fresh.recommendation.reason.code,
+                code: fresh.code,
               });
               setClockNowMs(nowMs);
               setError(null);
@@ -332,12 +406,11 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
         applySession(completed);
         await queueSave(completed);
 
-        const learnerModel = await loadLearnerModel(localPracticeSessionStore);
-        const recommendation = recommendPractice(grade, learnerModel);
+        const nextPlan = await resolvePracticePlan(grade);
         const advanced =
-          recommendation.kind === 'unavailable' ||
-          recommendation.skillId !== completed.plan.skillId ||
-          recommendation.difficulty !== completed.plan.difficulty;
+          nextPlan.kind === 'unavailable' ||
+          nextPlan.skillId !== completed.plan.skillId ||
+          nextPlan.difficulty !== completed.plan.difficulty;
 
         setLevelTransition({
           completedSessionId: completed.id,
@@ -482,12 +555,11 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
         applySession(completed);
         await queueSave(completed);
 
-        const learnerModel = await loadLearnerModel(localPracticeSessionStore);
-        const recommendation = recommendPractice(grade, learnerModel);
+        const nextPlan = await resolvePracticePlan(grade);
         const advanced =
-          recommendation.kind === 'unavailable' ||
-          recommendation.skillId !== completed.plan.skillId ||
-          recommendation.difficulty !== completed.plan.difficulty;
+          nextPlan.kind === 'unavailable' ||
+          nextPlan.skillId !== completed.plan.skillId ||
+          nextPlan.difficulty !== completed.plan.difficulty;
 
         setLevelTransition({
           completedSessionId: completed.id,
@@ -575,6 +647,7 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
     question,
     activeDurationMs,
     unavailable,
+    gradeReadiness,
     levelTransition,
     submitNumericAnswer,
     submitRelationAnswer,

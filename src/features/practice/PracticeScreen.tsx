@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -21,6 +20,7 @@ import { translateAppShell } from '@/localization/appShell';
 
 import {
   formatPracticeAnswerText,
+  getCorrectPracticeAnswer,
   getPracticeAnswerOptions,
   isSamePracticeAnswer,
   practiceAnswerKey,
@@ -105,47 +105,25 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
   const [lastResult, setLastResult] = useState<boolean | null>(null);
 
   const practice = usePracticeSession(grade);
-  const shownTransitionRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const transition = practice.levelTransition;
-    if (
-      transition === null ||
-      shownTransitionRef.current === transition.completedSessionId
-    ) {
-      return;
-    }
-
-    shownTransitionRef.current = transition.completedSessionId;
-    const advanced = transition.kind === 'advanced';
-
-    Alert.alert(
-      translate(
-        locale,
-        advanced
-          ? 'feedback.levelCompleteTitle'
-          : 'feedback.levelRetryTitle',
-      ),
-      translate(
-        locale,
-        advanced
-          ? 'feedback.levelCompleteMessage'
-          : 'feedback.levelRetryMessage',
-      ),
-      [
-        {
-          text: translate(locale, 'action.continue'),
-          onPress: () => {
-            setSelectedAnswer(null);
-            setChecked(false);
-            setLastResult(null);
-            void practice.continueAfterLevel();
-          },
-        },
-      ],
-      { cancelable: false },
-    );
-  }, [locale, practice]);
+  const readiness = practice.gradeReadiness;
+  const gradeAdvisory =
+    readiness !== null &&
+    readiness.previousGrade !== null &&
+    !readiness.previousGradeComplete ? (
+      <View style={styles.advisoryCard}>
+        <Text style={styles.advisoryTitle}>
+          {translate(locale, 'advisory.previousGradeTitle', {
+            grade: readiness.previousGrade,
+          })}
+        </Text>
+        <Text style={styles.advisoryMessage}>
+          {translate(locale, 'advisory.previousGradeMessage', {
+            grade: readiness.previousGrade,
+            targetGrade: readiness.targetGrade,
+          })}
+        </Text>
+      </View>
+    ) : null;
 
   const resetAnswerUi = () => {
     setSelectedAnswer(null);
@@ -197,11 +175,59 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
     resetAnswerUi();
   };
 
+  const continueAfterLevel = async () => {
+    resetAnswerUi();
+    await practice.continueAfterLevel();
+  };
+
   if (practice.loading) {
     return (
       <View style={styles.statePage}>
         <Text style={styles.stateText}>{translate(locale, 'status.loading')}</Text>
       </View>
+    );
+  }
+
+  if (practice.levelTransition !== null) {
+    const advanced = practice.levelTransition.kind === 'advanced';
+
+    return (
+      <ScrollView contentContainerStyle={styles.page}>
+        <View style={styles.container}>
+          <Text style={styles.eyebrow}>
+            {translateAppShell(locale, 'home.eyebrow')}
+          </Text>
+          <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
+          {gradeAdvisory}
+          <View style={[styles.card, styles.transitionCard]}>
+            <Text style={styles.transitionTitle}>
+              {translate(
+                locale,
+                advanced
+                  ? 'feedback.levelCompleteTitle'
+                  : 'feedback.levelRetryTitle',
+              )}
+            </Text>
+            <Text style={styles.transitionMessage}>
+              {translate(
+                locale,
+                advanced
+                  ? 'feedback.levelCompleteMessage'
+                  : 'feedback.levelRetryMessage',
+              )}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void continueAfterLevel()}
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryButtonText}>
+                {translate(locale, 'action.continue')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -233,6 +259,7 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
             {translateAppShell(locale, 'home.eyebrow')}
           </Text>
           <Text style={styles.title}>{translate(locale, 'app.title')}</Text>
+          {gradeAdvisory}
           <View style={styles.card}>
             <Text style={styles.completedTitle}>
               {translate(locale, 'feedback.sessionComplete')}
@@ -280,7 +307,10 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
     );
   }
 
+  const correctAnswer = getCorrectPracticeAnswer(question);
   const canFinish = checked && lastResult === true;
+  const checkDisabled =
+    selectedAnswer === null || (checked && lastResult === false);
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -295,6 +325,8 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
             difficulty: practice.session.plan.difficulty,
           })}
         </Text>
+
+        {gradeAdvisory}
 
         <View style={styles.sessionMeta}>
           <Text style={styles.progress}>
@@ -320,6 +352,12 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
           <View style={styles.answerGrid}>
             {answerOptions.map((answer) => {
               const selected = isSamePracticeAnswer(selectedAnswer, answer);
+              const revealCorrect =
+                checked &&
+                lastResult === false &&
+                isSamePracticeAnswer(correctAnswer, answer);
+              const revealIncorrect =
+                checked && lastResult === false && selected;
 
               return (
                 <Pressable
@@ -336,7 +374,12 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
                     setChecked(false);
                     setLastResult(null);
                   }}
-                  style={[styles.answerButton, selected && styles.answerButtonSelected]}
+                  style={[
+                    styles.answerButton,
+                    selected && styles.answerButtonSelected,
+                    revealCorrect && styles.answerButtonCorrect,
+                    revealIncorrect && styles.answerButtonIncorrect,
+                  ]}
                 >
                   <Text style={styles.answerText}>
                     {formatPracticeAnswerText(
@@ -351,16 +394,42 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
           </View>
 
           {checked && selectedAnswer !== null && lastResult !== null ? (
-            <Text style={[styles.feedback, lastResult ? styles.feedbackCorrect : styles.feedbackIncorrect]}>
-              {translate(locale, lastResult ? 'feedback.correct' : 'feedback.incorrect')}
-            </Text>
+            <View style={styles.feedbackGroup}>
+              <Text
+                style={[
+                  styles.feedback,
+                  lastResult
+                    ? styles.feedbackCorrect
+                    : styles.feedbackIncorrect,
+                ]}
+              >
+                {translate(
+                  locale,
+                  lastResult ? 'feedback.correct' : 'feedback.incorrect',
+                )}
+              </Text>
+              {!lastResult ? (
+                <Text style={styles.correctAnswer}>
+                  {translate(locale, 'feedback.correctAnswer', {
+                    answer: formatPracticeAnswerText(
+                      correctAnswer,
+                      locale,
+                      question,
+                    ),
+                  })}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
 
           <Pressable
             accessibilityRole="button"
-            disabled={selectedAnswer === null}
+            disabled={canFinish ? false : checkDisabled}
             onPress={() => void (canFinish ? nextQuestion() : checkAnswer())}
-            style={[styles.primaryButton, selectedAnswer === null && styles.primaryButtonDisabled]}
+            style={[
+              styles.primaryButton,
+              !canFinish && checkDisabled && styles.primaryButtonDisabled,
+            ]}
           >
             <Text style={styles.primaryButtonText}>
               {translate(locale, canFinish ? 'action.next' : 'action.check')}
@@ -488,10 +557,22 @@ const styles = StyleSheet.create({
     borderColor: '#315EFB',
     backgroundColor: '#EAF0FF',
   },
+  answerButtonCorrect: {
+    borderColor: '#157A45',
+    backgroundColor: '#EAF8F0',
+  },
+  answerButtonIncorrect: {
+    borderColor: '#B44136',
+    backgroundColor: '#FFF0EE',
+  },
   answerText: {
     fontSize: 20,
     fontWeight: '800',
     color: '#172033',
+  },
+  feedbackGroup: {
+    gap: 6,
+    alignItems: 'center',
   },
   feedback: {
     textAlign: 'center',
@@ -503,6 +584,45 @@ const styles = StyleSheet.create({
   },
   feedbackIncorrect: {
     color: '#B44136',
+  },
+  correctAnswer: {
+    color: '#172033',
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  advisoryCard: {
+    borderWidth: 1,
+    borderColor: '#E2B94B',
+    borderRadius: 18,
+    backgroundColor: '#FFF9E7',
+    padding: 16,
+    gap: 6,
+  },
+  advisoryTitle: {
+    color: '#6A4D00',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  advisoryMessage: {
+    color: '#6A5A2B',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  transitionCard: {
+    marginTop: 8,
+  },
+  transitionTitle: {
+    color: '#172033',
+    fontSize: 26,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  transitionMessage: {
+    color: '#526071',
+    fontSize: 16,
+    lineHeight: 23,
+    textAlign: 'center',
   },
   primaryButton: {
     backgroundColor: '#315EFB',
