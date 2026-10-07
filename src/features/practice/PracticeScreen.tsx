@@ -268,7 +268,8 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
     );
   }
 
-  const answerOptions = getPracticeAnswerOptions(practice.question);
+  const question = practice.question;
+  const answerOptions = getPracticeAnswerOptions(question);
   if (answerOptions === null) {
     return (
       <View style={styles.statePage}>
@@ -311,10 +312,10 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
 
         <View style={styles.card}>
           <Text style={styles.question}>
-            {renderQuestionPrompt(practice.question, locale)}
+            {renderQuestionPrompt(question, locale)}
           </Text>
 
-          <VisualQuestion question={practice.question} locale={locale} />
+          <VisualQuestion question={question} locale={locale} />
 
           <View style={styles.answerGrid}>
             {answerOptions.map((answer) => {
@@ -325,7 +326,7 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
                   accessibilityLabel={renderAnswerAccessibilityLabel(
                     locale,
                     answer,
-                    practice.question,
+                    question,
                   )}
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
@@ -341,7 +342,7 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
                     {formatPracticeAnswerText(
                       answer,
                       locale,
-                      practice.question,
+                      question,
                     )}
                   </Text>
                 </Pressable>
