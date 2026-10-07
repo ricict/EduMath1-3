@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { startRecommendedPractice } from '../../src/core/adaptive/startRecommendedPractice';
+import {
+  shouldRefreshPracticeRecommendation,
+  startRecommendedPractice,
+} from '../../src/core/adaptive/startRecommendedPractice';
 import {
   completePracticeSession,
   issueNextQuestion,
@@ -48,6 +51,31 @@ function masteredDifficultySession(
 
   return completePracticeSession(session, nowMs);
 }
+
+test('adaptive recommendation refreshes after one frozen M5 evidence window', () => {
+  let session = startPracticeSession({
+    id: 'adaptive-refresh-window',
+    grade: 1,
+    skillId: 'number_recognition_10',
+    difficulty: 1,
+    sessionSeed: 20261006,
+    startedAtMs: 1_000,
+  });
+
+  for (let index = 0; index < 5; index += 1) {
+    const issued = issueNextQuestion(session);
+    session = submitAnswer(
+      issued.session,
+      { kind: 'numeric', value: correctNumericAnswer(issued.question) },
+      2_000 + index,
+    ).session;
+
+    assert.equal(
+      shouldRefreshPracticeRecommendation(session),
+      index === 4,
+    );
+  }
+});
 
 test('zero-history bridge starts the first recommended Grade 1 skill through M4 and M3', async () => {
   let listCompletedCalls = 0;

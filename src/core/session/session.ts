@@ -57,6 +57,16 @@ function normalizeSeed(seed: number): number {
   return seed >>> 0;
 }
 
+function mixQuestionSeed(seed: number): number {
+  let value = seed >>> 0;
+  value ^= value >>> 16;
+  value = Math.imul(value, 0x85ebca6b) >>> 0;
+  value ^= value >>> 13;
+  value = Math.imul(value, 0xc2b2ae35) >>> 0;
+  value ^= value >>> 16;
+  return value >>> 0;
+}
+
 function getActiveAttemptIndex(session: PracticeSession): number {
   let activeIndex = -1;
 
@@ -107,7 +117,15 @@ export function deriveQuestionSeed(sessionSeed: number, ordinal: number): number
     throw new Error('Question ordinal must be an unsigned 32-bit integer.');
   }
 
-  return (normalizeSeed(sessionSeed) + ordinal) >>> 0;
+  const normalizedSessionSeed = normalizeSeed(sessionSeed);
+
+  // Preserve ordinal 0 exactly so the locked M1/M3 reference remains unchanged.
+  if (ordinal === 0) {
+    return normalizedSessionSeed;
+  }
+
+  const positionSalt = Math.imul(ordinal, 0x9e3779b9) >>> 0;
+  return mixQuestionSeed((normalizedSessionSeed + positionSalt) >>> 0);
 }
 
 export function startPracticeSession(

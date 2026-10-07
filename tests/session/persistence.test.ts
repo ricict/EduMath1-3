@@ -15,6 +15,7 @@ import {
   submitAnswer,
 } from '../../src/core/session/session';
 import type { LearnerAnswer } from '../../src/core/session/types';
+import { generateQuestion } from '../../src/core/question-engine/registry';
 import type { Question } from '../../src/core/types';
 
 class MemoryKeyValueStorage implements KeyValueStorage {
@@ -78,6 +79,53 @@ test('versioned serialization round-trip preserves resumable semantic session st
   assert.equal(
     restored.attempts[0].question.questionId,
     issued.question.id,
+  );
+});
+
+test('schema-v1 restore accepts pre-M8.2 sequential question seeds', () => {
+  const first = issueNextQuestion(createSession());
+  const answered = submitAnswer(
+    first.session,
+    correctAnswerFor(first.question),
+    2_000,
+  );
+  const second = issueNextQuestion(answered.session);
+
+  const parsed = JSON.parse(
+    serializePracticeSession(second.session),
+  ) as {
+    attempts: Array<{
+      question: {
+        generationContext: {
+          grade: 1;
+          skillId: 'addition_within_10';
+          difficulty: 3;
+          seed: number;
+        };
+        questionId: string;
+        questionType: Question['questionType'];
+        representation: Question['representation'];
+      };
+    }>;
+  };
+
+  const legacySeed = (20261006 + 1) >>> 0;
+  const legacyQuestion = generateQuestion({
+    grade: 1,
+    skillId: 'addition_within_10',
+    difficulty: 3,
+    seed: legacySeed,
+  });
+
+  parsed.attempts[1].question.generationContext.seed = legacySeed;
+  parsed.attempts[1].question.questionId = legacyQuestion.id;
+  parsed.attempts[1].question.questionType = legacyQuestion.questionType;
+  parsed.attempts[1].question.representation = legacyQuestion.representation;
+
+  const restored = deserializePracticeSession(JSON.stringify(parsed));
+  assert.equal(
+    restored.attempts[1].question.generationContext.seed,
+    legacySeed,
   );
 });
 

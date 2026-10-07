@@ -72,10 +72,15 @@ test('session starts with a versioned 10-minute practice target and no learner P
   ]);
 });
 
-test('question seeds are deterministic and position-specific without changing the M3 PRNG', () => {
+test('question seeds are deterministic, position-mixed, and preserve ordinal zero', () => {
   assert.equal(deriveQuestionSeed(20261006, 0), 20261006);
-  assert.equal(deriveQuestionSeed(20261006, 1), 20261007);
-  assert.equal(deriveQuestionSeed(0xffffffff, 1), 0);
+  assert.equal(deriveQuestionSeed(20261006, 1), 455217808);
+  assert.equal(deriveQuestionSeed(20261006, 2), 2694862291);
+  assert.equal(deriveQuestionSeed(0xffffffff, 1), 920564995);
+  assert.notEqual(
+    deriveQuestionSeed(20261006, 1),
+    deriveQuestionSeed(20261006, 2),
+  );
   assert.throws(() => deriveQuestionSeed(1, -1), /unsigned 32-bit integer/);
 });
 
@@ -132,8 +137,37 @@ test('a correct answer completes the current attempt and permits deterministic p
   assert.equal(second.session.attempts.length, 2);
   assert.equal(
     second.session.attempts[1].question.generationContext.seed,
-    20261007,
+    455217808,
   );
+});
+
+test('Grade 1 number recognition visibly varies across correct progression', () => {
+  let session = startPracticeSession({
+    id: 'number-recognition-variation',
+    grade: 1,
+    skillId: 'number_recognition_10',
+    difficulty: 1,
+    sessionSeed: 20261006,
+    startedAtMs: 1_000,
+  });
+  const targets: number[] = [];
+
+  for (let index = 0; index < 5; index += 1) {
+    const issued = issueNextQuestion(session);
+    if (issued.question.data.operation !== 'number-recognition') {
+      throw new Error('Expected number-recognition semantics.');
+    }
+
+    targets.push(issued.question.data.target);
+    session = submitAnswer(
+      issued.session,
+      correctAnswerFor(issued.question),
+      2_000 + index,
+    ).session;
+  }
+
+  assert.deepEqual(targets, [2, 0, 3, 5, 1]);
+  assert.equal(new Set(targets).size, 5);
 });
 
 test('the same session seed and progression reconstruct the same question sequence', () => {

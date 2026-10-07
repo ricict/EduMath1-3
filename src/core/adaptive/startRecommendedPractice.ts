@@ -1,8 +1,9 @@
 import { loadLearnerModel } from './history';
 import { recommendPractice } from './recommendation';
-import type {
-  PracticeRecommendation,
-  UnavailablePracticeRecommendation,
+import {
+  MASTERY_POLICY,
+  type PracticeRecommendation,
+  type UnavailablePracticeRecommendation,
 } from './types';
 import type { LocalSessionStore } from '../session/persistence';
 import {
@@ -35,6 +36,16 @@ export interface UnavailableRecommendedPractice {
 export type StartRecommendedPracticeResult =
   | StartedRecommendedPractice
   | UnavailableRecommendedPractice;
+
+export function shouldRefreshPracticeRecommendation(
+  session: PracticeSession,
+): boolean {
+  return (
+    session.status === 'active' &&
+    session.attempts.length >= MASTERY_POLICY.minimumEvidencePerDifficulty &&
+    session.attempts.every((attempt) => attempt.status === 'completed')
+  );
+}
 
 export async function startRecommendedPractice(
   store: Pick<LocalSessionStore, 'listCompleted'>,

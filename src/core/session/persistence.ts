@@ -446,7 +446,11 @@ function assertSessionSemantics(session: PracticeSession): void {
     }
 
     const expectedSeed = deriveQuestionSeed(session.sessionSeed, index);
-    if (context.seed !== expectedSeed) {
+    const legacySequentialSeed = (session.sessionSeed + index) >>> 0;
+    if (
+      context.seed !== expectedSeed &&
+      context.seed !== legacySequentialSeed
+    ) {
       throw new Error('Stored question seed does not match deterministic sequencing.');
     }
 

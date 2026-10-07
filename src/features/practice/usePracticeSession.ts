@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { startRecommendedPractice } from '@/core/adaptive/startRecommendedPractice';
+import {
+  shouldRefreshPracticeRecommendation,
+  startRecommendedPractice,
+} from '@/core/adaptive/startRecommendedPractice';
 import type { RecommendationUnavailableCode } from '@/core/adaptive/types';
 import {
   checkpointPracticeSession,
@@ -440,6 +443,16 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
 
     try {
       const nowMs = Date.now();
+
+      if (shouldRefreshPracticeRecommendation(current)) {
+        const completed = completePracticeSession(current, nowMs);
+        applySession(completed);
+        await queueSave(completed);
+        await startFresh();
+        setError(null);
+        return;
+      }
+
       const issued = issueNextQuestion(current);
       setQuestion(issued.question);
       await persistCheckpoint(issued.session, nowMs);
@@ -448,7 +461,13 @@ export function usePracticeSession(grade: Grade): PracticeSessionController {
       reportError(cause);
       throw cause;
     }
-  }, [persistCheckpoint, reportError]);
+  }, [
+    applySession,
+    persistCheckpoint,
+    queueSave,
+    reportError,
+    startFresh,
+  ]);
 
   const finishSession = useCallback(async () => {
     const current = sessionRef.current;
