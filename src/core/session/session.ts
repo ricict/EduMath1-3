@@ -96,6 +96,47 @@ function deriveProbeSeed(
   return mixQuestionSeed((baseSeed + probeSalt) >>> 0);
 }
 
+/**
+ * All permitted schema-v1 question seeds. M8.2 novelty probing may choose
+ * a non-primary deterministic seed, while pre-M8.2 completed sessions used
+ * sequential seeds. Persisted question identity is still reconstructed and
+ * checked separately; arbitrary/unrelated seeds remain invalid.
+ */
+export function isSupportedPersistedQuestionSeed(
+  sessionSeed: number,
+  ordinal: number,
+  candidateSeed: number,
+): boolean {
+  if (
+    !Number.isInteger(candidateSeed) ||
+    candidateSeed < 0 ||
+    candidateSeed > MAX_UINT32
+  ) {
+    return false;
+  }
+
+  const primarySeed = deriveQuestionSeed(sessionSeed, ordinal);
+  if (
+    candidateSeed === primarySeed ||
+    candidateSeed === ((sessionSeed + ordinal) >>> 0)
+  ) {
+    return true;
+  }
+
+  // The first question is always the locked primary seed, never a probe.
+  if (ordinal === 0) {
+    return false;
+  }
+
+  for (let probe = 1; probe < QUESTION_NOVELTY_PROBE_LIMIT; probe += 1) {
+    if (candidateSeed === deriveProbeSeed(sessionSeed, ordinal, probe)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function getActiveAttemptIndex(session: PracticeSession): number {
   let activeIndex = -1;
 

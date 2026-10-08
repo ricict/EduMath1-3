@@ -11,7 +11,7 @@ import type {
   SkillId,
   TimeAnswer,
 } from '../types';
-import { deriveQuestionSeed, evaluateLearnerAnswer } from './session';
+import { evaluateLearnerAnswer, isSupportedPersistedQuestionSeed } from './session';
 import {
   PRACTICE_SESSION_SCHEMA_VERSION,
   type AnswerRecord,
@@ -445,11 +445,12 @@ function assertSessionSemantics(session: PracticeSession): void {
       throw new Error('Stored question context does not match the session plan.');
     }
 
-    const expectedSeed = deriveQuestionSeed(session.sessionSeed, index);
-    const legacySequentialSeed = (session.sessionSeed + index) >>> 0;
     if (
-      context.seed !== expectedSeed &&
-      context.seed !== legacySequentialSeed
+      !isSupportedPersistedQuestionSeed(
+        session.sessionSeed,
+        index,
+        context.seed,
+      )
     ) {
       throw new Error('Stored question seed does not match deterministic sequencing.');
     }

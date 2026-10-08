@@ -29,6 +29,11 @@ import type { PracticeScreenAnswer } from './practiceCompatibility';
 import { VisualQuestion } from './visual/VisualQuestion';
 import { type PracticeUnavailableReason, usePracticeSession } from './usePracticeSession';
 
+// Enabled only in cloud-built M8.2 physical-test APKs. Production builds
+// must not expose raw local error messages or child-facing debug metadata.
+const SHOW_TEST_DIAGNOSTICS =
+  process.env.EXPO_PUBLIC_ENABLE_TEST_DIAGNOSTICS === '1';
+
 function formatDuration(durationMs: number): string {
   const totalSeconds = Math.max(0, Math.floor(durationMs / 1_000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -247,6 +252,11 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
         <Text style={styles.validationError}>
           {translate(locale, 'status.persistenceError')}
         </Text>
+        {SHOW_TEST_DIAGNOSTICS ? (
+          <Text selectable style={styles.diagnosticText}>
+            Test diagnostic: {practice.error}
+          </Text>
+        ) : null}
       </View>
     );
   }
@@ -449,9 +459,16 @@ export function PracticeScreen({ grade }: { grade: Grade }) {
           ) : null}
 
           {practice.error ? (
-            <Text style={styles.validationError}>
-              {translate(locale, 'status.persistenceError')}
-            </Text>
+            <View style={styles.errorGroup}>
+              <Text style={styles.validationError}>
+                {translate(locale, 'status.persistenceError')}
+              </Text>
+              {SHOW_TEST_DIAGNOSTICS ? (
+                <Text selectable style={styles.diagnosticText}>
+                  Test diagnostic: {practice.error}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
         </View>
 
@@ -653,6 +670,15 @@ const styles = StyleSheet.create({
   validationError: {
     color: '#B44136',
     fontWeight: '700',
+    textAlign: 'center',
+  },
+  errorGroup: {
+    gap: 6,
+  },
+  diagnosticText: {
+    color: '#526071',
+    fontSize: 12,
+    lineHeight: 18,
     textAlign: 'center',
   },
 });

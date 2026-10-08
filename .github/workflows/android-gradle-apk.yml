@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 45
     env:
       CI: '1'
+      # Device-local diagnostic text in physical-test APK only; no telemetry.
+      EXPO_PUBLIC_ENABLE_TEST_DIAGNOSTICS: '1'
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8
 
     steps:

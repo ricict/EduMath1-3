@@ -9,6 +9,7 @@ import {
 } from '../../src/core/session/persistence';
 import {
   completePracticeSession,
+  deriveQuestionSeed,
   issueNextQuestion,
   pausePracticeSession,
   startPracticeSession,
@@ -79,6 +80,88 @@ test('versioned serialization round-trip preserves resumable semantic session st
   assert.equal(
     restored.attempts[0].question.questionId,
     issued.question.id,
+  );
+});
+
+test('novelty-probed question seeds persist, restore and complete without losing mastery evidence', async () => {
+  let alternateSeedCount = 0;
+
+  for (let seed = 0; seed < 24; seed += 1) {
+    const store = createLocalSessionStore(new MemoryKeyValueStorage());
+    let session = startPracticeSession({
+      id: `offline-novelty-${seed}`,
+      grade: 1,
+      skillId: 'number_recognition_10',
+      difficulty: 1,
+      sessionSeed: seed,
+      startedAtMs: 1_000,
+    });
+
+    for (let index = 0; index < 5; index += 1) {
+      const issued = issueNextQuestion(session);
+      const selectedSeed = issued.session.attempts[index].question.generationContext.seed;
+      const primarySeed = deriveQuestionSeed(seed, index);
+      const legacySeed = (seed + index) >>> 0;
+      if (selectedSeed !== primarySeed && selectedSeed !== legacySeed) {
+        alternateSeedCount += 1;
+      }
+
+      assert.deepEqual(
+        deserializePracticeSession(serializePracticeSession(issued.session)),
+        issued.session,
+      );
+      await store.save(issued.session);
+      assert.deepEqual(await store.loadResumable(1), issued.session);
+
+      session = submitAnswer(
+        issued.session,
+        correctAnswerFor(issued.question),
+        2_000 + index,
+      ).session;
+      await store.save(session);
+      assert.deepEqual(await store.loadResumable(1), session);
+    }
+
+    const completed = completePracticeSession(session, 3_000);
+    await store.save(completed);
+    assert.equal(await store.loadResumable(1), null);
+    assert.deepEqual(await store.listCompleted(), [completed]);
+  }
+
+  assert.ok(
+    alternateSeedCount > 0,
+    'regression must exercise at least one novelty-probed seed',
+  );
+});
+
+test('tampered first-question seed remains invalid even with a consistent question ID', () => {
+  const issued = issueNextQuestion(createSession());
+  const forgedSeed = 99;
+  const forgedQuestion = generateQuestion({
+    ...issued.session.attempts[0].question.generationContext,
+    seed: forgedSeed,
+  });
+
+  const tampered = {
+    ...issued.session,
+    attempts: [{
+      ...issued.session.attempts[0],
+      question: {
+        ...issued.session.attempts[0].question,
+        generationContext: {
+          ...issued.session.attempts[0].question.generationContext,
+          seed: forgedSeed,
+        },
+        questionId: forgedQuestion.id,
+        questionType: forgedQuestion.questionType,
+        representation: forgedQuestion.representation,
+      },
+    }],
+  };
+
+  assert.throws(
+    () => serializePracticeSession(tampered),
+    /Stored question seed does not match deterministic sequencing/,
   );
 });
 
