@@ -1,4 +1,4 @@
-name: Android APK (GitHub Gradle)
+name: Android Standalone APK (GitHub Gradle)
 
 on:
   workflow_dispatch:
@@ -43,29 +43,38 @@ jobs:
       - name: Generate Android native project
         run: npx expo prebuild --platform android --clean
 
-      - name: Build debug APK with Gradle
+      # Release variant embeds Expo/React Native JavaScript; debug requires Metro.
+      # The generated Expo Android template uses its debug keystore for local
+      # release testing. This is NOT a production/Play Store signing workflow.
+      - name: Build standalone release-variant APK with Gradle
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
       - name: Stage and verify APK
         shell: bash
         run: |
           set -euo pipefail
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK="android/app/build/outputs/apk/release/app-release.apk"
           test -f "$APK"
           mkdir -p artifacts
-          cp "$APK" artifacts/EduMath-0.1.3-vc4-debug.apk
-          sha256sum artifacts/EduMath-0.1.3-vc4-debug.apk
+          cp "$APK" artifacts/EduMath-0.1.3-vc4-standalone-test.apk
+          sha256sum artifacts/EduMath-0.1.3-vc4-standalone-test.apk
+          # Reject an APK without an embedded offline JS bundle.
+          unzip -Z1 "$APK" | grep -Fx 'assets/index.android.bundle'
+          echo "Embedded offline JavaScript bundle: PASS"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          echo "Android APK signing verification: PASS"
           AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
-          "$AAPT" dump badging artifacts/EduMath-0.1.3-vc4-debug.apk | grep -E "^(package:|application-label:)"
+          "$AAPT" dump badging artifacts/EduMath-0.1.3-vc4-standalone-test.apk | grep -E "^(package:|application-label:)"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: EduMath-0.1.3-vc4-debug-apk
-          path: artifacts/EduMath-0.1.3-vc4-debug.apk
+          name: EduMath-0.1.3-vc4-standalone-test-apk
+          path: artifacts/EduMath-0.1.3-vc4-standalone-test.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
