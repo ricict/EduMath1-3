@@ -425,3 +425,49 @@ M8.1 is **PASS_AND_CHECKPOINT** because:
 This checkpoint authorizes **M8.2 — Physical Device Validation**.
 
 M8 itself remains **IN PROGRESS**. M8.2 physical-device evidence is still required before advancing to production Android configuration.
+
+
+## 13. M8.2 storage validation regression — OPEN / DEVICE RETEST REQUIRED
+
+Reported during Android standalone physical-device testing (2026-10-08): Practice displayed
+`Local practice storage is unavailable.` This text is a generic PracticeScreen
+fallback for initialization/serialization errors and is **not proof** of an SQLite
+native-module failure.
+
+### Audited cause and patch
+
+A definite software defect was identified at the M8.2 question issuance/persistence
+boundary. The no-repeat generator can use a deterministic novelty-probe seed,
+whereas schema-v1 session serialization was still accepting only position-mixed
+primary seeds and legacy sequential seeds. A legitimate new question could
+therefore fail validation before it was written to SQLite.
+
+Patch: `d64e30def42f6b5fb9d040c0f857cd2505609ed8`.
+
+- Recognize bounded, deterministic novelty-probe seeds during schema-v1
+  serialization and restore, while still rejecting forged unrelated seeds.
+- Preserve legacy sequential seeds, the locked first-question reference,
+  question-identity reconstruction, and the existing session schema version.
+- Add regression coverage for 24 Grade 1 number-recognition seeds over five
+  questions each, including save, resume, completion, and mastery-evidence listing.
+- Enable **local-only technical diagnostics in the GitHub-built M8.2 test APK**
+  using `EXPO_PUBLIC_ENABLE_TEST_DIAGNOSTICS=1`. No network logging, PII,
+  analytics or telemetry is introduced; production builds omit this flag.
+- Do not clear, migrate destructively, or reset device-local practice history.
+
+Quality evidence: GitHub Actions Run `37776224729` — SUCCESS;
+**182 tests passed, 0 failed**.
+
+Standalone APK rebuild: GitHub Actions Run `37776224797`; final APK
+availability and physical-device validation must be confirmed separately.
+
+The Expo SQLite adapter continues to use `expo-sqlite/kv-store`, consistent
+with its documented async key-value API; a second native SQLite fault is
+not established without test-device diagnostic evidence.
+
+**Status:** PATCHED IN SOURCE / CI PASS / PHYSICAL RETEST PENDING.
+This is **not** M8.2 PASS_AND_CHECKPOINT. The device must demonstrate:
+initial Grade 1–3 practice, five-question progression without storage errors,
+correct-answer persistence, grade-scoped resume, app restart, and Progress.
+If the error recurs, capture the test APK's diagnostic text to distinguish
+native SQLite I/O from session/model validation before further changes.
